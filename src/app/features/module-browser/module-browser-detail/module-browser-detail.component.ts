@@ -2,6 +2,7 @@ import { SubManager } from 'src/app/shared-interproject/directives/subscription-
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   Input,
   OnDestroy,
   OnInit,
@@ -57,6 +58,7 @@ import { moduleBrowserDetailAnimations } from './module-browser-detail.animation
 import { buildModuleDetailSeoData, injectModuleJsonLd } from './module-browser-detail.seo';
 import * as detailPresentation from './module-browser-detail.presentation';
 import { ModuleCommunityStat } from './module-browser-detail.presentation';
+import { ModuleDetailViewportDemand } from './module-browser-detail.viewport-demand';
 import {
   getAvailableRetailerSearchLinks as getAvailableRetailerSearchLinksForListings,
   getManufacturerSearchLinks as getManufacturerSearchLinksForModule
@@ -88,6 +90,15 @@ export {
 })
 export class ModuleBrowserDetailComponent extends SubManager implements OnInit, OnDestroy {
   @ViewChild(ModuleEditorComponent) moduleEditor?: ModuleEditorComponent;
+  @ViewChild('usageDemandAnchor', {read: ElementRef})
+  set usageDemandAnchor(ref: ElementRef<HTMLElement> | undefined) {
+    this.viewportDemand.observe('usage', ref);
+  }
+
+  @ViewChild('communityDemandAnchor', {read: ElementRef})
+  set communityDemandAnchor(ref: ElementRef<HTMLElement> | undefined) {
+    this.viewportDemand.observe('community', ref);
+  }
   @Input() ignoreSeo                           = false;
   @Input() showManualButton                    = false;
   @Input() viewConfig: ModuleMinimalViewConfig = {
@@ -127,6 +138,7 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
   mergeTargetModuleIdDraft = '';
   manualUrlDraft: string = '';
   private panelRatioMeasurementRun = 0;
+  private readonly viewportDemand = new ModuleDetailViewportDemand(slot => this.emitDemand(slot));
 
   constructor(
     public dataService: ModuleDetailDataService,
@@ -162,6 +174,13 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
       .subscribe(() => {
         this.commentsDataService.requestReset$.next();
       });
+
+    // Below-fold reads are viewport-deferred: when the module changes while a demand
+    // anchor is already in view, IntersectionObserver stays silent (no visibility
+    // transition), so re-emit demand for whatever is currently visible.
+    this.dataService.updateSingleModuleData$
+      .pipe(this.takeUntilDestroyed())
+      .subscribe(() => this.viewportDemand.reemitVisible());
 
     this.route.params
       .pipe(
@@ -257,6 +276,7 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
   }
 
   ngOnDestroy(): void {
+    this.viewportDemand.disconnect();
     clearJsonLdScript(JSONLD_SCRIPT_ID);
     this.dataService.singleModuleData$.next(undefined);
     super.ngOnDestroy();
@@ -394,6 +414,14 @@ export class ModuleBrowserDetailComponent extends SubManager implements OnInit, 
 
   private patchDevModule(changes: Partial<DbModule>): void {
     this.dataService.changeModule$.next(changes);
+  }
+
+  private emitDemand(slot: 'usage' | 'community'): void {
+    if (slot === 'usage') {
+      this.dataService.requestUsageSummary$.next();
+    } else {
+      this.dataService.requestPossessionCounts$.next();
+    }
   }
 
   private getDevPanelDisplayName(panel: ModulePanel, index: number): string {

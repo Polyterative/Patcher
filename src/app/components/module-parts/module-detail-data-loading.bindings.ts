@@ -11,7 +11,10 @@ export type { ModuleDetailDataLoadingContext } from './module-detail-data-loadin
 /**
  * Wires every data fetch that reloads when `updateSingleModuleData$` emits a module id:
  * the module record itself, its rack/patch/collection usage, price listings/history,
- * usage summary, possession counts, cool-reaction count, and the current user's acquisitions.
+ * cool-reaction count, and the current user's acquisitions. Usage summary and
+ * possession counts are below-fold viewport-deferred reads instead: the module id
+ * stream only clears their stale values, while the actual fetches wait for the
+ * template's `requestUsageSummary$` / `requestPossessionCounts$` demand signals.
  * Extracted verbatim from ModuleDetailDataService's constructor (only `this.` -> `ctx.` and
  * `this.takeUntilDestroyed()` -> `takeUntil(ctx.destroy$)`) to keep that file under the repo's
  * 500-line soft limit — behavior is unchanged from the inline version.
@@ -96,18 +99,32 @@ export function bindModuleDetailDataLoading(ctx: ModuleDetailDataLoadingContext)
     )
     .subscribe(snapshots => ctx.modulePriceHistorySnapshots$.next(snapshots));
 
+  // Below-fold reads stay unfetched until the detail template reports its usage
+  // cards / Community card region entering the viewport via requestUsageSummary$
+  // / requestPossessionCounts$. Stale values are still cleared eagerly on every
+  // module change so a previous module's counts never leak into the next one.
   ctx.updateSingleModuleData$
     .pipe(
-      tap(() => ctx.moduleUsageSummary$.next(undefined)),
-      switchMap(x => ctx.backend.get.moduleUsageSummary(x)),
+      tap(() => {
+        ctx.moduleUsageSummary$.next(undefined);
+        ctx.possessionCounts$.next(undefined);
+      }),
+      takeUntil(ctx.destroy$)
+    )
+    .subscribe();
+
+  ctx.requestUsageSummary$
+    .pipe(
+      withLatestFrom(ctx.updateSingleModuleData$),
+      switchMap(([, moduleId]) => ctx.backend.get.moduleUsageSummary(moduleId)),
       takeUntil(ctx.destroy$)
     )
     .subscribe(summary => ctx.moduleUsageSummary$.next(summary));
 
-  ctx.updateSingleModuleData$
+  ctx.requestPossessionCounts$
     .pipe(
-      tap(() => ctx.possessionCounts$.next(undefined)),
-      switchMap(x => ctx.backend.get.modulePossessionCounts(x)),
+      withLatestFrom(ctx.updateSingleModuleData$),
+      switchMap(([, moduleId]) => ctx.backend.get.modulePossessionCounts(moduleId)),
       takeUntil(ctx.destroy$)
     )
     .subscribe(counts => ctx.possessionCounts$.next(counts));

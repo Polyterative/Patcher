@@ -60,6 +60,11 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
   readonly sparsePriceHistorySummary$: Observable<ModuleSparsePriceHistorySummary | null>;
   readonly moduleUsageSummary$ = new BehaviorSubject<ModuleUsageSummary | undefined>(undefined);
   readonly possessionCounts$ = new BehaviorSubject<ModulePossessionCounts | undefined>(undefined);
+  // Below-fold demand signals: the detail template emits these when the usage
+  // cards (usage summary) and the Community card (possession counts) enter the
+  // viewport, so the two reads below stay unfetched until actually viewable.
+  readonly requestUsageSummary$ = new Subject<void>();
+  readonly requestPossessionCounts$ = new Subject<void>();
   readonly coolCount$ = new BehaviorSubject<number | undefined>(undefined);
   readonly coolCountUpdate$ = new Subject<number | null>();
   readonly deleteModule$ = new Subject<number>();
