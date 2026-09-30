@@ -1006,4 +1006,59 @@ describe('SupabaseService - GET.modules filtering', () => {
       }
     });
   }, TEST_TIMEOUT);
+
+  it('does not fire ilike+count for a 1-char name query and returns empty without previous results', async () => {
+    const fromSpy = spyOn(supabaseClient, 'from').and.callThrough();
+
+    const result = await firstValueFrom(service.GET.modules(0, 10, 'a')) as unknown as ModuleListingResult;
+
+    expect(fromSpy).not.toHaveBeenCalled();
+    expect(result.data).toEqual([]);
+    expect(result.count).toBe(0);
+  }, TEST_TIMEOUT);
+
+  it('does not fire ilike+count for a 1-char description query', async () => {
+    const fromSpy = spyOn(supabaseClient, 'from').and.callThrough();
+
+    const result = await firstValueFrom(service.GET.modules(
+      0, 10, undefined, undefined, undefined, undefined, undefined, undefined, undefined, 'x'
+    )) as unknown as ModuleListingResult;
+
+    expect(fromSpy).not.toHaveBeenCalled();
+    expect(result.data).toEqual([]);
+  }, TEST_TIMEOUT);
+
+  it('reuses previous module results for a 1-char query instead of blanking the list', async () => {
+    const browseRows = [{id: 1, name: 'Rings', description: 'Resonator'}];
+    const fromSpy = spyOn(supabaseClient, 'from').and.returnValue(chainableWithIlike({
+      data: browseRows,
+      count: 1,
+      error: null
+    }));
+
+    const first = await firstValueFrom(service.GET.modules(0, 10)) as unknown as ModuleListingResult;
+    expect(first.data).toEqual(browseRows);
+
+    const second = await firstValueFrom(service.GET.modules(0, 10, 'r')) as unknown as ModuleListingResult;
+
+    // One server round-trip total: the 1-char query reuses the previous
+    // emission without touching supabase again.
+    expect(fromSpy.calls.count()).toBe(1);
+    expect(second.data).toEqual(browseRows);
+    expect(second.count).toBe(1);
+  }, TEST_TIMEOUT);
+
+  it('still fires the server search for a 2-char query', async () => {
+    const queries = getModuleQueriesDouble(service);
+    spyOn(queries, 'fetchAllRows').and.resolveTo({data: [], error: null});
+    const fromSpy = spyOn(supabaseClient, 'from').and.returnValue(chainableWithIlike({
+      data: [],
+      count: 0,
+      error: null
+    }));
+
+    await firstValueFrom(service.GET.modules(0, 10, 'ri'));
+
+    expect(fromSpy.calls.count()).toBeGreaterThan(0);
+  }, TEST_TIMEOUT);
 });

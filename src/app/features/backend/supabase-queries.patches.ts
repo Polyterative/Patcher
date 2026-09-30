@@ -8,7 +8,8 @@ import {
 import {
   filter,
   map,
-  switchMap
+  switchMap,
+  tap
 } from 'rxjs/operators';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { Database } from 'src/backend/database.types';
@@ -121,7 +122,8 @@ import {
   escapeIlikePattern,
   getHpBandLabel,
   isOneUStandard,
-  HP_BAND_ORDER
+  HP_BAND_ORDER,
+  MIN_SERVER_TEXT_SEARCH_CHARS
 } from './supabase-queries.helpers';
 import {
   rankBuckets,
@@ -154,6 +156,13 @@ import {
 
 
 export class SupabasePatchQueries extends SupabaseQueriesBase {
+
+  /**
+   * Last successful patch list emission, reused when a sub-min-length name
+   * query arrives so the browser list keeps showing previous results instead
+   * of blanking (or firing a near-full-table `ilike` + `count: exact`).
+   */
+  private lastPatchListResult: {data: Patch[]; count: number; error: unknown} | null = null;
 
 
   @Cacheable({
@@ -381,6 +390,11 @@ export class SupabasePatchQueries extends SupabaseQueriesBase {
   ) {
     const connections = `,patch_connections!inner(patchid)`; // Ensures only patches with connections are included
     const nameQuery = (name ?? '').trim();
+    // A 1-char query matches most of the table — never fire ilike+count for
+    // it; reuse the previous list result so the browser never blanks.
+    if (nameQuery.length > 0 && nameQuery.length < MIN_SERVER_TEXT_SEARCH_CHARS) {
+      return of(this.lastPatchListResult ?? {data: [], count: 0, error: null});
+    }
 
     let queryBuilder = this.supabase
       .from(DbPaths.patches)
@@ -400,6 +414,11 @@ export class SupabasePatchQueries extends SupabaseQueriesBase {
         map((response: SupabaseWireResponse) => {
           const rows = (Array.isArray(response?.data) ? response.data : []) as Patch[];
           return {data: rows, count: response?.count ?? rows.length, error: response?.error};
+        }),
+        tap(result => {
+          if (!result.error) {
+            this.lastPatchListResult = result;
+          }
         })
       );
   }

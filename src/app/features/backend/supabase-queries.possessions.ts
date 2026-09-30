@@ -266,6 +266,93 @@ export class SupabasePossessionQueries extends SupabaseQueriesBase {
     cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('currentUserModules'))),
     maxCacheCount: 50
   })
+  getCurrentUserModulesForPatchEditor(
+    orderConfig?: Partial<CurrentUserModulesOrderConfig>,
+    strictErrors = false,
+  ): Observable<CurrentUserModule[]> {
+    const prefix = `module`;
+    const panelsTable: string = `${ prefix }.${ DbPaths.module_panels }`;
+
+    // Trimmed projection for the patch editor (see loadEditorCollectionModules$).
+    // The editor renders module-minimal cards with a hidden manufacturer/HP/tags
+    // view config, so it only consumes: id (cards, copy adds), name +
+    // manufacturer.name (search filter, name/manufacturer sort + grouping),
+    // manufacturer.id (abstract-module check), hp + standard + panels
+    // id/color/filename (panel image), full ins/outs (click-to-wire CVs carry
+    // the whole CV into the pending connection), and collectionUpdated +
+    // possessionKind (added-date sort, WANTS exclusion). Everything else the
+    // full pull fetches — module_tags join, description, weight/depth/power
+    // rails, public/created/updated scalars, manufacturer logo — is unread.
+    const moduleColumns = `id,name,hp`;
+
+    const columns = [
+      moduleColumns,
+      QueryJoins.manufacturer,
+      QueryJoins.standard,
+      QueryJoins.rackDisplayModulePanels,
+      QueryJoins.insOuts,
+    ];
+
+    const safeOrderConfig = this.getSafeCurrentUserModulesOrderConfig(orderConfig);
+
+    return this.getUserSession$().pipe(
+      switchMap(user => {
+        let queryBuilder = this.supabase.from(DbPaths.user_modules)
+          .select(
+            `kind,collectionUpdated:updated,
+              ${ prefix }:modules!user_modules_moduleid_fkey(
+                ${ columns.join(',') })`
+          )
+          .order(`color`, {
+            foreignTable: panelsTable,
+            ascending: true
+          })
+          .limit(1, {foreignTable: panelsTable})
+          .filter('profileid', 'eq', user.id);
+
+        if (safeOrderConfig.key === 'moduleName') {
+          queryBuilder = queryBuilder
+            .order('name', {
+              foreignTable: prefix,
+              ascending: safeOrderConfig.direction === 'asc'
+            })
+            .order('id', {
+              foreignTable: prefix,
+              ascending: true
+            });
+        } else {
+          queryBuilder = queryBuilder
+            .order('updated', {ascending: safeOrderConfig.direction === 'asc'})
+            .order('name', {
+              foreignTable: prefix,
+              ascending: true
+            })
+            .order('id', {
+              foreignTable: prefix,
+              ascending: true
+            });
+        }
+
+        return rxFrom(queryBuilder).pipe(
+          remapErrors(),
+          throwIfSupabaseErrorWhen<{data: CurrentUserModulePossessionRow[] | null}>(strictErrors),
+          map((x: {data: CurrentUserModulePossessionRow[] | null}) => (x.data ?? []).map((y: CurrentUserModulePossessionRow) => ({
+            ...y.module,
+            collectionUpdated: y.collectionUpdated as string | null,
+            possessionKind: y.kind as UserModulePossessionKind
+          })) as unknown as CurrentUserModule[])
+        );
+      }),
+    );
+  }
+
+
+
+  @Cacheable({
+    maxAge: defaultCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('currentUserModules'))),
+    maxCacheCount: 50
+  })
   getCurrentUserModulesPossessionOnly(): Observable<Pick<DbModule, 'id' | 'possessionKind'>[]> {
     return this.getUserSession$().pipe(
       switchMap(user =>
