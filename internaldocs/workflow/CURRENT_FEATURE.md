@@ -41,11 +41,11 @@
 #### Batch 2 (same issue)
 
 - [x] Below-fold reads deferred to viewport demand
-- [ ] Homepage discovery double-fire + history fan-out
-- [ ] `getUserRacksPaginated *` narrow/remove
-- [ ] Patch-editor collection pull minimal
-- [ ] `rackedModules` short-TTL cache
-- [ ] Min-chars gate on server search
+- [x] Homepage discovery shared snapshot + history cap
+- [x] Dead `getUserRacksPaginated *` removed
+- [x] Patch-editor collection pull trimmed
+- [x] `rackedModules` short-TTL cache
+- [x] Min-chars gate on server search
 
 Updated: 2026-09-29
 
