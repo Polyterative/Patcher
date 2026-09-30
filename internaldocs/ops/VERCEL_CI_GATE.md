@@ -43,10 +43,14 @@ The script follows Vercel ignored-build exit semantics:
 
 Flow:
 
-1. Skip docs-only / `.github`-only changes. For a `standard-version` release
-   commit immediately following the develop-to-production merge, evaluate the
-   cumulative diff from the previous production tip so merged application
-   changes cannot be mistaken for a metadata-only release.
+1. Skip docs-only / `.github`-only changes. Diff against `VERCEL_GIT_PREVIOUS_SHA`
+   when Vercel provides it so multi-commit pushes are judged on the whole push,
+   not just the tip commit. When that SHA is missing (local runs, shallow clone
+   without the previous commit), fall back to the tip diff (`HEAD^..HEAD`). For
+   a `standard-version` release commit immediately following the
+   develop-to-production merge, evaluate the cumulative diff from the previous
+   production tip so merged application changes cannot be mistaken for a
+   metadata-only release.
 2. Poll the GitHub Actions workflow-runs API for `.github/workflows/angular-tests.yml` at the exact pushed SHA.
 3. Proceed only when that workflow reports `status=completed` and `conclusion=success`.
 4. If the workflow endpoint is temporarily unavailable, fall back to required check-runs:

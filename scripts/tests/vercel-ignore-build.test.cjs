@@ -48,6 +48,43 @@ test('release commit still skips when the preceding merge contains only document
   assert.match(result.output, /Only docs\/\.github changed/);
 });
 
+test('proceeds when docs-only tip is stacked on app changes in the same push', () => {
+  const repo = createRepository();
+  const base = commitFile(repo, 'README.md', '# Base\n', 'docs: base');
+  commitFile(repo, 'src/app.ts', 'export const x = 1;\n', 'fix: app change');
+  commitFile(repo, 'internaldocs/notes.md', '# Notes\n', 'docs: tip notes');
+
+  const result = runGate(repo, {VERCEL_GIT_PREVIOUS_SHA: base});
+
+  assert.equal(result.status, 1, result.output);
+  assert.match(result.output, /Angular Tests completed successfully/);
+  assert.doesNotMatch(result.output, /Only docs\/\.github changed/);
+});
+
+test('skips when the whole push is docs-only', () => {
+  const repo = createRepository();
+  const base = commitFile(repo, 'README.md', '# Base\n', 'docs: base');
+  commitFile(repo, 'internaldocs/a.md', '# A\n', 'docs: a');
+  commitFile(repo, 'internaldocs/b.md', '# B\n', 'docs: b');
+
+  const result = runGate(repo, {VERCEL_GIT_PREVIOUS_SHA: base});
+
+  assert.equal(result.status, 0, result.output);
+  assert.match(result.output, /Only docs\/\.github changed/);
+});
+
+test('falls back to tip diff when the previous SHA is unknown locally', () => {
+  const repo = createRepository();
+  commitFile(repo, 'src/app.ts', 'export const x = 1;\n', 'fix: app change');
+  commitFile(repo, 'internaldocs/notes.md', '# Notes\n', 'docs: tip notes');
+
+  const result = runGate(repo, {VERCEL_GIT_PREVIOUS_SHA: 'ffffffffffffffffffffffffffffffffffffffff'});
+
+  assert.equal(result.status, 0, result.output);
+  assert.match(result.output, /falling back to tip diff/);
+  assert.match(result.output, /Only docs\/\.github changed/);
+});
+
 function createRepository() {
   const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'patcher-vercel-ignore-'));
   git(repo, ['init', '--quiet']);
@@ -76,7 +113,7 @@ function commitFile(repo, relativePath, content, message) {
   return git(repo, ['rev-parse', 'HEAD']).trim();
 }
 
-function runGate(repo) {
+function runGate(repo, extraEnv = {}) {
   const binDir = path.join(repo, 'test-bin');
   fs.mkdirSync(binDir);
   fs.writeFileSync(path.join(binDir, 'curl'), [
@@ -94,7 +131,8 @@ function runGate(repo) {
       VERCEL_GIT_REPO_OWNER: 'Polyterative',
       VERCEL_GIT_REPO_SLUG: 'Patcher',
       VERCEL_IGNORE_MAX_ATTEMPTS: '1',
-      VERCEL_IGNORE_SLEEP_SECONDS: '0'
+      VERCEL_IGNORE_SLEEP_SECONDS: '0',
+      ...extraEnv
     }
   });
 

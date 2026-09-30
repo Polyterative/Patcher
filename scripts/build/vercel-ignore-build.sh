@@ -7,7 +7,10 @@
 #
 # Strategy:
 #   1. If the diff only touches docs / .github / *.md / *.txt → skip (matches
-#      the historical ignoreCommand behaviour).
+#      the historical ignoreCommand behaviour). Diff against
+#      VERCEL_GIT_PREVIOUS_SHA when available so multi-commit pushes are judged
+#      on the whole push, not just the tip commit (HEAD^..HEAD would misclassify
+#      a docs-only tip stacked on app changes as docs-only).
 #   2. Otherwise poll the Angular Tests GitHub Actions workflow run for this
 #      exact commit. If that endpoint is temporarily unavailable, fall back to
 #      the required Angular Tests check-runs. Proceed only when CI completed
@@ -26,20 +29,45 @@ if [ -z "${SHA}" ]; then
   exit 0
 fi
 
-diff_base="HEAD^"
-commit_subject="$(git log -1 --pretty=%s HEAD 2>/dev/null || true)"
-parent_line="$(git rev-list --parents -n 1 HEAD^ 2>/dev/null || true)"
+diff_base=""
+changed_files=""
+PREVIOUS_SHA="${VERCEL_GIT_PREVIOUS_SHA:-}"
 
-# standard-version creates a metadata-only release commit on top of the merge
-# that brought develop into production. Vercel evaluates only the pushed tip,
-# so checking HEAD^..HEAD would incorrectly classify every release as docs-only
-# and skip the application changes contained in that merge.
-if printf '%s' "${commit_subject}" | grep -qE '^chore\(release\): ' \
-    && [ "$(printf '%s\n' "${parent_line}" | awk '{print NF}')" -ge 3 ]; then
-  diff_base="HEAD^^"
+# Prefer the whole-push diff when Vercel provides the previous deployment SHA.
+# HEAD^..HEAD only covers the tip commit, so a docs-only tip stacked on app
+# changes in the same push would incorrectly skip the deploy.
+if [ -n "${PREVIOUS_SHA}" ] \
+    && [ "${PREVIOUS_SHA}" != "${SHA}" ] \
+    && ! printf '%s' "${PREVIOUS_SHA}" | grep -qE '^0+$' \
+    && git cat-file -e "${PREVIOUS_SHA}^{commit}" 2>/dev/null; then
+  if changed_files="$(git diff "${PREVIOUS_SHA}" HEAD --name-only 2>/dev/null)"; then
+    diff_base="${PREVIOUS_SHA}"
+    echo "[vercel-ignore] Diff base: VERCEL_GIT_PREVIOUS_SHA covering whole push."
+  else
+    echo "[vercel-ignore] Cannot diff against VERCEL_GIT_PREVIOUS_SHA — falling back to tip diff."
+  fi
+else
+  if [ -n "${PREVIOUS_SHA}" ]; then
+    echo "[vercel-ignore] VERCEL_GIT_PREVIOUS_SHA unavailable locally — falling back to tip diff."
+  fi
 fi
 
-changed_files="$(git diff "${diff_base}" HEAD --name-only 2>/dev/null || git show --pretty='' --name-only HEAD 2>/dev/null || true)"
+if [ -z "${diff_base}" ]; then
+  diff_base="HEAD^"
+  commit_subject="$(git log -1 --pretty=%s HEAD 2>/dev/null || true)"
+  parent_line="$(git rev-list --parents -n 1 HEAD^ 2>/dev/null || true)"
+
+  # standard-version creates a metadata-only release commit on top of the merge
+  # that brought develop into production. Vercel evaluates only the pushed tip,
+  # so checking HEAD^..HEAD would incorrectly classify every release as docs-only
+  # and skip the application changes contained in that merge.
+  if printf '%s' "${commit_subject}" | grep -qE '^chore\(release\): ' \
+      && [ "$(printf '%s\n' "${parent_line}" | awk '{print NF}')" -ge 3 ]; then
+    diff_base="HEAD^^"
+  fi
+
+  changed_files="$(git diff "${diff_base}" HEAD --name-only 2>/dev/null || git show --pretty='' --name-only HEAD 2>/dev/null || true)"
+fi
 
 if [ -n "${changed_files}" ] && ! printf '%s\n' "${changed_files}" \
     | grep -qvE '^(internaldocs/|[^/]+\.md$|[^/]+\.txt$|\.github/)'; then
