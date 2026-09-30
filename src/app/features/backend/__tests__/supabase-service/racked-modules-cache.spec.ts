@@ -96,4 +96,36 @@ describe('SupabaseService - get.rackedModules short-TTL cache', () => {
     // Read + batch upsert + refetch after the bust.
     expect(fromSpy.calls.count()).toBe(3);
   }, TEST_TIMEOUT);
+
+  it('refetches after add.rackModule busts the rackWithId tag', async () => {
+    mockUserSession(service, authUserFixture('rack-module-cache-user'));
+    const fromSpy = spyOn(supabaseClient, 'from').and.returnValue(
+      chainable<RackModuleRow>({data: [rowFor(7)], error: null})
+    );
+
+    await firstValueFrom(service.get.rackedModules(7));
+    expect(fromSpy.calls.count()).toBe(1);
+
+    await firstValueFrom(service.add.rackModule(10, 7));
+
+    await firstValueFrom(service.get.rackedModules(7));
+    // Read + insert + refetch after the bust.
+    expect(fromSpy.calls.count()).toBe(3);
+  }, TEST_TIMEOUT);
+
+  it('refetches after delete.rackedModule busts the rackWithId tag', async () => {
+    mockUserSession(service, authUserFixture('rack-module-cache-user'));
+    const fromSpy = spyOn(supabaseClient, 'from').and.returnValue(
+      chainable<RackModuleRow>({data: [rowFor(7)], error: null})
+    );
+
+    await firstValueFrom(service.get.rackedModules(7));
+    expect(fromSpy.calls.count()).toBe(1);
+
+    await firstValueFrom(service.delete.rackedModule(701));
+
+    await firstValueFrom(service.get.rackedModules(7));
+    // Read + delete + refetch after the bust.
+    expect(fromSpy.calls.count()).toBe(3);
+  }, TEST_TIMEOUT);
 });

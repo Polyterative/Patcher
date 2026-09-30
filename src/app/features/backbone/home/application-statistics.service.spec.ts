@@ -1254,4 +1254,35 @@ describe('ApplicationStatisticsService', () => {
       done();
     });
   });
+
+  it('triggers exactly one more discovery RPC on refresh with both streams sharing the second snapshot', (done) => {
+    const {backend, service} = build();
+    const discoverySpy = backend.GET.applicationModuleDiscovery as jasmine.Spy;
+    let finished = false;
+    let discoveryEmissions = 0;
+    let priceDropsEmissions = 0;
+    const maybeDone = (): void => {
+      if (finished) {
+        return;
+      }
+      if (discoveryEmissions === 2 && priceDropsEmissions === 2) {
+        finished = true;
+        expect(discoverySpy.calls.count()).toBe(2);
+        expect(discoverySpy).toHaveBeenCalledWith(6, 1);
+        done();
+      }
+    };
+
+    service.discovery$.subscribe(() => {
+      discoveryEmissions++;
+      maybeDone();
+    });
+    service.priceDrops$.subscribe(() => {
+      priceDropsEmissions++;
+      if (priceDropsEmissions === 1) {
+        service.refresh();
+      }
+      maybeDone();
+    });
+  });
 });
