@@ -50,7 +50,7 @@ Status: Open on `develop`, frontend-only. No schema/migration/RLS/RPC change. No
 - 2026-09-29: Proxy routing uses a per-bucket allowlist (`IMAGE_PROXY_BUCKETS`) in `getPublicStorageUrl` so only `module-collections` moves; other buckets keep direct URLs until verified.
 - 2026-09-29: Layer 2 skips are deliberate, not deferred debt: search-path-only TTL needs a method split, detail `*` trims need a template audit, and current-user lists are already narrow. Revisit only if egress still over after Layer 3.
 - 2026-09-29: Layer 3 skips are evidence-backed: proxy worker source confirms no image-transform support, every `exact` count is consumed by UI/gates. Import cap lands 20× worst-case reduction with file-driven caller (no debounce needed). (Lazy-load moved to Batch 2 after a viewport signal was designed.)
-- 2026-09-30: Batch 2 done (290 + 88 targeted specs green, eslint/checks clean): watch dashboard for headroom, then close #161.
+- 2026-09-30: Full unit suite green (5891 passed, 1 skipped, 0 failed) after Batch 2; added 12 more regression specs (viewport-demand helper direct, add/delete cache busts, refresh-cycle sharing, NULL-kind survival) in `64392168`.
 - 2026-09-30: Regression-contract guard required an aggregate-family spec for the editor bindings swap — added `loadEditorCollectionModules$` coverage to `patch-detail-data.service.spec.ts` instead of a registry exception.
 - 2026-09-30: Deferred-reads chunk `d5152e09` includes two pre-existing tree hunks (demand-signal subjects) folded in as the same feature unit.
 
