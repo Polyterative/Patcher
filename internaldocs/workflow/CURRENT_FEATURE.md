@@ -17,37 +17,28 @@
 
 ## Active
 
-### Supabase Cached Egress overquota — plan: [plans/supabase-cached-egress-overquota.md](./plans/supabase-cached-egress-overquota.md)
+### Immediate UI feedback — plan: [plans/immediate-ui-feedback-pending-ack.md](./plans/immediate-ui-feedback-pending-ack.md)
 
-#### Layer 1 — MVP (stop the full-table fetches)
+#### Layer 1 — MVP (pending flags + template ack)
 
-- [x] Rack search server-side filter + range
-- [x] Collection covers via proxy + long cacheControl
-- [x] Targeted specs + lint green
+- [x] Module collection pending flag + button busy state
+- [x] Rack row layout pending flag + Add/Remove disabled
+- [x] Patch linked-rack saving flag + control disabled + Saving hint
+- [x] Patch instance add latch fix + remove pending
 
-#### Layer 2 — Structural (shrink repeat payloads)
+#### Layer 2 — Structural (guards + regression specs)
 
-- [x] Patch search server-side + module fallback capped
-- [x] Current-user lists verified narrow (no change)
-- [x] Detail projections reviewed (trim skipped, needs audit)
+- [x] Pending set/clear on success + error specs for all four tracks
+- [x] Double-submit guards, no pipe body changes, lint green
 
-#### Layer 3 — Polish (defer + densify what remains)
+#### Layer 3 — Polish (CSS-only ack)
 
-- [x] Import burst capped (20× worst-case cut)
-- [x] Image sizing + count trims reviewed (both skipped with evidence)
-- [x] Below-fold lazy-load investigated (queued as follow-up)
-- [ ] Egress headroom verified on dashboard (user-side, then close #161)
+- [x] aria-busy + tooltip copy per DESIGN_LANGUAGE
+- [ ] :active + focus ring (deferred to designer brief)
 
-#### Batch 2 (same issue)
+> Egress overquota plan stays open in `plans/supabase-cached-egress-overquota.md`, paused on user-side dashboard verification.
 
-- [x] Below-fold reads deferred to viewport demand
-- [x] Homepage discovery shared snapshot + history cap
-- [x] Dead `getUserRacksPaginated *` removed
-- [x] Patch-editor collection pull trimmed
-- [x] `rackedModules` short-TTL cache
-- [x] Min-chars gate on server search
-
-Updated: 2026-09-29
+Updated: 2026-10-01
 
 Recent completed checkpoints are archived in [COMPLETED.md](./COMPLETED.md); their validation
 notes and decisions live in the matching plan files (e.g.
