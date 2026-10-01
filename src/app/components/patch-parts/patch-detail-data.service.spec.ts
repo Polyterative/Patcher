@@ -2,6 +2,7 @@ import { PatchDetailDataService } from './patch-detail-data.service';
 import { SelectionPanelBridgeService } from './selection-panel-bridge.service';
 import {
   Observable,
+  Subject,
   of
 } from 'rxjs';
 import { CVConnectionEntity } from '../../models/cv';
@@ -24,6 +25,7 @@ import { loadEditorCollectionModules$ } from './patch-detail-linked-rack.binding
 import type { PatchDetailDataDependencies } from './patch-detail-data.context.types';
 import type { PatchEditorSortStrategy } from './patch-editor/patch-editor.types';
 import type { DbModule } from '../../models/module';
+import type { Patch } from '../../models/patch';
 
 
 type UserSession = { id: string } | null;
@@ -31,11 +33,16 @@ type MutationResponse = Record<string, never>;
 type DialogAnswer = { answer: boolean };
 
 interface PatchDetailBackendDouble {
+  cacheResetter$: Subject<string[]>;
   auth: {
     getUserSession$: jasmine.Spy<() => Observable<UserSession>>;
   };
   GET: {
     patchConnections: jasmine.Spy<(patchId: number) => Observable<PatchConnection[]>>;
+    patchModuleInstances: jasmine.Spy<(patchId: number) => Observable<PatchModuleInstance[]>>;
+  };
+  update: {
+    patchSilent: jasmine.Spy<(patch: Patch) => Observable<MutationResponse>>;
   };
   delete: {
     patchModuleInstance: jasmine.Spy<(instanceId: number) => Observable<MutationResponse>>;
@@ -50,6 +57,7 @@ interface PatchDetailBackendDouble {
 interface BuildFixture {
   service: PatchDetailDataService;
   bridge: SelectionPanelBridgeService;
+  backend: PatchDetailBackendDouble;
 }
 
 function mutationResponse(): MutationResponse {
@@ -90,12 +98,19 @@ function patchModuleInstance(id: number, moduleId: number): PatchModuleInstance 
 function build(): BuildFixture {
   const bridge = new SelectionPanelBridgeService();
   const backend: PatchDetailBackendDouble = {
+    cacheResetter$: new Subject<string[]>(),
     auth: {
       getUserSession$: jasmine.createSpy<() => Observable<UserSession>>('getUserSession$').and.returnValue(of(null))
     },
     GET: {
       patchConnections: jasmine.createSpy<(patchId: number) => Observable<PatchConnection[]>>('patchConnections')
+        .and.returnValue(of([])),
+      patchModuleInstances: jasmine.createSpy<(patchId: number) => Observable<PatchModuleInstance[]>>('patchModuleInstances')
         .and.returnValue(of([]))
+    },
+    update: {
+      patchSilent: jasmine.createSpy<(patch: Patch) => Observable<MutationResponse>>('patchSilent')
+        .and.returnValue(of(mutationResponse()))
     },
     delete: {
       patchModuleInstance: jasmine.createSpy<(instanceId: number) => Observable<MutationResponse>>('patchModuleInstance')
@@ -115,7 +130,7 @@ function build(): BuildFixture {
     router, snackBar, dialog, userService, supabaseServiceDouble(backend), bridge, analytics
   );
 
-  return {service, bridge};
+  return {service, bridge, backend};
 }
 
 describe('PatchDetailDataService selection behavior', () => {
@@ -338,5 +353,59 @@ describe('PatchDetailDataService editor collection modules', () => {
       expect(modules.map(module => module.id)).toEqual([1, 3]);
       done();
     });
+  });
+});
+
+describe('PatchDetailDataService linked rack saving ack', () => {
+  let service: PatchDetailDataService;
+  let bridge: SelectionPanelBridgeService;
+  let backend: PatchDetailBackendDouble;
+
+  beforeEach(() => {
+    ({service, bridge, backend} = build());
+  });
+
+  afterEach(() => {
+    service.ngOnDestroy();
+    bridge.ngOnDestroy();
+  });
+
+  function seedPatch(linkedRackId: number | null = null): void {
+    service.singlePatchData$.next({id: 7, linked_rack_id: linkedRackId} as Patch);
+  }
+
+  it('sets linkedRackSaving$ true synchronously and clears it after the save resolves', () => {
+    const gate = new Subject<MutationResponse>();
+    backend.update.patchSilent.and.returnValue(gate);
+    seedPatch(null);
+
+    expect(service.linkedRackSaving$.value).toBeFalse();
+    service.requestLinkedRackChange$.next(3);
+
+    expect(backend.update.patchSilent).toHaveBeenCalled();
+    expect(service.linkedRackSaving$.value).toBeTrue();
+    expect(service.formData.linkedRack.control.disabled).toBeTrue();
+
+    gate.next(mutationResponse());
+    gate.complete();
+
+    expect(service.linkedRackSaving$.value).toBeFalse();
+    expect(service.formData.linkedRack.control.enabled).toBeTrue();
+    expect(service.singlePatchData$.value?.linked_rack_id).toBe(3);
+  });
+
+  it('clears linkedRackSaving$ after a backend error without changing the seeded patch', () => {
+    const gate = new Subject<MutationResponse>();
+    backend.update.patchSilent.and.returnValue(gate);
+    seedPatch(null);
+
+    service.requestLinkedRackChange$.next(3);
+    expect(service.linkedRackSaving$.value).toBeTrue();
+
+    gate.error(new Error('connection down'));
+
+    expect(service.linkedRackSaving$.value).toBeFalse();
+    expect(service.formData.linkedRack.control.enabled).toBeTrue();
+    expect(service.singlePatchData$.value?.linked_rack_id).toBeNull();
   });
 });

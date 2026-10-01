@@ -1,7 +1,7 @@
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { EMPTY, forkJoin, Observable, of } from 'rxjs';
-import { catchError, exhaustMap, filter, map, switchMap, takeUntil, tap, withLatestFrom } from 'rxjs/operators';
+import { catchError, exhaustMap, filter, finalize, map, switchMap, takeUntil, tap, withLatestFrom } from 'rxjs/operators';
 import { ConfirmDialogComponent, ConfirmDialogDataInModel, ConfirmDialogDataOutModel } from 'src/app/shared-interproject/dialogs/confirm-dialog/confirm-dialog.component';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { PatchModuleInstance } from '../../models/connection';
@@ -19,6 +19,7 @@ export function bindAddModuleInstance(ctx: PatchDetailDataContext, deps: PatchDe
         const wouldBeCount = sameModuleCount + (sameModuleCount === 0 ? 2 : 1);
         if (wouldBeCount > MAX_INSTANCES_PER_MODULE) {
           SharedConstants.errorCustom(deps.snackBar, `Maximum of ${ MAX_INSTANCES_PER_MODULE } copies per module reached.`);
+          ctx.clearAddingCopyForModule$.next(module.id);
           return EMPTY;
         }
 
@@ -30,6 +31,7 @@ export function bindAddModuleInstance(ctx: PatchDetailDataContext, deps: PatchDe
             catchError(err => {
               console.error('Failed to add module instances:', err);
               SharedConstants.errorCustom(deps.snackBar, 'Failed to add module copies.');
+              ctx.clearAddingCopyForModule$.next(module.id);
               return EMPTY;
             })
           );
@@ -44,6 +46,7 @@ export function bindAddModuleInstance(ctx: PatchDetailDataContext, deps: PatchDe
             catchError(err => {
               console.error('Failed to add module instance:', err);
               SharedConstants.errorCustom(deps.snackBar, 'Failed to add module copy.');
+              ctx.clearAddingCopyForModule$.next(module.id);
               return EMPTY;
             })
           );
@@ -54,6 +57,7 @@ export function bindAddModuleInstance(ctx: PatchDetailDataContext, deps: PatchDe
           catchError(err => {
             console.error('Failed to add module instance:', err);
             SharedConstants.errorCustom(deps.snackBar, 'Failed to add module copy.');
+            ctx.clearAddingCopyForModule$.next(module.id);
             return EMPTY;
           })
         );
@@ -75,6 +79,7 @@ export function bindAddModuleInstance(ctx: PatchDetailDataContext, deps: PatchDe
 export function bindRemoveModuleInstance(ctx: PatchDetailDataContext, deps: PatchDetailDataDependencies): void {
   ctx.removeModuleInstance$
     .pipe(
+      tap((instance: PatchModuleInstance) => ctx.removingInstanceId$.next(instance.id)),
       switchMap((instance: PatchModuleInstance) => confirmModuleInstanceRemoval$(ctx, deps.dialog, deps.snackBar, instance)),
       switchMap((instance: PatchModuleInstance) =>
         (deps.backend.delete.patchModuleInstance(instance.id) as Observable<unknown>).pipe(
@@ -83,7 +88,8 @@ export function bindRemoveModuleInstance(ctx: PatchDetailDataContext, deps: Patc
             console.error('Failed to remove module instance:', err);
             SharedConstants.errorCustom(deps.snackBar, 'Failed to remove instance.');
             return EMPTY;
-          })
+          }),
+          finalize(() => ctx.removingInstanceId$.next(null))
         )
       ),
       takeUntil(ctx.destroy$)
@@ -298,7 +304,10 @@ function confirmModuleInstanceRemoval$(
       width: '32rem'
     }).afterClosed().pipe(
       tap((result: ConfirmDialogDataOutModel) => {
-        if (!result?.answer) SharedConstants.infoCustom(snackBar, 'No changes made.');
+        if (!result?.answer) {
+          ctx.removingInstanceId$.next(null);
+          SharedConstants.infoCustom(snackBar, 'No changes made.');
+        }
       }),
       filter((result: ConfirmDialogDataOutModel) => result?.answer === true),
       map(() => instance)
