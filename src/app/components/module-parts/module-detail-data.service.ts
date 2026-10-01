@@ -2,7 +2,7 @@ import { SubManager } from 'src/app/shared-interproject/directives/subscription-
 import { Injectable, OnDestroy } from '@angular/core';
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { BehaviorSubject, EMPTY, merge, Observable, of, ReplaySubject, Subject } from 'rxjs';
-import { catchError, exhaustMap, filter, map, switchMap, take, tap, withLatestFrom } from 'rxjs/operators';
+import { catchError, exhaustMap, filter, finalize, map, switchMap, take, tap, withLatestFrom } from 'rxjs/operators';
 import { RackModuleAdderDialogComponent } from 'src/app/components/rack-parts/rack-module-adder/rack-module-adder-dialog.component';
 import { UserManagementService } from '../../features/backbone/login/user-management.service';
 import { SupabaseService } from '../../features/backend/supabase.service';
@@ -47,6 +47,7 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
   readonly requestAddModuleToRack$ = new Subject<DbModule>();
   readonly removeModuleFromCollection$ = new Subject<number>();
   readonly setModulePossession$ = new Subject<UserModulePossessionKind | ModulePossessionDialogResult | null>();
+  readonly isCollectionActionPending$ = new BehaviorSubject<boolean>(false);
   readonly currentModulePossession$: Observable<UserModulePossessionKind | null>;
   readonly userModuleAcquisitions$ = new BehaviorSubject<UserModuleAcquisition[] | undefined>(undefined);
   readonly latestFormattedAcquisitionValue$: Observable<string | null>;
@@ -162,11 +163,15 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
     this.setModulePossession$
       .pipe(
         withLatestFrom(this.singleModuleData$, this.updateSingleModuleData$),
+        tap(() => this.isCollectionActionPending$.next(true)),
         exhaustMap(([request, module]) => {
-          if (!module) return EMPTY;
+          if (!module) return EMPTY.pipe(finalize(() => this.isCollectionActionPending$.next(false)));
           const kind = getPossessionRequestKind(request);
           if (kind === null) {
-            return this.backend.delete.userModule(module.id).pipe(map(() => ({kind, module})));
+            return this.backend.delete.userModule(module.id).pipe(
+              map(() => ({kind, module})),
+              finalize(() => this.isCollectionActionPending$.next(false))
+            );
           }
           return this.backend.update.userModulePossession(module.id, kind).pipe(
             switchMap(() => {
@@ -184,7 +189,8 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
                     })
                   )
                 : of({kind, module});
-            })
+            }),
+            finalize(() => this.isCollectionActionPending$.next(false))
           );
         }),
         withLatestFrom(this.updateSingleModuleData$),
@@ -213,12 +219,14 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
     
     this.addModuleToCollection$
       .pipe(
+        tap(() => this.isCollectionActionPending$.next(true)),
         exhaustMap(x => this.backend.add.userModule(x).pipe(
           catchError(err => {
             console.error('Failed to add module to collection:', err);
             SharedConstants.errorCustom(this.snackBar, 'Failed to add to your collection — check your connection and try again.');
             return EMPTY;
-          })
+          }),
+          finalize(() => this.isCollectionActionPending$.next(false))
         )),
         withLatestFrom(this.updateSingleModuleData$, this.singleModuleData$),
         this.takeUntilDestroyed()
@@ -231,12 +239,14 @@ export class ModuleDetailDataService extends SubManager implements OnDestroy {
     
     this.removeModuleFromCollection$
       .pipe(
+        tap(() => this.isCollectionActionPending$.next(true)),
         exhaustMap(x => this.backend.delete.userModule(x).pipe(
           catchError(err => {
             console.error('Failed to remove module from collection:', err);
             SharedConstants.errorCustom(this.snackBar, 'Failed to remove from your collection — check your connection and try again.');
             return EMPTY;
-          })
+          }),
+          finalize(() => this.isCollectionActionPending$.next(false))
         )),
         withLatestFrom(this.updateSingleModuleData$, this.singleModuleData$),
         this.takeUntilDestroyed()

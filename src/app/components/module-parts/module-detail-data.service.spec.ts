@@ -7,6 +7,7 @@ import {
   Observable,
   of,
   ReplaySubject,
+  Subject,
   throwError
 } from 'rxjs';
 import { RackModuleAdderDialogComponent } from '../rack-parts/rack-module-adder/rack-module-adder-dialog.component';
@@ -1009,4 +1010,98 @@ describe('ModuleDetailDataService', () => {
     expect(backend.GET.currentUserModulesPossessionOnly.calls.count()).toBe(callsBefore);
     expect(service.userModulesList$.value).toEqual([]);
   }));
+
+  it('marks collection pending synchronously while addModuleToCollection$ is in flight', () => {
+    const {service, backend, baseModule} = build();
+    const gate = new Subject<Record<string, never>>();
+    backend.add.userModule.and.returnValue(gate.asObservable());
+    service.updateSingleModuleData$.next(10);
+    service.singleModuleData$.next(baseModule);
+    service.userModulesList$.next([]);
+
+    expect(service.isCollectionActionPending$.value).toBeFalse();
+
+    service.addModuleToCollection$.next(10);
+
+    expect(backend.add.userModule).toHaveBeenCalledWith(10);
+    expect(service.isCollectionActionPending$.value).toBeTrue();
+
+    gate.next({});
+    gate.complete();
+
+    expect(service.isCollectionActionPending$.value).toBeFalse();
+  });
+
+  it('marks collection pending synchronously while removeModuleFromCollection$ is in flight', () => {
+    const {service, backend, baseModule} = build();
+    const gate = new Subject<Record<string, never>>();
+    backend.delete.userModule.and.returnValue(gate.asObservable());
+    service.updateSingleModuleData$.next(10);
+    service.singleModuleData$.next(baseModule);
+    service.userModulesList$.next([moduleFixture({id: 10, possessionKind: 'HAS'})]);
+
+    expect(service.isCollectionActionPending$.value).toBeFalse();
+
+    service.removeModuleFromCollection$.next(10);
+
+    expect(backend.delete.userModule).toHaveBeenCalledWith(10);
+    expect(service.isCollectionActionPending$.value).toBeTrue();
+
+    gate.next({});
+    gate.complete();
+
+    expect(service.isCollectionActionPending$.value).toBeFalse();
+  });
+
+  it('marks collection pending synchronously while setModulePossession$ is in flight', () => {
+    const {service, backend, baseModule} = build();
+    const gate = new Subject<null>();
+    backend.update.userModulePossession.and.returnValue(gate.asObservable());
+    service.updateSingleModuleData$.next(10);
+    service.singleModuleData$.next(baseModule);
+    service.userModulesList$.next([moduleFixture({id: 10, possessionKind: 'HAS'})]);
+
+    expect(service.isCollectionActionPending$.value).toBeFalse();
+
+    service.setModulePossession$.next('WANTS');
+
+    expect(backend.update.userModulePossession).toHaveBeenCalledWith(10, 'WANTS');
+    expect(service.isCollectionActionPending$.value).toBeTrue();
+
+    gate.next(null);
+    gate.complete();
+
+    expect(service.isCollectionActionPending$.value).toBeFalse();
+  });
+
+  it('clears collection pending flag when a collection action fails so the button never latches', () => {
+    const {service, backend, baseModule} = build();
+    spyOn(console, 'error');
+    const seededList: Array<Pick<DbModule, 'id' | 'possessionKind'>> = [moduleFixture({id: 10, possessionKind: 'HAS'})];
+    service.updateSingleModuleData$.next(10);
+    service.singleModuleData$.next(baseModule);
+    service.userModulesList$.next(seededList);
+    const addGate = new Subject<Record<string, never>>();
+    backend.add.userModule.and.returnValue(addGate.asObservable());
+    const removeGate = new Subject<Record<string, never>>();
+    backend.delete.userModule.and.returnValue(removeGate.asObservable());
+
+    service.addModuleToCollection$.next(10);
+
+    expect(service.isCollectionActionPending$.value).toBeTrue();
+
+    addGate.error(new Error('add failed'));
+
+    expect(service.isCollectionActionPending$.value).toBeFalse();
+    expect(service.userModulesList$.value).toEqual(seededList);
+
+    service.removeModuleFromCollection$.next(10);
+
+    expect(service.isCollectionActionPending$.value).toBeTrue();
+
+    removeGate.error(new Error('remove failed'));
+
+    expect(service.isCollectionActionPending$.value).toBeFalse();
+    expect(service.userModulesList$.value).toEqual(seededList);
+  });
 });
