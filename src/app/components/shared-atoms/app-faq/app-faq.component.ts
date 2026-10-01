@@ -55,7 +55,7 @@ export class AppFaqComponent {
       question: 'How can I contribute to the project?',
       icon: 'volunteer_activism',
       link: 'https://www.patreon.com/c/patcher',
-      answer: 'There are many ways you can contribute to the project, including development, documentation, or data entry. You can also help by sharing the project with your friends and spreading the word. Direct support via Patreon is available.'
+      answer: 'There are many ways you can contribute to the project, including development, documentation, or data entry. You can also help by sharing the project with your friends and spreading the word. Direct support via Patreon is available from €1, with a €5 tier if you want to cover more of the hosting and development costs. Contributions are pure donations — Patcher stays free and identical for everyone.'
     },
     {
       question: 'How can I report a bug?',
