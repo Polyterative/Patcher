@@ -7,11 +7,13 @@ import {
 import { Router } from '@angular/router';
 import {
   Observable,
+  Subject,
   of,
-  Subject
+  throwError
 } from 'rxjs';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
 import { SelectionPanelBridgeService } from 'src/app/components/patch-parts/selection-panel-bridge.service';
+import { PatchEditorStateService } from 'src/app/components/patch-parts/patch-editor/patch-editor-state.service';
 import {
   SimpleUserModel,
   SupabaseService
@@ -1194,7 +1196,7 @@ describe('PatchDetailDataService - Instance Management', () => {
       setTimeout(() => {
         // Instances should be loaded even without auth
         expect(service.patchModuleInstances$.value.length).toBe(3);
-        
+
         const labelMap = service.instanceLabelMap$.value;
         expect(labelMap.size).toBe(3);
         expect(labelMap.get(7010)).toBe('(1)');
@@ -1202,6 +1204,92 @@ describe('PatchDetailDataService - Instance Management', () => {
         expect(labelMap.get(7012)).toBe('(3)');
         done();
       }, 100);
+    });
+  });
+
+  // -------------------------------------------------------------------
+  // Immediate UI feedback — instance add/remove pending ack (Track C)
+  // -------------------------------------------------------------------
+  describe('Instance pending ack — removingInstanceId$ and add-latch bridge', () => {
+
+    function seedInstancesForRemoval(): PatchModuleInstance {
+      const instanceToDelete: PatchModuleInstance = {id: 501, patch_id: 100, module_id: 10, instance_label: '(2)'};
+      service.patchModuleInstances$.next([
+        {id: 500, patch_id: 100, module_id: 10, instance_label: '(1)'},
+        instanceToDelete
+      ]);
+      service.editorConnections$.next([]);
+      return instanceToDelete;
+    }
+
+    it('sets removingInstanceId$ synchronously and clears it after the delete resolves', () => {
+      const gate = new Subject<MutationResponse>();
+      mockSupabaseService.delete.patchModuleInstance.and.returnValue(gate);
+      const instanceToDelete = seedInstancesForRemoval();
+
+      expect(service.removingInstanceId$.value).toBeNull();
+      service.removeModuleInstance$.next(instanceToDelete);
+
+      expect(service.removingInstanceId$.value).toBe(501);
+
+      gate.next(mutationResponse());
+      gate.complete();
+
+      expect(service.removingInstanceId$.value).toBeNull();
+      expect(service.patchModuleInstances$.value.map(i => i.id)).toEqual([500]);
+    });
+
+    it('clears removingInstanceId$ after a backend error without removing the instance', () => {
+      const gate = new Subject<MutationResponse>();
+      mockSupabaseService.delete.patchModuleInstance.and.returnValue(gate);
+      const instanceToDelete = seedInstancesForRemoval();
+
+      service.removeModuleInstance$.next(instanceToDelete);
+      expect(service.removingInstanceId$.value).toBe(501);
+
+      gate.error(new Error('connection down'));
+
+      expect(service.removingInstanceId$.value).toBeNull();
+      expect(service.patchModuleInstances$.value.map(i => i.id)).toEqual([500, 501]);
+    });
+
+    it('emits clearAddingCopyForModule$ when adding copies fails so the add button unlatches', () => {
+      mockSupabaseService.add.patchModuleInstances.and.returnValue(
+        throwError(() => new Error('connection down'))
+      );
+      const seen: number[] = [];
+      service.clearAddingCopyForModule$.subscribe(id => seen.push(id));
+      service.singlePatchData$.next(fakePatch);
+      service.patchModuleInstances$.next([]);
+      service.editorConnections$.next([]);
+
+      service.addModuleInstance$.next(minimalModuleFixture(20, 'ModB'));
+
+      expect(seen).toEqual([20]);
+      expect(service.patchModuleInstances$.value).toEqual([]);
+    });
+
+    it('PatchEditorStateService drops the module id from addingCopy when the bridge fires', () => {
+      mockSupabaseService.add.patchModuleInstances.and.returnValue(
+        throwError(() => new Error('connection down'))
+      );
+      spyOn(service, 'loadEditorCollectionModules$').and.returnValue(of([]));
+      const editorState = new PatchEditorStateService(service);
+      editorState.connect({
+        readonly: false,
+        clearExpandedRackSelection: () => undefined,
+        prepareRackPreviewFrame: () => undefined
+      });
+      service.singlePatchData$.next(fakePatch);
+      service.patchModuleInstances$.next([]);
+      service.editorConnections$.next([]);
+
+      // Simulate PatchEditorComponent.onAddCopy: instant ack before the backend roundtrip.
+      editorState.addingCopy.add(20);
+      service.addModuleInstance$.next(minimalModuleFixture(20, 'ModB'));
+
+      expect(editorState.addingCopy.has(20)).toBeFalse();
+      editorState.ngOnDestroy();
     });
   });
 });

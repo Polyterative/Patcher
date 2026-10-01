@@ -116,6 +116,7 @@ export class PatchEditorStateService extends SubManager {
     if (!callbacks.readonly) {
       this.connectCollectionLoader();
       this.connectEditorCards();
+      this.connectAddingCopyClear();
       this.connectFilteredEditorCards();
       this.connectLinkedRackInstanceMap();
       this.connectLinkedRackDivergence();
@@ -151,6 +152,12 @@ export class PatchEditorStateService extends SubManager {
         this.addingCopy.clear();
         this.sourceEditorCards$.next(editorCards);
       });
+  }
+
+  private connectAddingCopyClear(): void {
+    this.dataService.clearAddingCopyForModule$
+      .pipe(this.takeUntilDestroyed())
+      .subscribe(moduleId => this.addingCopy.delete(moduleId));
   }
 
   private connectFilteredEditorCards(): void {
