@@ -144,6 +144,8 @@
                     mat-icon-button
                     [matTooltip]="getPossessionActionTooltip(bag.possessionKind)"
                     [attr.aria-label]="getPossessionActionTooltip(bag.possessionKind)"
+                    [disabled]="(dataService.isCollectionActionPending$ | async) ?? false"
+                    [attr.aria-busy]="dataService.isCollectionActionPending$ | async"
                     (click)="openPossessionDialog(bag.possessionKind)"
                   >
                     <mat-icon>{{ getPossessionActionIcon(bag.possessionKind) }}</mat-icon>
