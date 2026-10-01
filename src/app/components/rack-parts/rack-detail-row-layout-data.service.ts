@@ -24,11 +24,12 @@ export class RackDetailRowLayoutDataService {
   bind(context: RackDetailDataContext): void {
     context.requestRemoveRow$
       .pipe(
+        tap(() => context.rowLayoutActionInProgress$.next(true)),
         withLatestFrom(context.singleRackData$, context.rowedRackedModules$),
         exhaustMap(([_, rack, rackModules]) => {
           if (!rack || rack.rows <= 1) {
             SharedConstants.infoCustom(context.snackBar, 'This row cannot be removed.');
-            return EMPTY;
+            return EMPTY.pipe(finalize(() => context.rowLayoutActionInProgress$.next(false)));
           }
 
           const rowToRemove = rack.rows - 1;
@@ -39,7 +40,7 @@ export class RackDetailRowLayoutDataService {
           const lastRackRow = currentRows[rowToRemove] ?? [];
           if (lastRackRow.length > 0) {
             SharedConstants.infoCustom(context.snackBar, 'Clear the last row before removing it.');
-            return EMPTY;
+            return EMPTY.pipe(finalize(() => context.rowLayoutActionInProgress$.next(false)));
           }
 
           const snapshotRack: Rack = cloneRackData(rack);
@@ -61,7 +62,8 @@ export class RackDetailRowLayoutDataService {
               context.rowedRackedModules$.next(context.withCurrentRackModuleOrientations(snapshotRows));
               SharedConstants.errorCustom(context.snackBar, 'Failed to remove row — changes reverted. Check your connection and try again.');
               return EMPTY;
-            })
+            }),
+            finalize(() => context.rowLayoutActionInProgress$.next(false))
           );
         }),
         context.takeUntilDestroyed()
@@ -70,10 +72,11 @@ export class RackDetailRowLayoutDataService {
 
     context.requestAddNewRow$
       .pipe(
+        tap(() => context.rowLayoutActionInProgress$.next(true)),
         withLatestFrom(context.singleRackData$, context.rowedRackedModules$),
         exhaustMap(([_, rack, rackModules]) => {
           if (!rack) {
-            return EMPTY;
+            return EMPTY.pipe(finalize(() => context.rowLayoutActionInProgress$.next(false)));
           }
           if (rack.rows >= MAX_RACK_ROWS) {
             SharedConstants.infoCustom(context.snackBar, `This rack has reached the maximum of ${ MAX_RACK_ROWS } rows.`);
@@ -83,7 +86,7 @@ export class RackDetailRowLayoutDataService {
               reason: 'max_rows',
               action: 'add'
             });
-            return EMPTY;
+            return EMPTY.pipe(finalize(() => context.rowLayoutActionInProgress$.next(false)));
           }
 
           const snapshotRack: Rack = cloneRackData(rack);
@@ -109,7 +112,8 @@ export class RackDetailRowLayoutDataService {
               context.rowedRackedModules$.next(context.withCurrentRackModuleOrientations(snapshotRows));
               SharedConstants.errorCustom(context.snackBar, 'Failed to add row — changes reverted. Check your connection and try again.');
               return EMPTY;
-            })
+            }),
+            finalize(() => context.rowLayoutActionInProgress$.next(false))
           );
         }),
         context.takeUntilDestroyed()
@@ -118,13 +122,14 @@ export class RackDetailRowLayoutDataService {
 
     context.requestMoveRow$
       .pipe(
+        tap(() => context.rowLayoutActionInProgress$.next(true)),
         concatMap(({rowId, direction}) => context.waitForRackModuleOrientationUpdateIdle().pipe(
           switchMap(() => {
             const rackModules = context.rowedRackedModules$.value;
             const rack = context.singleRackData$.value;
             if (!rack || !rackModules) {
               SharedConstants.errorCustom(context.snackBar, 'Rack data is still loading. Try moving the row again in a moment.');
-              return EMPTY;
+              return EMPTY.pipe(finalize(() => context.rowLayoutActionInProgress$.next(false)));
             }
 
             const targetRow = direction === 'up' ? rowId - 1 : rowId + 1;
@@ -135,7 +140,7 @@ export class RackDetailRowLayoutDataService {
 
             if (!canMove) {
               SharedConstants.infoCustom(context.snackBar, 'This row cannot move any further.');
-              return EMPTY;
+              return EMPTY.pipe(finalize(() => context.rowLayoutActionInProgress$.next(false)));
             }
 
             const snapshot: RackedModule[][] = cloneRackData(rackModules);
@@ -154,7 +159,8 @@ export class RackDetailRowLayoutDataService {
                 context.rowedRackedModules$.next(context.withCurrentRackModuleOrientations(snapshot));
                 SharedConstants.errorCustom(context.snackBar, 'Failed to move row — changes reverted. Check your connection and try again.');
                 return EMPTY;
-              })
+              }),
+              finalize(() => context.rowLayoutActionInProgress$.next(false))
             );
           })
         )),
@@ -227,6 +233,7 @@ export class RackDetailRowLayoutDataService {
 
     context.requestDeleteRow$
       .pipe(
+        tap(() => context.rowLayoutActionInProgress$.next(true)),
         switchMap(rowId => context.waitForRackModuleOrientationUpdateIdle().pipe(
           map(() => ({
             rowId,
@@ -237,7 +244,7 @@ export class RackDetailRowLayoutDataService {
         switchMap(({rowId, rackModules, rack}) => {
           if (!rack || !rackModules) {
             SharedConstants.errorCustom(context.snackBar, 'Rack data is still loading. Try deleting the row again in a moment.');
-            return EMPTY;
+            return EMPTY.pipe(finalize(() => context.rowLayoutActionInProgress$.next(false)));
           }
 
           const row = rackModules?.[rowId] ?? [];
@@ -250,7 +257,7 @@ export class RackDetailRowLayoutDataService {
             SharedConstants.infoCustom(context.snackBar, row.length > 0
               ? 'Clear this row before deleting it.'
               : 'This row cannot be deleted.');
-            return EMPTY;
+            return EMPTY.pipe(finalize(() => context.rowLayoutActionInProgress$.next(false)));
           }
 
           const snapshotRack: Rack = cloneRackData(rack);
@@ -283,7 +290,8 @@ export class RackDetailRowLayoutDataService {
               context.rowedRackedModules$.next(context.withCurrentRackModuleOrientations(snapshotRackModules));
               SharedConstants.errorCustom(context.snackBar, 'Failed to delete row — changes reverted. Check your connection and try again.');
               return EMPTY;
-            })
+            }),
+            finalize(() => context.rowLayoutActionInProgress$.next(false))
           );
         }),
         context.takeUntilDestroyed()

@@ -94,6 +94,7 @@ export interface RackDetailDataContext {
   requestMoveRow$: Subject<{rowId: number; direction: 'up' | 'down'}>;
   requestDuplicateRow$: Subject<number>;
   duplicateRowInProgress$: BehaviorSubject<boolean>;
+  rowLayoutActionInProgress$: BehaviorSubject<boolean>;
   requestClearRow$: Subject<number>;
   requestDeleteRow$: Subject<number>;
   requestLayoutRemix$: Subject<void>;
