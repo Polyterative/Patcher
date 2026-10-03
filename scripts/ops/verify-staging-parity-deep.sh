@@ -130,7 +130,17 @@ fi
 
 if want views; then
   echo "--- HARD: views (owner + definition) ---"
-  compare_section "views" "SELECT c.relname, pg_get_userbyid(c.relowner), coalesce(array_to_string(c.reloptions, ','), ''), md5(pg_get_viewdef(c.oid)) FROM pg_class c WHERE c.relnamespace = 'public'::regnamespace AND c.relkind IN ('v','m') ORDER BY 1;"
+  VIEWDEF="pg_get_viewdef(c.oid)"
+  src_major="$(pg_q "${SOURCE_DB_URL}" "SHOW server_version_num;" 2>/dev/null | cut -c1-2)" || src_major=""
+  tgt_major="$(pg_q "${TARGET_DB_URL}" "SHOW server_version_num;" 2>/dev/null | cut -c1-2)" || tgt_major=""
+  if [ "${src_major}" != "${tgt_major}" ]; then
+    # PG16+ deparses single-relation views without "tbl." column qualifiers, so the raw
+    # text differs across majors. Compare it with every "qualifier." stripped, plus the
+    # set of table columns the view reads (pg_depend) and its output columns + types.
+    echo "(PG ${src_major} vs ${tgt_major}: cross-major view fingerprint — qualifiers stripped, dependencies + output columns compared)"
+    VIEWDEF="regexp_replace(pg_get_viewdef(c.oid), '(\"[^\"]+\"|[A-Za-z_][A-Za-z0-9_\$]*)\\.', '', 'g') || '|' || coalesce((SELECT string_agg(DISTINCT d.refobjid::regclass::text || '.' || a.attname, ',') FROM pg_rewrite rw JOIN pg_depend d ON d.classid = 'pg_rewrite'::regclass AND d.objid = rw.oid AND d.refclassid = 'pg_class'::regclass AND d.refobjid <> c.oid JOIN pg_attribute a ON a.attrelid = d.refobjid AND a.attnum = d.refobjsubid WHERE rw.ev_class = c.oid), '') || '|' || (SELECT string_agg(a.attname || ' ' || format_type(a.atttypid, a.atttypmod), ',' ORDER BY a.attnum) FROM pg_attribute a WHERE a.attrelid = c.oid AND a.attnum > 0 AND NOT a.attisdropped)"
+  fi
+  compare_section "views" "SELECT c.relname, pg_get_userbyid(c.relowner), coalesce(array_to_string(c.reloptions, ','), ''), md5(${VIEWDEF}) FROM pg_class c WHERE c.relnamespace = 'public'::regnamespace AND c.relkind IN ('v','m') ORDER BY 1;"
 fi
 
 if want privileges; then

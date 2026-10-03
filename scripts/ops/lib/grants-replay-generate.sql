@@ -52,6 +52,8 @@ routines AS (
     FROM pg_proc p
    WHERE p.pronamespace IN (SELECT oid FROM obj_nsp)
      AND NOT EXISTS (SELECT 1 FROM pg_depend d WHERE d.classid = 'pg_proc'::regclass AND d.objid = p.oid AND d.deptype = 'e')
+     -- write-freeze.sh maintenance state (a frozen source has it, the target may not)
+     AND p.oid::regprocedure::text <> 'private.patcher_freeze_reject()'
 ),
 types AS (
   SELECT t.oid, t.typtype, t.typowner, t.oid::regtype::text AS qname,
@@ -80,11 +82,12 @@ defacls AS (
   SELECT pg_get_userbyid(d.defaclrole) AS rolname, n.nspname, d.defaclobjtype AS objtype, d.defaclacl AS acl
     FROM pg_default_acl d JOIN obj_nsp n ON n.oid = d.defaclnamespace
   UNION ALL
-  -- global effective rows (absent row = hardwired default)
+  -- global rows; an absent row = the hardwired default (acl NULL here). That default is
+  -- version-specific (PG17 adds MAINTAIN on tables), so it is restored from the
+  -- target's own acldefault() instead of replaying the source's privilege list.
   SELECT r.rolname, NULL, t.objtype,
-         coalesce((SELECT d.defaclacl FROM pg_default_acl d
-                    WHERE d.defaclnamespace = 0 AND d.defaclrole = r.rolname::regrole AND d.defaclobjtype = t.objtype),
-                  acldefault(CASE t.objtype WHEN 'S' THEN 's' ELSE t.objtype END, r.rolname::regrole))
+         (SELECT d.defaclacl FROM pg_default_acl d
+           WHERE d.defaclnamespace = 0 AND d.defaclrole = r.rolname::regrole AND d.defaclobjtype = t.objtype)
     FROM defacl_roles r
    CROSS JOIN (VALUES ('r'::"char"), ('S'), ('f'), ('T'), ('n')) t(objtype)
 ),
@@ -211,6 +214,10 @@ stmts(sec, k, ord, stmt) AS (
                 CASE WHEN a.grantee = 0 THEN 'PUBLIC' ELSE quote_ident(pg_get_userbyid(a.grantee)) END,
                 CASE WHEN a.is_grantable THEN ' WITH GRANT OPTION' ELSE '' END)
     FROM defacls d, aclexplode(d.acl) a GROUP BY d.rolname, d.nspname, d.objtype, a.grantee, a.is_grantable
+  UNION ALL
+  SELECT 5, '/' || d.rolname || '/' || d.objtype::text, 2,
+         format('SELECT pg_temp.restore_hardwired_default_acl(%L, %L);', d.rolname, d.objtype)
+    FROM defacls d WHERE d.nspname IS NULL AND d.acl IS NULL
   -- 6. storage policies
   UNION ALL SELECT 6, '', 0, '-- 6. Storage policies (drop all on target, recreate the source set)'
   UNION ALL SELECT 6, '', 1, 'SELECT pg_temp.drop_policies(''storage'');'
