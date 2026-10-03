@@ -57,6 +57,8 @@ case "${1:-}" in
     for port in "${PORT_A}" "${PORT_B}"; do
       load "${port}" "${SCRIPT_DIR}/bootstrap-stubs.sql"
       load "${port}" "${schema}"
+      # Schema-only dumps carry no grants: give the API roles the hosted default posture.
+      load "${port}" "${SCRIPT_DIR}/../staging-public-grants.sql"
       [ -z "${data}" ] || load "${port}" "${data}"
     done
     psql "$(url "${PORT_B}")" -X -q -c "CREATE ROLE patcher_selfhost_marker NOLOGIN;"
