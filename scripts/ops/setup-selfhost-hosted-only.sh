@@ -113,7 +113,7 @@ fi
 sed -i 's|^  const workerTimeoutMs = 1 \* 60 \* 1000$|  const workerTimeoutMs = 150 * 1000 // Patcher: function budgets 110 s, hosted wall clock 150 s|' volumes/functions/main/index.ts
 grep -q 'const workerTimeoutMs = 150 \* 1000' volumes/functions/main/index.ts || { echo "router timeout edit failed" >&2; exit 1; }
 EOF
-tar -C "$REPO_ROOT/supabase/functions" -cf - snapshot-store-listings _shared \
+COPYFILE_DISABLE=1 tar --no-xattrs -C "$REPO_ROOT/supabase/functions" -cf - snapshot-store-listings _shared \
   | ssh "$SSH_HOST" "tar -C '$PROJECT_DIR/volumes/functions' -xf -"
 
 echo "== recreating functions container + DB setup"
@@ -184,6 +184,11 @@ unset tok
 echo "authorised limit=1 -> $(printf '%s' "$body" | tail -1)"
 printf '%s\n' "$body" | sed '$d' | head -c 600; echo
 q() { docker exec supabase-db psql -U supabase_admin -d postgres -AtX -v ON_ERROR_STOP=1 -c "$1"; }
+# A data-only/ad-hoc restore leaves the matview unpopulated, and the job's
+# REFRESH ... CONCURRENTLY then fails every hour; populate it once first.
+if [ "$(q "select ispopulated from pg_matviews where schemaname='public' and matviewname='module_discovery_snapshot'")" = f ]; then
+  q "refresh materialized view public.module_discovery_snapshot;" >/dev/null && echo "discovery matview  -> populated (was empty)"
+fi
 q "select public.refresh_module_discovery_snapshot();" >/dev/null && echo "discovery refresh  -> ok"
 q "select jobname || ' | ' || schedule || ' | active=' || active from cron.job order by jobname"
 q "select 'latest observed_at: ' || max(observed_at) from public.module_price_snapshots" || true
