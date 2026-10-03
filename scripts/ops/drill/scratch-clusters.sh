@@ -4,8 +4,10 @@
 #   A = "hosted-like"  (no marker role)            port ${DRILL_PORT_A:-55432}
 #   B = "self-host"    (carries the marker role)   port ${DRILL_PORT_B:-55433}
 # Both get Supabase platform stubs (bootstrap-stubs.sql) + a hosted `public`
-# schema dump, optionally a data dump. Everything lives under DRILL_DIR and is
-# local-only (TCP on 127.0.0.1, trust auth, no network exposure).
+# schema dump, optionally a data dump; A also gets the migrations' grant posture
+# (migration-grant-posture.py) so capture-grants' least-privilege audit passes.
+# Everything lives under DRILL_DIR and is local-only (TCP on 127.0.0.1, trust
+# auth, no network exposure).
 #
 # Cross-major drills: point PG_BIN_A / PG_BIN_B at different installs, e.g.
 #   PG_BIN_A=/opt/homebrew/opt/postgresql@15/bin PG_BIN_B=/opt/homebrew/opt/postgresql@17/bin
@@ -61,6 +63,8 @@ case "${1:-}" in
       load "${port}" "${SCRIPT_DIR}/../staging-public-grants.sql"
       [ -z "${data}" ] || load "${port}" "${data}"
     done
+    # Hosted's real posture on A only (the self-host gets it from capture-grants replay).
+    python3 "${SCRIPT_DIR}/migration-grant-posture.py" | psql "$(url "${PORT_A}")" -X -q >/dev/null 2>&1 || true
     psql "$(url "${PORT_B}")" -X -q -c "CREATE ROLE patcher_selfhost_marker NOLOGIN;"
     echo "A (hosted-like): PG $(psql "$(url "${PORT_A}")" -tAXc 'SHOW server_version;')  B (self-host, marker): PG $(psql "$(url "${PORT_B}")" -tAXc 'SHOW server_version;')"
     bash "$0" urls
@@ -69,8 +73,9 @@ case "${1:-}" in
     echo "export DRILL_HOSTED_URL=$(url "${PORT_A}") DRILL_SELFHOST_URL=$(url "${PORT_B}")"
     ;;
   down)
-    for name in a b; do
-      [ -d "${DRILL_DIR}/${name}" ] && "${BIN_A}/pg_ctl" -D "${DRILL_DIR}/${name}" -m fast stop >/dev/null 2>&1 || true
+    for pair in "a:${BIN_A}" "b:${BIN_B}"; do
+      name="${pair%%:*}"
+      [ -d "${DRILL_DIR}/${name}" ] && "${pair#*:}/pg_ctl" -D "${DRILL_DIR}/${name}" -m fast stop >/dev/null 2>&1 || true
     done
     rm -rf "${DRILL_DIR}"
     echo "drill clusters removed"
