@@ -14,8 +14,10 @@
 #   functions   public + private: signature, security definer, owner,
 #               proconfig (search_path), body md5
 #   views       public views: owner + definition md5 (catches --no-owner drift)
-#   privileges  table/view/function/schema ACLs, normalised via aclexplode
-#               (fails until hosted grants are replayed verbatim — by design)
+#   privileges  effective (NULL -> acldefault) table/view/sequence/function/
+#               schema/column ACLs, default privileges and custom-role
+#               memberships, normalised via aclexplode (fails until hosted
+#               grants are replayed with capture-grants.sh — by design)
 #   extensions  installed extension names
 # SOFT sections (printed for a human verdict): sequence last_values,
 # extension versions, snapshot-RPC output hashes.
@@ -130,9 +132,12 @@ fi
 
 if want privileges; then
   echo "--- HARD: privileges (normalised ACLs) ---"
-  compare_section "privileges-relations" "SELECT c.relname, c.relkind, $(printf "${ACL_FMT}" 'c.relacl') FROM pg_class c WHERE c.relnamespace = 'public'::regnamespace AND c.relkind IN ('r','p','v','m','S') ORDER BY 1;"
-  compare_section "privileges-functions" "SELECT n.nspname || '.' || p.proname || '(' || pg_get_function_identity_arguments(p.oid) || ')', $(printf "${ACL_FMT}" 'p.proacl') FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname IN ('public', 'private') ORDER BY 1;"
-  compare_section "privileges-schemas" "SELECT nspname, $(printf "${ACL_FMT}" 'nspacl') FROM pg_namespace WHERE nspname IN ('public', 'private', 'storage') ORDER BY 1;"
+  compare_section "privileges-relations" "SELECT c.relname, c.relkind, $(printf "${ACL_FMT}" "coalesce(c.relacl, acldefault(CASE WHEN c.relkind = 'S' THEN 's' ELSE 'r' END::\"char\", c.relowner))") FROM pg_class c WHERE c.relnamespace IN ('public'::regnamespace, 'private'::regnamespace) AND c.relkind IN ('r','p','v','m','f','S') ORDER BY 1;"
+  compare_section "privileges-columns" "SELECT c.relname, a.attname, $(printf "${ACL_FMT}" 'a.attacl') FROM pg_class c JOIN pg_attribute a ON a.attrelid = c.oid WHERE c.relnamespace IN ('public'::regnamespace, 'private'::regnamespace) AND a.attnum > 0 AND NOT a.attisdropped AND a.attacl IS NOT NULL ORDER BY 1, 2;"
+  compare_section "privileges-functions" "SELECT n.nspname || '.' || p.proname || '(' || pg_get_function_identity_arguments(p.oid) || ')', $(printf "${ACL_FMT}" "coalesce(p.proacl, acldefault('f', p.proowner))") FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname IN ('public', 'private') ORDER BY 1;"
+  compare_section "privileges-schemas" "SELECT nspname, pg_get_userbyid(nspowner), $(printf "${ACL_FMT}" "coalesce(nspacl, acldefault('n', nspowner))") FROM pg_namespace WHERE nspname IN ('public', 'private', 'storage') ORDER BY 1;"
+  compare_section "privileges-defaults" "SELECT pg_get_userbyid(d.defaclrole), coalesce(n.nspname, '<global>'), d.defaclobjtype, $(printf "${ACL_FMT}" 'd.defaclacl') FROM pg_default_acl d LEFT JOIN pg_namespace n ON n.oid = d.defaclnamespace WHERE n.nspname IN ('public', 'private') OR (d.defaclnamespace = 0 AND d.defaclrole IN (SELECT relowner FROM pg_class WHERE relnamespace IN ('public'::regnamespace, 'private'::regnamespace) UNION SELECT proowner FROM pg_proc WHERE pronamespace IN ('public'::regnamespace, 'private'::regnamespace))) ORDER BY 1, 2, 3;"
+  compare_section "privileges-memberships" "SELECT r.rolname, m2.rolname, bool_or(m.admin_option) FROM pg_auth_members m JOIN pg_roles r ON r.oid = m.roleid JOIN pg_roles m2 ON m2.oid = m.member WHERE r.rolname LIKE 'api\\_%' OR m2.rolname LIKE 'api\\_%' GROUP BY 1, 2 ORDER BY 1, 2;"
 fi
 
 if want extensions; then
