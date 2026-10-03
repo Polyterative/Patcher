@@ -1,132 +1,150 @@
 #!/usr/bin/env bash
 #
-# Capture hosted GRANTs/default-privileges/policies for verbatim prod replay.
+# Capture the source database's ownership + privilege state as a replayable SQL
+# file, and replay it onto the self-host. Replaces the blanket
+# staging-public-grants.sql with the source's exact grants.
 #
-# DRAFT FOR REVIEW — owner-run later (read-only capture). Agents author
-# docs/scripts only; execution stays in an owner-present window. Nothing here
-# writes to any database: capture reads hosted and writes gitignored local
-# files only. The staging blanket-ALL file must NEVER be used as the cutover
-# grant step (see scripts/ops/staging-public-grants.sql header + runbook §9.7).
+#   capture  (read-only) SOURCE_DB_URL -> backups/grants-replay-<ts>.sql
+#            Runs with default_transaction_read_only=on; also runs the
+#            least-privilege audit against the source and reports it.
+#   apply    TARGET_DB_URL <- file. Default is a REHEARSAL: the whole file runs
+#            inside BEGIN ... ROLLBACK, so errors and the audit show without
+#            changing anything. --commit runs it in a single transaction.
 #
-# Captures (all read-only):
-#   - \z equivalent (table/sequence/function privileges via information_schema)
-#   - pg_policies snapshot (public schema, incl. qual + with_check)
-#   - default privileges + role membership bearing on api_reader/api_view_owner
-#   - api_identity least-privilege reference lines (65-69, 344-355) for the
-#     EXECUTE -> api_reader-only audit
+# What the replay sets (scope in lib/grants-replay-generate.sql):
+#   owners of schemas/types/tables/views/sequences/routines in public+private;
+#   effective ACLs of those objects + column grants + public/private/storage
+#   schema ACLs; default privileges; custom roles (NOLOGIN only) + memberships;
+#   storage policies. Ends with the api_v1 least-privilege audit — any
+#   violation aborts the transaction.
 #
-# Safety:
-#   - Dry-run (default) prints redacted psql commands, performs zero
-#     connections (psql never invoked) and writes no files.
-#   - APPLY (owner-run) requires SOURCE_DB_URL, refuses to run if backups/ is
-#     not gitignored, writes timestamped gitignored files with mode 0700.
-#   - Connection strings are never printed (logs show redacted form only).
+# Safety: apply refuses targets without the patcher_selfhost_marker role, URLs
+# that look hosted, and non-superuser sessions (the file re-checks marker +
+# superuser itself, so it is safe even if piped by hand). Connection strings
+# are never printed. Output lives in gitignored backups/.
 #
 # Usage:
-#   bash scripts/ops/capture-grants.sh --help
-#   SOURCE_DB_URL="postgres://..." bash scripts/ops/capture-grants.sh --dry-run
-#   SOURCE_DB_URL="postgres://..." bash scripts/ops/capture-grants.sh
+#   SOURCE_DB_URL=... bash scripts/ops/capture-grants.sh capture
+#   TARGET_DB_URL=... bash scripts/ops/capture-grants.sh apply backups/grants-replay-<ts>.sql [--commit]
+#   bash scripts/ops/capture-grants.sh audit   # TARGET_DB_URL or SOURCE_DB_URL, read-only
 
 set -euo pipefail
 umask 077
 
-BACKUP_DIR="backups"
-DRY_RUN=false
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+# shellcheck source=lib/pg-common.sh
+source "${SCRIPT_DIR}/lib/pg-common.sh"
 
-usage() {
-  cat <<'EOF'
-Usage: SOURCE_DB_URL="postgres://..." bash scripts/ops/capture-grants.sh [--dry-run]
+GENERATE_SQL="${SCRIPT_DIR}/lib/grants-replay-generate.sql"
+PRELUDE_SQL="${SCRIPT_DIR}/lib/grants-replay-prelude.sql"
+AUDIT_SQL="${SCRIPT_DIR}/lib/grants-replay-audit.sql"
+BACKUP_DIR="${REPO_ROOT}/backups"
 
-Read-only grant/policy capture for verbatim prod replay (DRAFT, owner-run later).
+usage() { sed -n '2,29p' "$0" | sed 's/^# \{0,1\}//'; }
 
-Safety:
-  - Dry-run (default when --dry-run passed; otherwise use --help to inspect)
-    prints redacted commands, performs zero connections, writes no files.
-  - APPLY reads hosted only, writes gitignored timestamped files under backups/.
-  - backups/ must be git-ignored or the script refuses to write.
+cmd="${1:-}"
+[ $# -gt 0 ] && shift
+case "${cmd}" in
+  -h|--help) usage; exit 0 ;;
+  "") usage >&2; exit 1 ;;
+  capture|apply|audit) ;;
+  *) echo "ERROR: unknown command: ${cmd}" >&2; usage >&2; exit 1 ;;
+esac
 
-Options:
-  --dry-run   Print redacted capture commands without connecting or writing
-  -h|--help   Show this help
-EOF
+command -v psql >/dev/null 2>&1 || { echo "ERROR: required command not found: psql" >&2; exit 1; }
+
+run_audit() {
+  local url="$1"
+  psql "${url}" -X -q -v ON_ERROR_STOP=1 -c "SET search_path = pg_catalog;" -f "${AUDIT_SQL}" 2>&1
 }
 
-for arg in "$@"; do
-  case "$arg" in
-    --dry-run)
-      DRY_RUN=true
-      ;;
-    -h|--help)
-      usage
-      exit 0
-      ;;
-    *)
-      echo "ERROR: unknown argument: $arg" >&2
-      usage >&2
-      exit 1
-      ;;
-  esac
-done
+if [ "${cmd}" = "capture" ]; then
+  [ $# -eq 0 ] || { echo "ERROR: capture takes no arguments." >&2; exit 1; }
+  [ -n "${SOURCE_DB_URL:-}" ] || { echo "ERROR: SOURCE_DB_URL must be set in the shell (never commit it)." >&2; exit 1; }
+  require_not_selfhost_source "${SOURCE_DB_URL}"
+  if git -C "${REPO_ROOT}" rev-parse --is-inside-work-tree >/dev/null 2>&1 \
+     && ! git -C "${REPO_ROOT}" check-ignore -q "backups/"; then
+    echo "ERROR: backups/ is not ignored by git. Refusing to write." >&2; exit 1
+  fi
+  mkdir -p "${BACKUP_DIR}"; chmod 700 "${BACKUP_DIR}"
+  out="${BACKUP_DIR}/grants-replay-$(date -u +%Y%m%dT%H%M%SZ).sql"
+  body="$(mktemp)"; trap 'rm -f "${body}"' EXIT
 
-if [ -z "${SOURCE_DB_URL:-}" ]; then
-  echo "ERROR: SOURCE_DB_URL must be set in the shell (never commit it)." >&2
-  exit 1
-fi
+  PGOPTIONS="${PGOPTIONS} -c default_transaction_read_only=on -c search_path=pg_catalog" \
+    psql "${SOURCE_DB_URL}" -X -q -tA -v ON_ERROR_STOP=1 -f "${GENERATE_SQL}" > "${body}"
 
-if [ "$DRY_RUN" = true ]; then
-  echo "=== capture-grants dry-run — no connections, no files ==="
-  echo "Source: [REDACTED — connection string never printed]"
-  echo
-  echo 'psql "$SOURCE_DB_URL" -c "SELECT grantee, privilege_type, table_schema, table_name FROM information_schema.role_table_grants WHERE table_schema='"'"'public'"'"' ORDER BY 1,2,3,4;"'
-  echo 'psql "$SOURCE_DB_URL" -c "SELECT sequence_schema, sequence_name, grantee, privilege_type FROM information_schema.role_usage_grants UNION ALL SELECT routine_schema, routine_name, grantee, privilege_type FROM information_schema.role_routine_grants ORDER BY 1,2,3;"'
-  echo 'psql "$SOURCE_DB_URL" -c "SELECT schemaname, tablename, policyname, cmd, roles, qual, with_check FROM pg_policies WHERE schemaname='"'"'public'"'"' ORDER BY tablename, policyname, cmd;"'
-  echo 'psql "$SOURCE_DB_URL" -c "SELECT defaclrole::regrole, defaclnamespace::regnamespace, defaclobjtype, defaclacl FROM pg_default_acl WHERE defaclnamespace='"'"'public'"'"'::regnamespace;"'
-  echo 'psql "$SOURCE_DB_URL" -c "SELECT nspname, proname, prosecdef, proacl FROM pg_proc p JOIN pg_namespace n ON n.oid=pronamespace WHERE nspname IN ('"'"'public'"'"','"'"'private'"'"') ORDER BY 1,2;"'
-  echo
-  echo "Reference (repo, no DB): supabase/migrations/20260724133200_api_identity.sql:65-69,344-355 (EXECUTE -> api_reader-only audit)."
-  echo "Dry run complete. No connections were made and no files were written."
+  {
+    echo "-- Patcher grants/ownership replay — GENERATED by scripts/ops/capture-grants.sh; do not edit."
+    echo "-- Apply only via: TARGET_DB_URL=... bash scripts/ops/capture-grants.sh apply <this file> [--commit]"
+    echo "-- No secrets, no row data, no connection strings. Keep in gitignored backups/."
+    echo
+    cat "${PRELUDE_SQL}"
+    echo
+    cat "${body}"
+    echo
+    echo "-- 7. Least-privilege audit (aborts the transaction on any violation)"
+    cat "${AUDIT_SQL}"
+  } > "${out}"
+  chmod 600 "${out}"
+
+  count() { grep -c "$1" "${body}" || true; }
+  echo "Captured (read-only): ${out#"${REPO_ROOT}"/}"
+  echo "  owners: $(count '^ALTER .* OWNER TO')  object grants: $(count '^GRANT .* ON ')  column grants: $(count '^GRANT [A-Z]* (')"
+  echo "  default-privilege grants: $(count '^ALTER DEFAULT PRIVILEGES')  memberships: $(count 'ensure_membership')  storage policies: $(count '^CREATE POLICY')"
+  echo "Source least-privilege audit:"
+  if audit_out="$(PGOPTIONS="${PGOPTIONS} -c default_transaction_read_only=on" run_audit "${SOURCE_DB_URL}")"; then
+    echo "  ${audit_out:-OK}" | sed 's/^  NOTICE:  /  /'
+  else
+    echo "  FAILED on the source — the replay will abort on the target until this is resolved:"
+    echo "${audit_out}" | sed 's/^/  /'
+  fi
+  echo "Next: TARGET_DB_URL=... bash scripts/ops/capture-grants.sh apply ${out#"${REPO_ROOT}"/}   (rehearsal; add --commit to keep)"
   exit 0
 fi
 
-if command -v git >/dev/null 2>&1 && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-  if ! git check-ignore -q "${BACKUP_DIR}/"; then
-    echo "ERROR: ${BACKUP_DIR}/ is not ignored by git. Refusing to write grant captures." >&2
-    exit 1
-  fi
+if [ "${cmd}" = "audit" ]; then
+  url="${TARGET_DB_URL:-${SOURCE_DB_URL:-}}"
+  [ -n "${url}" ] || { echo "ERROR: set TARGET_DB_URL or SOURCE_DB_URL." >&2; exit 1; }
+  PGOPTIONS="${PGOPTIONS} -c default_transaction_read_only=on" run_audit "${url}"
+  exit $?
 fi
 
-if ! command -v psql >/dev/null 2>&1; then
-  echo "ERROR: required command not found: psql" >&2
-  exit 1
+# apply
+file="" commit=0
+for arg in "$@"; do
+  case "${arg}" in
+    --commit) commit=1 ;;
+    -*) echo "ERROR: unknown option: ${arg}" >&2; exit 1 ;;
+    *) [ -z "${file}" ] || { echo "ERROR: one replay file only." >&2; exit 1; }; file="${arg}" ;;
+  esac
+done
+[ -n "${file}" ] && [ -f "${file}" ] || { echo "ERROR: apply needs an existing replay file." >&2; exit 1; }
+head -1 "${file}" | grep -q '^-- Patcher grants/ownership replay — GENERATED' \
+  || { echo "ERROR: ${file} is not a capture-grants replay file." >&2; exit 1; }
+[ -n "${TARGET_DB_URL:-}" ] || { echo "ERROR: TARGET_DB_URL must be set in the shell (never commit it)." >&2; exit 1; }
+
+require_selfhost_target "${TARGET_DB_URL}"
+[ "$(pg_q "${TARGET_DB_URL}" "SELECT rolsuper FROM pg_roles WHERE rolname = current_user;")" = "t" ] || {
+  echo "ERROR: connect as a superuser (self-host: supabase_admin); ownership and other roles' grants need it." >&2; exit 1; }
+
+echo "Target: $(mask_db_url "${TARGET_DB_URL}")"
+rc=0
+if [ "${commit}" -eq 1 ]; then
+  echo "Mode: COMMIT (single transaction; any error or audit failure rolls everything back)"
+  log="$(psql "${TARGET_DB_URL}" -X -q -v ON_ERROR_STOP=1 --single-transaction -f "${file}" 2>&1)" || rc=$?
+else
+  echo "Mode: REHEARSAL (BEGIN ... ROLLBACK — nothing is kept). Re-run with --commit to apply."
+  log="$({ echo 'BEGIN;'; cat "${file}"; echo; echo 'ROLLBACK;'; } \
+    | psql "${TARGET_DB_URL}" -X -q -v ON_ERROR_STOP=1 2>&1)" || rc=$?
 fi
-
-mkdir -p "${BACKUP_DIR}"
-chmod 700 "${BACKUP_DIR}"
-
-timestamp="$(date +"%Y-%m-%d_%H-%M-%S")"
-out="${BACKUP_DIR}/grants_${timestamp}.txt"
-
-{
-  echo "-- Grant/policy capture (read-only source, redacted log)"
-  echo "-- Timestamp: ${timestamp}"
-  echo
-  echo "-- role_table_grants (public)"
-  psql "${SOURCE_DB_URL}" -c "SELECT grantee, privilege_type, table_schema, table_name FROM information_schema.role_table_grants WHERE table_schema='public' ORDER BY 1,2,3,4;"
-  echo
-  echo "-- role usage/routine grants"
-  psql "${SOURCE_DB_URL}" -c "SELECT sequence_schema, sequence_name, grantee, privilege_type FROM information_schema.role_usage_grants UNION ALL SELECT routine_schema, routine_name, grantee, privilege_type FROM information_schema.role_routine_grants ORDER BY 1,2,3;"
-  echo
-  echo "-- pg_policies (public)"
-  psql "${SOURCE_DB_URL}" -c "SELECT schemaname, tablename, policyname, cmd, roles, qual, with_check FROM pg_policies WHERE schemaname='public' ORDER BY tablename, policyname, cmd;"
-  echo
-  echo "-- default privileges (public)"
-  psql "${SOURCE_DB_URL}" -c "SELECT defaclrole::regrole, defaclnamespace::regnamespace, defaclobjtype, defaclacl FROM pg_default_acl WHERE defaclnamespace='public'::regnamespace;"
-  echo
-  echo "-- functions security-definer + ACL (public, private)"
-  psql "${SOURCE_DB_URL}" -c "SELECT nspname, proname, prosecdef, proacl FROM pg_proc p JOIN pg_namespace n ON n.oid=pronamespace WHERE nspname IN ('public','private') ORDER BY 1,2;"
-} > "${out}"
-chmod 600 "${out}"
-
-echo "Created:"
-echo "  ${out}"
-echo "Stored locally under ./${BACKUP_DIR}/ (gitignored). Compare against staging-public-grants.sql + api_identity.sql:65-69,344-355 before any prod replay."
+# Skip per-object helper chatter; keep warnings, errors and the audit verdict.
+grep -E 'WARNING|ERROR|FATAL|audit|LINE|DETAIL|CONTEXT' <<< "${log}" | grep -v '^$' || true
+if [ "${rc}" -ne 0 ]; then
+  echo "FAILED (psql exit ${rc}) — nothing was changed." >&2; exit 1
+fi
+if [ "${commit}" -eq 1 ]; then
+  echo "Replay committed. Verify: SOURCE_DB_URL=... TARGET_DB_URL=... pnpm verify:staging-parity:deep --only privileges (and views, policies)."
+else
+  echo "Rehearsal passed (rolled back)."
+fi

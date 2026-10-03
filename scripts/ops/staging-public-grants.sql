@@ -14,6 +14,10 @@
 -- 20260724133200_api_identity.sql:344-355. Prod replays captured hosted
 -- GRANTs/default-privs verbatim with an api_reader-only audit
 -- (re-review BLOCK 2026-10-03).
+-- SUPERSEDED for parity: `bash scripts/ops/capture-grants.sh capture` (hosted,
+-- read-only) + `... apply <file> --commit` (self-host) replays the hosted
+-- owners/grants/default privileges verbatim and resets anything this file
+-- granted. Keep this file only as a stopgap right after a throwaway restore.
 --
 -- APPLY (from repo root, self-host target only — the restore script refuses
 -- hosted-looking targets and requires explicit confirmation):
