@@ -49,6 +49,9 @@ function listMd(dir) {
       // absent in fresh clones, so exclude it from doc lints entirely.
       if (entry.isDirectory() && entry.name === 'security'
         && path.relative(repoRoot, full) === path.join('internaldocs', 'security')) continue;
+      // internaldocs/private (self-host infra notes) is gitignored for the same reason.
+      if (entry.isDirectory() && entry.name === 'private'
+        && path.relative(repoRoot, full) === path.join('internaldocs', 'private')) continue;
       if (entry.isDirectory()) walk(full);
       else if (entry.isFile() && entry.name.endsWith('.md')) {
         out.push(path.relative(repoRoot, full));
