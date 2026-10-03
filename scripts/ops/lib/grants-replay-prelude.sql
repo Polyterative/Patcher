@@ -138,6 +138,26 @@ BEGIN
 END
 $f$;
 
+-- Global default privileges the source left at the hardwired default: grant the
+-- TARGET's acldefault() back (after reset_default_acls emptied it). Postgres drops
+-- a global pg_default_acl row once it equals the default, so the target ends up
+-- with no row — the same "absent" state as the source, whatever the major version.
+CREATE FUNCTION pg_temp.restore_hardwired_default_acl(r text, t "char") RETURNS void LANGUAGE plpgsql AS $f$
+DECLARE a record;
+BEGIN
+  FOR a IN SELECT grantee, is_grantable, string_agg(privilege_type, ', ') AS privs
+             FROM aclexplode(acldefault(CASE t WHEN 'S' THEN 's' ELSE t END, r::regrole))
+            GROUP BY grantee, is_grantable LOOP
+    EXECUTE format('ALTER DEFAULT PRIVILEGES FOR ROLE %I GRANT %s ON %s TO %s%s', r, a.privs,
+                   pg_temp.defacl_word(t), pg_temp.grantee_sql(a.grantee),
+                   CASE WHEN a.is_grantable THEN ' WITH GRANT OPTION' ELSE '' END);
+  END LOOP;
+  IF EXISTS (SELECT 1 FROM pg_default_acl WHERE defaclnamespace = 0 AND defaclrole = r::regrole AND defaclobjtype = t) THEN
+    RAISE EXCEPTION 'global default privileges of % on % did not return to the hardwired default', r, pg_temp.defacl_word(t);
+  END IF;
+END
+$f$;
+
 CREATE FUNCTION pg_temp.drop_policies(nsp text) RETURNS void LANGUAGE plpgsql AS $f$
 DECLARE p record;
 BEGIN
