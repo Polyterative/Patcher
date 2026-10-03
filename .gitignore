@@ -91,3 +91,6 @@ supabase/.temp/
 # Private security docs — NEVER commit: public repo, sole contributor works on
 # vulnerabilities/remediation locally in internaldocs/security/
 /internaldocs/security/
+# Private self-host/ops docs — NEVER commit: they describe the owner's home
+# infrastructure (public repo). Master checklist, runbook, plan live here.
+/internaldocs/private/

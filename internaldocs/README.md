@@ -69,6 +69,8 @@ second source of rules.
 | File | Purpose |
 |---|---|
 | [ops/CLOUDFLARE_CACHE_OBSERVABILITY.md](./ops/CLOUDFLARE_CACHE_OBSERVABILITY.md) | Image-proxy cache health re-check runbook line (#156) |
+| [ops/API_V1_SELFHOST_CONTRACT.md](./ops/API_V1_SELFHOST_CONTRACT.md) | Public `api_v1` contract handoff for the self-host move (draft) |
+| `private/selfhost/` (local, gitignored) | Self-hosted Supabase move: master checklist, runbook, plan — kept out of the public repo because they describe private infrastructure |
 | [ops/INFRA_SAFE_CHECKPOINT_2026-09-28.md](./ops/INFRA_SAFE_CHECKPOINT_2026-09-28.md) | Source-level evidence and preserved operator gates for infra issues #159/#158/#156/#151/#150/#145 |
 | [ops/LOCAL_BACKUP_INSPECTION.md](./ops/LOCAL_BACKUP_INSPECTION.md) | Local-only backup inspection notes |
 | [ops/RELEASE_PROCESS.md](./ops/RELEASE_PROCESS.md) | Release branch runbook and history-safety notes |
