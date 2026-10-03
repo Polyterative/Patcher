@@ -24,7 +24,7 @@ const DEFAULT_SUPABASE_URL = 'https://sozmatmywjpstwidzlss.supabase.co';
 function readExistingEnvironmentValue(filePath, propertyName) {
   if (!fs.existsSync(filePath)) return '';
   const content = fs.readFileSync(filePath, 'utf8');
-  return content.match(new RegExp(`${propertyName}:\\\\s*['"]([^'"]+)['"]`))?.[1] || '';
+  return content.match(new RegExp(`${propertyName}:\\s*['"]([^'"]+)['"]`))?.[1] || '';
 }
 
 const existingDevEnvPath = path.join(__dirname, 'src/environments/environment.ts');
