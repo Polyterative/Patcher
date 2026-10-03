@@ -82,6 +82,7 @@
     "copy:storage-to-staging": "node scripts/ops/copy-storage-to-staging.mjs",
     "import:auth-to-selfhost": "bash scripts/ops/import-auth-to-selfhost.sh",
     "copy:migration-history": "bash scripts/ops/copy-migration-history.sh",
+    "check:private-leaks": "node scripts/checks/check-private-leaks.cjs",
     "audit:panel-ratios": "node scripts/audits/audit-panel-ratios.mjs",
     "restore:data": "bash scripts/ops/restore-data.sh",
     "release:preflight": "node scripts/build/release-preflight.mjs",
