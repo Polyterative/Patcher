@@ -18,7 +18,7 @@ the comparison in chat history (2026-06-10).
   exposes `capture()`, `identify()`, `reset()`, plus auto router `$pageview`.
 - `UserManagementService.initializeAnalyticsIdentityHandler()` ties PostHog identity
   to the Supabase user on login/logout.
-- AdGuard (TrueNAS) allowlist updated for `*.posthog.com`.
+- Local DNS ad-blocker allowlist updated for `*.posthog.com`.
 - **Currently runs in dev** for verification — must be flipped back to prod-only
   before this plan is closed (see Layer 0).
 
@@ -168,7 +168,7 @@ Build these in PostHog and pin them to a "Patcher" dashboard folder.
   GA4 / DIY Supabase. Free tier (1M events/mo) is comfortably above current scale;
   open-source escape hatch exists.
 - 2026-06-10 — Initial wiring landed (posthog-js, AnalyticsService, identity
-  handler, AdGuard allowlist). Currently enabled in dev for verification —
+  handler, DNS ad-blocker allowlist). Currently enabled in dev for verification —
   Layer 0 must revert that before this plan is closed.
 - 2026-06-18 — Round 2 closed the code-owned slice: DNT is handled by
   `respect_dnt: true`; auth/password-reset inputs and module-flag notes are marked
