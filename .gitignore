@@ -94,3 +94,5 @@ supabase/.temp/
 # Private self-host/ops docs — NEVER commit: they describe the owner's home
 # infrastructure (public repo). Master checklist, runbook, plan live here.
 /internaldocs/private/
+# Owner-defined private patterns for scripts/checks/check-private-leaks.cjs
+/.private-leak-patterns
