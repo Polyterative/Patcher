@@ -86,6 +86,8 @@ compare_section() {
   fi
 }
 
+# private.patcher_freeze_reject() is write-freeze.sh maintenance state, not schema: exempt it.
+FREEZE_FN_EXEMPT="NOT (n.nspname = 'private' AND p.proname = 'patcher_freeze_reject')"
 ACL_FMT="coalesce((SELECT string_agg(x, ',' ORDER BY x) FROM (SELECT CASE WHEN a.grantee = 0 THEN 'PUBLIC' ELSE a.grantee::regrole::text END || ':' || a.privilege_type || CASE WHEN a.is_grantable THEN '*' ELSE '' END AS x FROM aclexplode(%s) a) acl), '<default>')"
 
 if want content; then
@@ -117,12 +119,13 @@ fi
 
 if want triggers; then
   echo "--- HARD: triggers (public tables + auth.users -> public functions) ---"
-  compare_section "triggers" "SELECT tg.tgrelid::regclass::text, tg.tgname, tg.tgenabled, tg.tgfoid::regprocedure::text, md5(pg_get_triggerdef(tg.oid)) FROM pg_trigger tg JOIN pg_class c ON c.oid = tg.tgrelid JOIN pg_proc p ON p.oid = tg.tgfoid WHERE NOT tg.tgisinternal AND (c.relnamespace = 'public'::regnamespace OR (tg.tgrelid = 'auth.users'::regclass AND p.pronamespace = 'public'::regnamespace)) ORDER BY 1, 2;"
+  # zz_patcher_freeze = write-freeze.sh maintenance trigger; one side may legitimately be frozen.
+  compare_section "triggers" "SELECT tg.tgrelid::regclass::text, tg.tgname, tg.tgenabled, tg.tgfoid::regprocedure::text, md5(pg_get_triggerdef(tg.oid)) FROM pg_trigger tg JOIN pg_class c ON c.oid = tg.tgrelid JOIN pg_proc p ON p.oid = tg.tgfoid WHERE NOT tg.tgisinternal AND tg.tgname <> 'zz_patcher_freeze' AND (c.relnamespace = 'public'::regnamespace OR (tg.tgrelid = 'auth.users'::regclass AND p.pronamespace = 'public'::regnamespace)) ORDER BY 1, 2;"
 fi
 
 if want functions; then
   echo "--- HARD: functions (public, private) ---"
-  compare_section "functions" "SELECT n.nspname || '.' || p.proname || '(' || pg_get_function_identity_arguments(p.oid) || ')', p.prosecdef, pg_get_userbyid(p.proowner), coalesce(array_to_string(p.proconfig, ';'), ''), md5(p.prosrc) FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname IN ('public', 'private') ORDER BY 1;"
+  compare_section "functions" "SELECT n.nspname || '.' || p.proname || '(' || pg_get_function_identity_arguments(p.oid) || ')', p.prosecdef, pg_get_userbyid(p.proowner), coalesce(array_to_string(p.proconfig, ';'), ''), md5(p.prosrc) FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname IN ('public', 'private') AND ${FREEZE_FN_EXEMPT} ORDER BY 1;"
 fi
 
 if want views; then
@@ -134,7 +137,7 @@ if want privileges; then
   echo "--- HARD: privileges (normalised ACLs) ---"
   compare_section "privileges-relations" "SELECT c.relname, c.relkind, $(printf "${ACL_FMT}" "coalesce(c.relacl, acldefault(CASE WHEN c.relkind = 'S' THEN 's' ELSE 'r' END::\"char\", c.relowner))") FROM pg_class c WHERE c.relnamespace IN ('public'::regnamespace, 'private'::regnamespace) AND c.relkind IN ('r','p','v','m','f','S') ORDER BY 1;"
   compare_section "privileges-columns" "SELECT c.relname, a.attname, $(printf "${ACL_FMT}" 'a.attacl') FROM pg_class c JOIN pg_attribute a ON a.attrelid = c.oid WHERE c.relnamespace IN ('public'::regnamespace, 'private'::regnamespace) AND a.attnum > 0 AND NOT a.attisdropped AND a.attacl IS NOT NULL ORDER BY 1, 2;"
-  compare_section "privileges-functions" "SELECT n.nspname || '.' || p.proname || '(' || pg_get_function_identity_arguments(p.oid) || ')', $(printf "${ACL_FMT}" "coalesce(p.proacl, acldefault('f', p.proowner))") FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname IN ('public', 'private') ORDER BY 1;"
+  compare_section "privileges-functions" "SELECT n.nspname || '.' || p.proname || '(' || pg_get_function_identity_arguments(p.oid) || ')', $(printf "${ACL_FMT}" "coalesce(p.proacl, acldefault('f', p.proowner))") FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname IN ('public', 'private') AND ${FREEZE_FN_EXEMPT} ORDER BY 1;"
   compare_section "privileges-schemas" "SELECT nspname, pg_get_userbyid(nspowner), $(printf "${ACL_FMT}" "coalesce(nspacl, acldefault('n', nspowner))") FROM pg_namespace WHERE nspname IN ('public', 'private', 'storage') ORDER BY 1;"
   compare_section "privileges-defaults" "SELECT pg_get_userbyid(d.defaclrole), coalesce(n.nspname, '<global>'), d.defaclobjtype, $(printf "${ACL_FMT}" 'd.defaclacl') FROM pg_default_acl d LEFT JOIN pg_namespace n ON n.oid = d.defaclnamespace WHERE n.nspname IN ('public', 'private') OR (d.defaclnamespace = 0 AND d.defaclrole IN (SELECT relowner FROM pg_class WHERE relnamespace IN ('public'::regnamespace, 'private'::regnamespace) UNION SELECT proowner FROM pg_proc WHERE pronamespace IN ('public'::regnamespace, 'private'::regnamespace))) ORDER BY 1, 2, 3;"
   compare_section "privileges-memberships" "SELECT r.rolname, m2.rolname, bool_or(m.admin_option) FROM pg_auth_members m JOIN pg_roles r ON r.oid = m.roleid JOIN pg_roles m2 ON m2.oid = m.member WHERE r.rolname LIKE 'api\\_%' OR m2.rolname LIKE 'api\\_%' GROUP BY 1, 2 ORDER BY 1, 2;"
