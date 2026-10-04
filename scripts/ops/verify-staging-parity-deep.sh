@@ -93,7 +93,9 @@ compare_section() {
 
 # private.patcher_freeze_reject() is write-freeze.sh maintenance state, not schema: exempt it.
 FREEZE_FN_EXEMPT="NOT (n.nspname = 'private' AND p.proname = 'patcher_freeze_reject')"
-ACL_FMT="coalesce((SELECT string_agg(x, ',' ORDER BY x COLLATE \"C\") FROM (SELECT CASE WHEN a.grantee = 0 THEN 'PUBLIC' ELSE a.grantee::regrole::text END || ':' || a.privilege_type || CASE WHEN a.is_grantable THEN '*' ELSE '' END AS x FROM aclexplode(%s) a) acl), '<default>')"
+# MAINTAIN is PG17-only (part of ALL there); the replay derives it from a full PG15
+# grant, so it is left out of the comparison.
+ACL_FMT="coalesce((SELECT string_agg(x, ',' ORDER BY x COLLATE \"C\") FROM (SELECT CASE WHEN a.grantee = 0 THEN 'PUBLIC' ELSE a.grantee::regrole::text END || ':' || a.privilege_type || CASE WHEN a.is_grantable THEN '*' ELSE '' END AS x FROM aclexplode(%s) a WHERE a.privilege_type <> 'MAINTAIN') acl), '<default>')"
 
 if want content; then
   echo "--- HARD: content (count + order-independent row-hash sum) ---"

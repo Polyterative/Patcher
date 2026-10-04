@@ -15,7 +15,8 @@
 #   owners of schemas/types/tables/views/sequences/routines in public+private;
 #   effective ACLs of those objects + column grants + public/private/storage
 #   schema ACLs; default privileges; custom roles (NOLOGIN only) + memberships;
-#   storage policies. Ends with the api_v1 least-privilege audit — any
+#   storage policies; on PG17+ targets MAINTAIN joins every full PG15 grant
+#   (lib/grants-replay-pg17.sql). Ends with the api_v1 least-privilege audit — any
 #   violation aborts the transaction.
 #
 # Safety: apply refuses targets without the patcher_selfhost_marker role, URLs
@@ -38,6 +39,7 @@ source "${SCRIPT_DIR}/lib/pg-common.sh"
 
 GENERATE_SQL="${SCRIPT_DIR}/lib/grants-replay-generate.sql"
 PRELUDE_SQL="${SCRIPT_DIR}/lib/grants-replay-prelude.sql"
+PG17_SQL="${SCRIPT_DIR}/lib/grants-replay-pg17.sql"
 AUDIT_SQL="${SCRIPT_DIR}/lib/grants-replay-audit.sql"
 BACKUP_DIR="${REPO_ROOT}/backups"
 
@@ -82,6 +84,8 @@ if [ "${cmd}" = "capture" ]; then
     cat "${PRELUDE_SQL}"
     echo
     cat "${body}"
+    echo
+    cat "${PG17_SQL}"
     echo
     echo "-- 7. Least-privilege audit (aborts the transaction on any violation)"
     cat "${AUDIT_SQL}"
