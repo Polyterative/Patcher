@@ -112,6 +112,9 @@ case "$code" in
   200|401) ok "gateway auth/v1/health -> $code" ;;
   *) fail "gateway auth/v1/health -> ${code:-no answer}" ;;
 esac
+pub="${GATEWAY%:*}:8001"
+code=$(curl -s -o /dev/null -m 10 -w '%{http_code}' "$pub/" || true)
+[ "$code" = 404 ] && ok "public listener :8001 / -> 404 (no Studio)" || fail "public listener :8001 / -> ${code:-no answer} (want 404; re-run selfhost-public-listener.sh)"
 
 echo
 if [ "$fails" -eq 0 ]; then echo "RESULT: all checks OK"; else echo "RESULT: $fails FAIL"; fi
