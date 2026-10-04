@@ -79,6 +79,7 @@
     "delta:sync": "node scripts/ops/delta-sync.mjs",
     "capture:grants": "bash scripts/ops/capture-grants.sh",
     "loadtest:selfhost": "node scripts/ops/load-test-selfhost.mjs",
+    "health:selfhost": "bash scripts/ops/selfhost-health.sh",
     "copy:storage-to-staging": "node scripts/ops/copy-storage-to-staging.mjs",
     "import:auth-to-selfhost": "bash scripts/ops/import-auth-to-selfhost.sh",
     "copy:migration-history": "bash scripts/ops/copy-migration-history.sh",
