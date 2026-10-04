@@ -13,6 +13,8 @@
 //                                            buckets (e.g. marketplace-listings) via the
 //                                            authenticated download route
 //   BUCKETS=a,b                              optional bucket filter
+//   INVENTORY=<file>                         {bucket: [names]} to copy (default: newest
+//                                            backups/storage-inventory_*.json)
 //   LIMIT, CONCURRENCY, SLOW                 smoke size / parallelism / politeness delay
 //
 // Safety: refuses a target that looks like hosted Supabase or equals the source
@@ -71,9 +73,13 @@ const sourceObjectUrl = (bucket, n) =>
 const baseType = (ct) => (ct || '').split(';')[0].trim().toLowerCase();
 
 (async () => {
-  const files = fs.readdirSync('backups/').filter((f) => f.startsWith('storage-inventory_')).sort();
-  if (!files.length) fail('no backups/storage-inventory_*.json found.');
-  const invData = JSON.parse(fs.readFileSync('backups/' + files[files.length - 1], 'utf8'));
+  let invFile = process.env.INVENTORY || '';
+  if (!invFile) {
+    const files = fs.readdirSync('backups/').filter((f) => f.startsWith('storage-inventory_')).sort();
+    if (!files.length) fail('no backups/storage-inventory_*.json found (or set INVENTORY).');
+    invFile = 'backups/' + files[files.length - 1];
+  }
+  const invData = JSON.parse(fs.readFileSync(invFile, 'utf8'));
 
   let done = {};
   if (MANIFEST_FILE) done = JSON.parse(fs.readFileSync(MANIFEST_FILE, 'utf8')).buckets || {};
