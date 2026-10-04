@@ -110,7 +110,10 @@ test.describe('Public browser filter contracts', () => {
     await page.goto('/racks/browser');
     await expect(page.locator('app-rack-micro').first()).toBeVisible({timeout: 20_000});
 
-    const filteredRequest = waitForTableRequest(page, 'racks', url => !url.searchParams.has('offset'));
+    const filteredRequest = waitForTableRequest(page, 'racks', url =>
+      (url.searchParams.get('name') ?? '').includes('performance')
+      && url.searchParams.get('offset') === '0'
+    );
 
     await page.getByLabel('Search rack...').fill('performance');
     await filteredRequest;
@@ -152,7 +155,10 @@ test.describe('Public browser filter contracts', () => {
     await page.goto('/patches/browser');
     await expect(page.locator('app-patch-list app-patch-micro').first()).toBeVisible({timeout: 20_000});
 
-    const filteredRequest = waitForTableRequest(page, 'patches', url => !url.searchParams.has('offset'));
+    const filteredRequest = waitForTableRequest(page, 'patches', url =>
+      (url.searchParams.get('name') ?? '').includes('demo')
+      && url.searchParams.get('offset') === '0'
+    );
 
     await page.getByLabel('Search patch...').fill('demo');
     await filteredRequest;
