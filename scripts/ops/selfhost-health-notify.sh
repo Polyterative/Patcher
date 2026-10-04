@@ -8,6 +8,7 @@
 #   - FAIL -> OK: recovery notice
 #   - daily heartbeat at HEARTBEAT_HOUR (default 09) - if it stops arriving, the NAS,
 #     its internet or this cron is down.
+#   - with the heartbeat: "update available" once per new self-hosted/v* release (item 21).
 # The topic is the only secret: kept in $OPS_DIR/ntfy-topic (0600), never in git.
 # Push bodies carry only check lines (container/pool names), no keys or data.
 #
@@ -90,6 +91,17 @@ if [ "$(date +%H)" = "$HEARTBEAT_HOUR" ] && [ "$(cat "$heartbeat_file" 2>/dev/nu
   push "Patcher self-host: daily $( [ "$state" = ok ] && echo OK || echo FAIL )" low "$( [ "$state" = ok ] && echo green_heart || echo warning )" \
     "${summary:-All checks OK. (Daily heartbeat - if this stops arriving, the NAS or its internet is down.)}" \
     && echo "$today" > "$heartbeat_file"
+  # Item 21: once a day, tell the owner when a newer self-hosted release exists (once per tag).
+  current="$(sed -n 's/^ref=//p' <project-dir>/.supabase-version 2>/dev/null)"
+  latest="$(git ls-remote --tags https://github.com/supabase/supabase 'refs/tags/self-hosted/v*' 2>/dev/null \
+    | awk '{print $2}' | grep -v '\^{}' | sed 's|refs/tags/||' | sort -V | tail -1)"
+  if [ -n "$latest" ] && [ -n "$current" ] && [ "$latest" != "$current" ] \
+     && [ "$(printf '%s\n%s\n' "$current" "$latest" | sort -V | tail -1)" = "$latest" ] \
+     && [ "$(cat "$OPS_DIR/update.notified" 2>/dev/null)" != "$latest" ]; then
+    push "Patcher self-host: update available" default package \
+      "$latest is out (running $current). Ask Claude to prepare the monthly update (runbook: update policy)." \
+      && echo "$latest" > "$OPS_DIR/update.notified"
+  fi
 fi
 echo "$state $last_push" > "$state_file"
 exit "$rc"
