@@ -63,6 +63,7 @@ const REPO_ROOT = path.resolve(SCRIPT_DIR, '../..');
 const BACKUP_DIR = path.join(REPO_ROOT, 'backups');
 const FK_CHECK_SQL = path.join(SCRIPT_DIR, 'lib', 'fk-orphan-check.sql');
 const MARKER_ROLE = 'patcher_selfhost_marker';
+const LIVE_ROLE = 'patcher_selfhost_live';
 const FREEZE_TRIGGER = 'zz_patcher_freeze';
 const FORMAT = 'patcher-delta-v2';
 const PSQL = process.env.PSQL || 'psql';
@@ -435,6 +436,7 @@ async function cmdApply(args) {
   if (direction === 'forward') {
     if (!targetMarked) refuse(`forward needs a target carrying the ${MARKER_ROLE} role (the self-host).`);
     if (src && hasMarker(src)) refuse('source carries the self-host marker — SOURCE/TARGET look swapped.');
+    if (one(tgt, `SELECT count(*) FROM pg_roles WHERE rolname = '${LIVE_ROLE}';`) !== '0') refuse(`forward target carries ${LIVE_ROLE} — the self-host is production; hosted -> self-host writes are staging-only.`);
   } else {
     if (targetMarked) refuse('reverse target carries the self-host marker — SOURCE/TARGET look swapped.');
     if (!args['target-is-hosted']) refuse('reverse writes hosted: pass --target-is-hosted.');

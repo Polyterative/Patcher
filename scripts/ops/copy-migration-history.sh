@@ -39,7 +39,7 @@ done
 [ -n "${SOURCE_DB_URL:-}" ] && [ -n "${TARGET_DB_URL:-}" ] || {
   echo "ERROR: SOURCE_DB_URL and TARGET_DB_URL must both be set." >&2; exit 1; }
 
-require_selfhost_target "${TARGET_DB_URL}"
+require_staging_target "${TARGET_DB_URL}"
 require_not_selfhost_source "${SOURCE_DB_URL}"
 
 HISTORY_SQL="SELECT version FROM supabase_migrations.schema_migrations ORDER BY 1;"

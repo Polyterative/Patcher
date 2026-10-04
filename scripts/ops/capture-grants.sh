@@ -128,7 +128,7 @@ head -1 "${file}" | grep -q '^-- Patcher grants/ownership replay — GENERATED' 
   || { echo "ERROR: ${file} is not a capture-grants replay file." >&2; exit 1; }
 [ -n "${TARGET_DB_URL:-}" ] || { echo "ERROR: TARGET_DB_URL must be set in the shell (never commit it)." >&2; exit 1; }
 
-require_selfhost_target "${TARGET_DB_URL}"
+require_staging_target "${TARGET_DB_URL}"
 [ "$(pg_q "${TARGET_DB_URL}" "SELECT rolsuper FROM pg_roles WHERE rolname = current_user;")" = "t" ] || {
   echo "ERROR: connect as a superuser (self-host: supabase_admin); ownership and other roles' grants need it." >&2; exit 1; }
 

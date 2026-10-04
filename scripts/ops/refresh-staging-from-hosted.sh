@@ -23,7 +23,9 @@
 # Schema is NOT re-dumped: the preflight aborts if the public table/column
 # fingerprint differs (apply the new migrations to the self-host first).
 #
-# Safety: target must carry patcher_selfhost_marker and be a superuser login;
+# Safety: target must carry patcher_selfhost_marker, must NOT carry
+# patcher_selfhost_live (set at the switch: the self-host is production, this
+# script would wipe it), and must be a superuser login;
 # source must not carry it and is only read. Dumps hold real user data: 0600 in
 # gitignored backups/, securely deleted at the end (also on failure).
 #
@@ -49,7 +51,7 @@ cd "${REPO_ROOT}"
 APPLY=0 YES=0 SESSIONS=0 SKIP_STORAGE=0 SKIP_PARITY=0
 while [ $# -gt 0 ]; do
   case "$1" in
-    -h|--help) sed -n '2,42p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help) sed -n '2,44p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     --apply) APPLY=1 ;;
     --yes) YES=1 ;;
     --include-sessions) SESSIONS=1 ;;
@@ -85,7 +87,7 @@ cleanup() { [ -d "${WORK}" ] && find "${WORK}" -type f -exec rm -P {} + 2>/dev/n
 trap cleanup EXIT
 
 echo "== Preflight (read-only)"
-require_selfhost_target "${TARGET_DB_URL}"
+require_staging_target "${TARGET_DB_URL}"
 require_not_selfhost_source "${SOURCE_DB_URL}"
 [ "$(pg_q "${TARGET_DB_URL}" "SELECT rolsuper FROM pg_roles WHERE rolname = current_user;")" = "t" ] || {
   echo "ERROR: target login must be a superuser (replica-mode load)." >&2; exit 1; }
@@ -161,6 +163,7 @@ ls -la "${WORK}" | awk 'NR > 1 && /\.sql$/ {print "  " $NF " " $5 " bytes"}'
 echo "== 3. Load (one transaction)"
 psql "${TARGET_DB_URL}" -X -q -v ON_ERROR_STOP=1 --single-transaction > /dev/null <<SQL
 SELECT 1 / (SELECT count(*) FROM pg_roles WHERE rolname = '${PATCHER_SELFHOST_MARKER_ROLE}')::int;
+SELECT 1 / (1 - (SELECT count(*) FROM pg_roles WHERE rolname = '${PATCHER_SELFHOST_LIVE_ROLE}'))::int;
 SET session_replication_role = replica;
 DO \$\$ DECLARE t text; BEGIN
   SELECT string_agg(format('%I.%I', schemaname, tablename), ', ') INTO t FROM pg_tables WHERE schemaname = 'public';

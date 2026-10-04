@@ -10,6 +10,9 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'patcher_selfhost_marker') THEN
     RAISE EXCEPTION 'target lacks patcher_selfhost_marker: not proven to be the self-host, refusing';
   END IF;
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'patcher_selfhost_live') THEN
+    RAISE EXCEPTION 'target carries patcher_selfhost_live: the self-host is production, grants replay is staging-only';
+  END IF;
   IF NOT (SELECT rolsuper FROM pg_roles WHERE rolname = current_user) THEN
     RAISE EXCEPTION 'replay must run as a superuser (self-host: supabase_admin), not %', current_user;
   END IF;
