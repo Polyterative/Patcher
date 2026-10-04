@@ -14,7 +14,7 @@ now=$(date +%s)
 age_h() { echo $(( (now - $1) / 3600 )); }
 
 echo "== containers"
-expected="supabase-db supabase-auth supabase-rest supabase-storage supabase-envoy supabase-meta supabase-pooler supabase-imgproxy supabase-edge-functions supabase-studio realtime-dev.supabase-realtime"
+expected="supabase-db supabase-auth supabase-rest supabase-storage supabase-envoy supabase-meta supabase-pooler supabase-imgproxy supabase-edge-functions supabase-studio realtime-dev.supabase-realtime supabase-auth-templates"
 for c in $expected; do
   st=$(docker inspect -f '{{.State.Status}}|{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}|{{.RestartCount}}|{{.State.StartedAt}}' "$c" 2>/dev/null) \
     || { fail "$c missing"; continue; }
