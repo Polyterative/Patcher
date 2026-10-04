@@ -18,7 +18,9 @@
 #               schema/column ACLs, default privileges and custom-role
 #               memberships, normalised via aclexplode (fails until hosted
 #               grants are replayed with capture-grants.sh — by design)
-#   extensions  installed extension names
+#   extensions  installed extension names, minus ACCEPTED_MISSING_EXTENSIONS
+#               (default "pgjwt pgsodium": hosted-only, absent from the PG17 image,
+#               accepted 2026-10-04; still listed in the SOFT versions section)
 # SOFT sections (printed for a human verdict): sequence last_values,
 # extension versions, snapshot-RPC output hashes.
 #
@@ -162,7 +164,8 @@ fi
 
 if want extensions; then
   echo "--- HARD: extensions (names) ---"
-  compare_section "extensions" "SELECT extname FROM pg_extension ORDER BY 1;"
+  accepted="$(printf "'%s'," ${ACCEPTED_MISSING_EXTENSIONS-pgjwt pgsodium} '')"
+  compare_section "extensions" "SELECT extname FROM pg_extension WHERE extname NOT IN (${accepted%,}) ORDER BY 1;"
 fi
 
 if [ -z "${ONLY}" ]; then
