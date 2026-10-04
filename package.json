@@ -112,7 +112,8 @@
     "test:functions:price-hub-import-local": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test scripts/tests/price-hub-import-local.test.mjs",
     "test:functions:public-open-api-migrations": "node --test scripts/tests/public-open-api-migrations.test.cjs",
     "test:functions:perf-measure": "node --test scripts/tests/perf-measure-flow.test.mjs",
-    "test:functions:check-regression-contract": "node --test scripts/tests/check-regression-contract.test.cjs"
+    "test:functions:check-regression-contract": "node --test scripts/tests/check-regression-contract.test.cjs",
+    "refresh:staging": "bash scripts/ops/with-staging-db.sh bash scripts/ops/refresh-staging-from-hosted.sh"
   },
   "lint-staged": {
     "src/**/*.scss": [
