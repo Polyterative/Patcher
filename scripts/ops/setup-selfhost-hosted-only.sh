@@ -21,6 +21,9 @@
 #   5. volumes/functions/main/index.ts: user-worker timeout 60 s -> 150 s. The
 #      function budgets 110 s (RUNTIME_BUDGET_MS) and hosted allows 150 s wall
 #      clock; the stock 60 s router kills a limit=20 run halfway. Same caveat as 4.
+#      Also adds the slug guards (main/_shared/dotfiles/unknown -> 404, not a 500
+#      echoing internal paths) and removes the upstream sample `hello` and macOS
+#      `._*` files (hardening H3).
 #   6. Copies supabase/functions/snapshot-store-listings + _shared verbatim.
 #   7. Recreates only the functions container (compose project <compose-project>).
 #   8. DB (one transaction, ON_ERROR_STOP): pg_cron in schema extensions (as the
@@ -112,6 +115,37 @@ if ! grep -q 'PRICE_HUB_SNAPSHOT_TOKEN' docker-compose.yml; then
 fi
 sed -i 's|^  const workerTimeoutMs = 1 \* 60 \* 1000$|  const workerTimeoutMs = 150 * 1000 // Patcher: function budgets 110 s, hosted wall clock 150 s|' volumes/functions/main/index.ts
 grep -q 'const workerTimeoutMs = 150 \* 1000' volumes/functions/main/index.ts || { echo "router timeout edit failed" >&2; exit 1; }
+python3 - volumes/functions/main/index.ts <<'PY'
+import sys
+p = sys.argv[1]
+s = open(p).read()
+not_found = """    return new Response(JSON.stringify({ msg: 'function not found' }), {
+      status: 404,
+      headers: { 'Content-Type': 'application/json' },
+    })
+"""
+edits = [
+    ("Patcher: only plain function slugs",
+     "  if (!service_name || service_name === '') {",
+     "  // Patcher: only plain function slugs; the router itself, _shared and dotfiles are not functions\n"
+     "  if (service_name && (service_name === 'main' || !/^[a-z0-9][a-z0-9_-]*$/.test(service_name))) {\n"
+     + not_found + "  }\n\n"),
+    ("unknown slug -> 404",
+     "  const memoryLimitMb = 150\n",
+     "  // Patcher: unknown slug -> 404 instead of a 500 that echoes internal paths\n"
+     "  try {\n    await Deno.stat(`${servicePath}/index.ts`)\n  } catch {\n"
+     + not_found + "  }\n\n"),
+]
+for marker, anchor, block in edits:
+    if marker in s:
+        continue
+    if s.count(anchor) != 1:
+        sys.exit(f"router guard edit failed (anchor not found: {anchor.strip()})")
+    s = s.replace(anchor, block + anchor)
+open(p, "w").write(s)
+PY
+rm -rf volumes/functions/hello
+find volumes/functions -maxdepth 1 -name '._*' -delete
 EOF
 COPYFILE_DISABLE=1 tar --no-xattrs -C "$REPO_ROOT/supabase/functions" -cf - snapshot-store-listings _shared \
   | ssh "$SSH_HOST" "tar -C '$PROJECT_DIR/volumes/functions' -xf -"
