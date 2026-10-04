@@ -58,6 +58,10 @@
   upload, and authenticated smoke/lifecycle window completed on 2026-07-24.
   The custom domain is live and smoke cleanup is complete. The owner deferred WAF;
   the production app release and later R2 work remain.
+- Self-host migration: **read-only queries against hosted** (version checks, grants capture,
+  migration-history read, parity reads, read-only dumps) approved by the owner on 2026-10-04.
+  Hosted writes, RLS/policy changes and cutover steps remain separately gated; detail in the
+  private self-host checklist.
 - Public Open API backend: authoring and Docker/local validation of the three
   reviewed migrations (roles, views/RLS, identity/RPCs) is approved. No remote
   apply, LOGIN credential, Vault secret, type generation against remote, or
