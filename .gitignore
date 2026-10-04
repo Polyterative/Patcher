@@ -96,3 +96,6 @@ supabase/.temp/
 /internaldocs/private/
 # Owner-defined private patterns for scripts/checks/check-private-leaks.cjs
 /.private-leak-patterns
+
+# Local agent screenshots
+.openchamber/
