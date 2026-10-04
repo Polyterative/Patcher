@@ -12,7 +12,7 @@
     }
   ],
   "vars": {
-    "SUPABASE_STORAGE_ORIGIN": "https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public",
+    "SUPABASE_STORAGE_ORIGIN": "https://supabase.patcher.xyz/storage/v1/object/public",
     "ALLOWED_BUCKETS": "module-panels,racks,manufacturer-logos,module-collections,patches,marketplace-listings",
     "BROWSER_CACHE_TTL_SECONDS": "604800",
     "EDGE_CACHE_TTL_SECONDS": "2592000"
