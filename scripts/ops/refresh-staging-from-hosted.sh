@@ -27,7 +27,8 @@
 # source must not carry it and is only read. Dumps hold real user data: 0600 in
 # gitignored backups/, securely deleted at the end (also on failure).
 #
-# Usage (defaults: hosted URL from .env.hosted-readonly, staging via
+# Usage (defaults: hosted URL from .env.hosted-readonly, hosted SOURCE_SERVICE_KEY from
+# .env.hosted-service if present, staging via
 # with-staging-db.sh, storage key from .env.staging-key):
 #   bash scripts/ops/with-staging-db.sh bash scripts/ops/refresh-staging-from-hosted.sh            # dry run
 #   bash scripts/ops/with-staging-db.sh bash scripts/ops/refresh-staging-from-hosted.sh --apply
@@ -68,6 +69,9 @@ PG_DUMP="${PG_DUMP:-/opt/homebrew/opt/postgresql@17/bin/pg_dump}"
 SSH_HOST="${SSH_HOST:-NAS}"
 ZFS_DATASET="${ZFS_DATASET:-<zfs-dataset>}"
 TARGET_SUPABASE_URL="${TARGET_SUPABASE_URL:-http://<nas-lan-ip>:8000}"
+if [ -z "${SOURCE_SERVICE_KEY:-}" ] && [ -f .env.hosted-service ]; then
+  set -a; . ./.env.hosted-service; set +a
+fi
 if [ -z "${TARGET_SERVICE_KEY:-}" ] && [ -f .env.staging-key ]; then
   TARGET_SERVICE_KEY="$(grep -o 'ey[A-Za-z0-9._-]*' .env.staging-key | head -1)"
 fi
