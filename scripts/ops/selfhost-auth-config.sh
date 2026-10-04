@@ -23,9 +23,9 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
-SSH_HOST="${SSH_HOST:-NAS}"
-PROJECT=<project-dir>
-ZFS_DATASET="${ZFS_DATASET:-<zfs-dataset>}"
+source "$(dirname "${BASH_SOURCE[0]}")/lib/selfhost-env.sh"
+selfhost_require SSH_HOST PROJECT_DIR ZFS_DATASET APP_COMPOSE COMPOSE_PROJECT
+PROJECT="${PROJECT_DIR}"
 HOSTED_JSON="${HOSTED_JSON:-${REPO_ROOT}/internaldocs/private/selfhost/hosted-auth-config-2026-10-04.json}"
 PUBLIC_URL="${PUBLIC_URL:-https://supabase.patcher.xyz}"
 SITE_URL="https://patcher-git-develop-polys-projects-01f337a7.vercel.app"
@@ -43,8 +43,8 @@ while [ $# -gt 0 ]; do
 done
 
 recreate_auth() {
-  ssh "${SSH_HOST}" "cd ${PROJECT} && docker compose -p <compose-project> \
-    -f <app-compose> \
+  ssh "${SSH_HOST}" "cd ${PROJECT} && docker compose -p ${COMPOSE_PROJECT} \
+    -f ${APP_COMPOSE} \
     up -d --no-deps --force-recreate auth 2>&1 | tail -1"
 }
 
@@ -209,8 +209,8 @@ else:
     print("app include updated + redeployed")
 PY
 
-ssh "${SSH_HOST}" "cd ${PROJECT} && docker compose -p <compose-project> \
-  -f <app-compose> \
+ssh "${SSH_HOST}" "cd ${PROJECT} && docker compose -p ${COMPOSE_PROJECT} \
+  -f ${APP_COMPOSE} \
   up -d 2>&1 | tail -2"
 for _ in $(seq 1 40); do
   st="$(ssh "${SSH_HOST}" "docker inspect -f '{{.State.Health.Status}}' supabase-auth supabase-auth-templates 2>/dev/null | sort -u | tr '\n' ' '")"

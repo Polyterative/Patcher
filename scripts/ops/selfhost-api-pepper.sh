@@ -2,7 +2,7 @@
 #
 # Carry the Public Open API pepper (Vault secret api_key_pepper) onto the
 # self-host and PROVE it is the hosted value (review 3 F2). Owner-run from the
-# repo root; works over `ssh NAS` + docker exec.
+# repo root; works over `ssh $SSH_HOST` + docker exec.
 #
 # Why a proof is possible without reading hosted: every API key's stored hash is
 # HMAC-SHA256(raw key bytes, pepper), and the hashes were copied from hosted. The
@@ -22,13 +22,14 @@
 # (or the password-manager copy made when the API launched). Same value as the
 # Worker secret API_KEY_PEPPER — that one stays untouched.
 #
-# Env: SSH_HOST (default NAS), PATCHER_PUBLIC_API_KEY (else read from
+# Env: SSH_HOST (.env.selfhost-ops), PATCHER_PUBLIC_API_KEY (else read from
 #      .env.public-api-smoke).
 
 set -euo pipefail
 umask 077
 
-SSH_HOST="${SSH_HOST:-NAS}"
+source "$(dirname "${BASH_SOURCE[0]}")/lib/selfhost-env.sh"
+selfhost_require SSH_HOST
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 APPLY=0
 for arg in "$@"; do

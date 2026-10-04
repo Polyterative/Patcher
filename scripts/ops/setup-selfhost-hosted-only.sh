@@ -3,7 +3,7 @@
 # Recreate the hosted-only backend pieces on the self-host stack (runbook §9.1-9.2):
 # the snapshot-store-listings Edge Function, its runtime token, pg_cron and both
 # hosted cron jobs. Owner-run from the repo root on the Mac; everything happens on
-# the NAS over `ssh NAS`. Hosted is never contacted.
+# the NAS over `ssh $SSH_HOST`. Hosted is never contacted.
 #
 #   (no flag)   dry run: read-only checks + the plan, writes nothing
 #   --apply     execute (idempotent; re-running converges)
@@ -25,7 +25,7 @@
 #      echoing internal paths) and removes the upstream sample `hello` and macOS
 #      `._*` files (hardening H3).
 #   6. Copies supabase/functions/snapshot-store-listings + _shared verbatim.
-#   7. Recreates only the functions container (compose project <compose-project>).
+#   7. Recreates only the functions container (compose project $COMPOSE_PROJECT).
 #   8. DB (one transaction, ON_ERROR_STOP): pg_cron in schema extensions (as the
 #      hosted migrations do); Vault secret price_hub_snapshot_token = runtime token
 #      (create or update; passed via env + \getenv, never on a command line);
@@ -43,14 +43,12 @@
 # hosted value verbatim (rotation invalidates every external API key), so it is
 # created in the cutover window, never from a generated value.
 #
-# Env: SSH_HOST (default NAS), PROJECT_DIR (default
-#      <project-dir>), APP_COMPOSE (NAS rendered compose).
+# Env: SSH_HOST, PROJECT_DIR, APP_COMPOSE, COMPOSE_PROJECT (.env.selfhost-ops).
 
 set -euo pipefail
 
-SSH_HOST="${SSH_HOST:-NAS}"
-PROJECT_DIR="${PROJECT_DIR:-<project-dir>}"
-APP_COMPOSE="${APP_COMPOSE:-<app-compose>}"
+source "$(dirname "${BASH_SOURCE[0]}")/lib/selfhost-env.sh"
+selfhost_require SSH_HOST PROJECT_DIR APP_COMPOSE COMPOSE_PROJECT
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 APPLY=0
@@ -68,7 +66,7 @@ for d in snapshot-store-listings _shared; do
   [ -d "$REPO_ROOT/supabase/functions/$d" ] || { echo "missing supabase/functions/$d" >&2; exit 1; }
 done
 
-remote() { ssh "$SSH_HOST" "PROJECT_DIR='$PROJECT_DIR' APP_COMPOSE='$APP_COMPOSE' JOB_ACTIVE='$JOB_ACTIVE' bash -s" ; }
+remote() { ssh "$SSH_HOST" "PROJECT_DIR='$PROJECT_DIR' APP_COMPOSE='$APP_COMPOSE' COMPOSE_PROJECT='$COMPOSE_PROJECT' JOB_ACTIVE='$JOB_ACTIVE' bash -s" ; }
 
 echo "== read-only checks on $SSH_HOST"
 remote <<'EOF'
@@ -154,7 +152,7 @@ echo "== recreating functions container + DB setup"
 remote <<'EOF'
 set -euo pipefail
 cd "$PROJECT_DIR"
-docker compose -p <compose-project> -f "$APP_COMPOSE" up -d --no-deps functions
+docker compose -p "$COMPOSE_PROJECT" -f "$APP_COMPOSE" up -d --no-deps functions
 for i in $(seq 1 30); do
   [ "$(docker inspect -f '{{.State.Health.Status}}' supabase-edge-functions)" = healthy ] && break; sleep 2
 done

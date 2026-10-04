@@ -16,12 +16,13 @@
 # self-host is staging again, the owner drops it by hand on the NAS:
 #   docker exec -it supabase-db psql -U supabase_admin -d postgres -c 'DROP ROLE patcher_selfhost_live;'
 #
-# Owner-run from the repo root; works over `ssh NAS` + docker exec (no DB URL).
-# Env: SSH_HOST (default NAS).
+# Owner-run from the repo root; works over `ssh $SSH_HOST` + docker exec (no DB URL).
+# Env: SSH_HOST (.env.selfhost-ops).
 
 set -euo pipefail
 
-SSH_HOST="${SSH_HOST:-NAS}"
+source "$(dirname "${BASH_SOURCE[0]}")/lib/selfhost-env.sh"
+selfhost_require SSH_HOST
 MODE="${1:-status}"
 
 db() { ssh "${SSH_HOST}" "docker exec -i supabase-db psql -U supabase_admin -d postgres -AtX -v ON_ERROR_STOP=1"; }

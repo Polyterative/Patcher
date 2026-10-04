@@ -40,8 +40,8 @@
 #   bash scripts/ops/with-staging-db.sh bash scripts/ops/refresh-staging-from-hosted.sh --apply
 # Options: --apply, --yes, --include-sessions, --skip-storage, --skip-parity
 # Env: SOURCE_DB_URL, TARGET_DB_URL, TARGET_SUPABASE_URL (default
-#      http://<nas-lan-ip>:8000), TARGET_SERVICE_KEY, SOURCE_SERVICE_KEY (optional),
-#      SSH_HOST (NAS), ZFS_DATASET (<zfs-dataset>), PG_DUMP (postgresql@17).
+#      http://$SELFHOST_LAN_HOST:8000), TARGET_SERVICE_KEY, SOURCE_SERVICE_KEY (optional),
+#      SSH_HOST, ZFS_DATASET (.env.selfhost-ops), PG_DUMP (postgresql@17).
 
 set -euo pipefail
 umask 077
@@ -72,9 +72,9 @@ fi
 [ -n "${SOURCE_DB_URL:-}" ] && [ -n "${TARGET_DB_URL:-}" ] || {
   echo "ERROR: SOURCE_DB_URL and TARGET_DB_URL must be set (see usage)." >&2; exit 1; }
 PG_DUMP="${PG_DUMP:-/opt/homebrew/opt/postgresql@17/bin/pg_dump}"
-SSH_HOST="${SSH_HOST:-NAS}"
-ZFS_DATASET="${ZFS_DATASET:-<zfs-dataset>}"
-TARGET_SUPABASE_URL="${TARGET_SUPABASE_URL:-http://<nas-lan-ip>:8000}"
+source "${SCRIPT_DIR}/lib/selfhost-env.sh"
+selfhost_require SSH_HOST ZFS_DATASET SELFHOST_LAN_HOST
+TARGET_SUPABASE_URL="${TARGET_SUPABASE_URL:-http://${SELFHOST_LAN_HOST}:8000}"
 if [ -z "${SOURCE_SERVICE_KEY:-}" ] && [ -f .env.hosted-service ]; then
   set -a; . ./.env.hosted-service; set +a
 fi

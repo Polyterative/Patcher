@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Runs ON the NAS: the checks behind scripts/ops/selfhost-health.sh (piped over ssh)
 # and the 15-minute alert cron (selfhost-health-notify.sh). Read-only.
-# Env: GATEWAY (http://127.0.0.1:8000), DUMP_DIR (<dump-dir>),
+# Env: GATEWAY (http://127.0.0.1:8000), DUMP_DIR, ZFS_DATASET, REPLICA_DATASET (required),
 #      PUBLIC_URL (optional, e.g. https://supabase.patcher.xyz).
 GATEWAY="${GATEWAY:-http://127.0.0.1:8000}"
-DUMP_DIR="${DUMP_DIR:-<dump-dir>}"
+DUMP_DIR="${DUMP_DIR:?}" ZFS_DATASET="${ZFS_DATASET:?}" REPLICA_DATASET="${REPLICA_DATASET:?}"
 set -uo pipefail
 fails=0
 ok()   { printf 'OK    %s\n' "$1"; }
@@ -35,9 +35,9 @@ esac
 echo "== storage"
 pools=$(zpool status -x 2>&1)
 [ "$pools" = "all pools are healthy" ] && ok "zpools healthy" || fail "zpool: $pools"
-avail=$(zfs list -Hp -o avail <zfs-dataset>)
-[ "$avail" -gt $((50 * 1024 * 1024 * 1024)) ] && ok "<zfs-dataset> free $((avail / 1024 / 1024 / 1024)) GiB" \
-  || fail "<zfs-dataset> free only $((avail / 1024 / 1024 / 1024)) GiB"
+avail=$(zfs list -Hp -o avail "$ZFS_DATASET")
+[ "$avail" -gt $((50 * 1024 * 1024 * 1024)) ] && ok "$ZFS_DATASET free $((avail / 1024 / 1024 / 1024)) GiB" \
+  || fail "$ZFS_DATASET free only $((avail / 1024 / 1024 / 1024)) GiB"
 if command -v smartctl >/dev/null; then
   for d in $(lsblk -dno NAME,TYPE | awk '$2=="disk" && $1 !~ /^zd/ {print $1}'); do
     r=$(smartctl -H "/dev/$d" 2>/dev/null | grep -E 'overall-health|SMART Health Status' | awk -F: '{gsub(/^ +/,"",$2); print $2}')
@@ -52,19 +52,19 @@ else
 fi
 
 echo "== backups"
-snap=$(zfs list -Hp -t snapshot -o creation -s creation <zfs-dataset> 2>/dev/null | tail -1)
+snap=$(zfs list -Hp -t snapshot -o creation -s creation "$ZFS_DATASET" 2>/dev/null | tail -1)
 if [ -n "$snap" ]; then
-  [ $((now - snap)) -lt 7200 ] && ok "newest <zfs-dataset> snapshot $(age_h "$snap") h old" \
-    || fail "newest <zfs-dataset> snapshot $(age_h "$snap") h old (hourly task 13)"
+  [ $((now - snap)) -lt 7200 ] && ok "newest $ZFS_DATASET snapshot $(age_h "$snap") h old" \
+    || fail "newest $ZFS_DATASET snapshot $(age_h "$snap") h old (hourly task 13)"
 else
-  fail "no <zfs-dataset> snapshots"
+  fail "no $ZFS_DATASET snapshots"
 fi
-rep=$(zfs list -Hp -t snapshot -o creation -s creation <replica-dataset> 2>/dev/null | tail -1)
+rep=$(zfs list -Hp -t snapshot -o creation -s creation "$REPLICA_DATASET" 2>/dev/null | tail -1)
 if [ -n "$rep" ]; then
   [ $((now - rep)) -lt 93600 ] && ok "newest replica snapshot $(age_h "$rep") h old" \
     || fail "newest replica snapshot $(age_h "$rep") h old (replication 4, daily 03:30)"
 else
-  fail "no <replica-dataset> snapshots"
+  fail "no $REPLICA_DATASET snapshots"
 fi
 dump=$(ls -t "$DUMP_DIR"/postgres-*.dump 2>/dev/null | head -1)
 if [ -n "$dump" ]; then
