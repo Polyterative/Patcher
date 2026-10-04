@@ -46,6 +46,7 @@ import {
 } from 'src/app/shared-interproject/json-ld-dom';
 import { normalizeSupabaseUtcTimestamp } from 'src/app/shared-interproject/pipes/supabase-utc-timestamp.pipe';
 import { UrlCreatorService } from 'src/app/features/backend/url-creator.service';
+import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 
 
 const JSONLD_SCRIPT_ID = 'manufacturer-jsonld';
@@ -96,7 +97,8 @@ export class ManufacturerDetailComponent extends SubManager {
     private readonly route: ActivatedRoute,
     private readonly seoAndUtilsService: SeoAndUtilsService,
     private readonly timeago: TimeagoPipe,
-    private readonly urlCreatorService: UrlCreatorService
+    private readonly urlCreatorService: UrlCreatorService,
+    public readonly appState: AppStateService
   ) {
     super();
     

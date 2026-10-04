@@ -48,6 +48,8 @@ export class ManufacturerDetailDataService extends SubManager {
   readonly modulesData$ = this._modulesData$.asObservable();
   readonly isLoading$ = this._isLoading$.asObservable();
   readonly displayAggregateRows$ = this._displayAggregateRows$.asObservable();
+  /** Admin gate for private manufacturer surfaces (e.g. widget embed preview). */
+  readonly isAdmin$ = new BehaviorSubject<boolean>(false);
 
   get logoStorageBase(): string {
     return this.backend.storage.publicUrlBases.manufacturerLogos;
@@ -59,6 +61,9 @@ export class ManufacturerDetailDataService extends SubManager {
     private readonly analytics: AnalyticsService
   ) {
     super();
+    this.backend.auth.hasAdminRole$()
+      .pipe(this.takeUntilDestroyed())
+      .subscribe(x => this.isAdmin$.next(x));
     this.initializeLoadHandler();
   }
   
