@@ -8,18 +8,22 @@
 # Default is a READ-ONLY dry run: preflight + plan (row counts, storage delta).
 # --apply then (after typing REFRESH STAGING, or --yes):
 #   1. ZFS snapshot of the self-host dataset (abort if it fails)
-#   2. read-only pg_dump --data-only from hosted: schema public, auth users +
+#   2. ONE read-only pg_dump --data-only from hosted (one snapshot, so no
+#      profile/user pair can be split): every public table, auth users +
 #      identities (+ sessions / refresh tokens / MFA with --include-sessions),
 #      supabase_migrations.schema_migrations; storage.buckets rows as upserts
 #   3. ONE staging transaction, session_replication_role = replica: TRUNCATE every
 #      public table, auth.users CASCADE (FK closure is checked to stay inside
-#      auth), migration history; load; upsert buckets; commit
+#      auth), migration history; load; upsert buckets; FK orphan proof
+#      (lib/fk-orphan-check.sql) and users-without-profile check, either aborts
+#      the whole load; commit
 #   4. refresh the discovery matview, grants capture + replay (keeps PG17
 #      MAINTAIN), verify counts / auth trigger / orphans
 #   5. storage delta by SQL metadata (bucket, name, eTag, size): copy new or
 #      changed objects (copy-storage-to-staging.mjs, md5-verified), delete
 #      objects gone from hosted, carry object owners; private buckets need SOURCE_SERVICE_KEY
-#   6. rm -P the dumps, run verify-staging-parity-deep.sh
+#   6. rm -P the dumps, run verify-staging-parity-deep.sh; its verdict line is
+#      printed and a FAILED parity makes the run exit non-zero
 # Schema is NOT re-dumped: the preflight aborts if the public table/column
 # fingerprint differs (apply the new migrations to the self-host first).
 #
@@ -153,10 +157,11 @@ ssh "${SSH_HOST}" "midclt call zfs.snapshot.create '{\"dataset\":\"${ZFS_DATASET
 echo "snapshot ${ZFS_DATASET}@${snap}"
 
 echo "== 2. Dumps (read-only on hosted)"
+# -t 'public.*' selects the same table data as --schema=public (TOC-diffed
+# 2026-10-04); -n cannot be combined with -t, and one pg_dump = one snapshot.
 auth_args=(); for t in "${AUTH_TABLES[@]}"; do auth_args+=(--table="${t}"); done
-"${PG_DUMP}" "${SOURCE_DB_URL}" --data-only --no-owner --no-acl --schema=public -f "${WORK}/public.sql"
-"${PG_DUMP}" "${SOURCE_DB_URL}" --data-only --no-owner --no-acl "${auth_args[@]}" -f "${WORK}/auth.sql"
-"${PG_DUMP}" "${SOURCE_DB_URL}" --data-only --no-owner --no-acl --table=supabase_migrations.schema_migrations -f "${WORK}/history.sql"
+"${PG_DUMP}" "${SOURCE_DB_URL}" --data-only --no-owner --no-acl --table='public.*' "${auth_args[@]}" \
+  --table=supabase_migrations.schema_migrations -f "${WORK}/data.sql"
 pg_q "${SOURCE_DB_URL}" "SELECT format('INSERT INTO storage.buckets (id, name, owner, owner_id, created_at, updated_at, public, avif_autodetection, file_size_limit, allowed_mime_types) VALUES (%L,%L,%L,%L,%L,%L,%L,%L,%L,%L) ON CONFLICT (id) DO UPDATE SET public = excluded.public, avif_autodetection = excluded.avif_autodetection, file_size_limit = excluded.file_size_limit, allowed_mime_types = excluded.allowed_mime_types;', id, name, owner, owner_id, created_at, updated_at, public, avif_autodetection, file_size_limit, allowed_mime_types) FROM storage.buckets ORDER BY id;" > "${WORK}/buckets.sql"
 ls -la "${WORK}" | awk 'NR > 1 && /\.sql$/ {print "  " $NF " " $5 " bytes"}'
 
@@ -169,12 +174,15 @@ DO \$\$ DECLARE t text; BEGIN
   SELECT string_agg(format('%I.%I', schemaname, tablename), ', ') INTO t FROM pg_tables WHERE schemaname = 'public';
   EXECUTE 'TRUNCATE ' || t || ', auth.users, supabase_migrations.schema_migrations CASCADE';
 END \$\$;
-\i ${WORK}/public.sql
-\i ${WORK}/auth.sql
-\i ${WORK}/history.sql
+\i ${WORK}/data.sql
 SET search_path = public;
 \i ${WORK}/buckets.sql
 SET session_replication_role = origin;
+\i ${SCRIPT_DIR}/lib/fk-orphan-check.sql
+DO \$\$ DECLARE n bigint; BEGIN
+  SELECT count(*) INTO n FROM auth.users u WHERE NOT EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = u.id);
+  IF n > 0 THEN RAISE EXCEPTION 'users without profile after load: % (rolled back)', n; END IF;
+END \$\$;
 SQL
 echo "committed"
 
@@ -189,7 +197,7 @@ echo "source: ${s_counts}"; echo "target: ${t_counts}"
 [ "${s_counts}" = "${t_counts}" ] || { echo "WARN: counts differ (hosted still taking writes? freeze it for the final run)"; fail=1; }
 trig="$(pg_q "${TARGET_DB_URL}" "SELECT count(*) FROM pg_trigger WHERE tgrelid = 'auth.users'::regclass AND tgname = 'on_auth_user_created' AND tgenabled = 'O';")"
 [ "${trig}" = "1" ] && echo "on_auth_user_created: OK" || { echo "on_auth_user_created: MISSING"; fail=1; }
-echo "orphans: $(pg_q "${TARGET_DB_URL}" "SELECT 'profiles without user ' || (SELECT count(*) FROM public.profiles p WHERE NOT EXISTS (SELECT 1 FROM auth.users u WHERE u.id = p.id)) || ', users without profile ' || (SELECT count(*) FROM auth.users u WHERE NOT EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = u.id));")"
+echo "orphans (load aborts on any): $(pg_q "${TARGET_DB_URL}" "SELECT 'profiles without user ' || (SELECT count(*) FROM public.profiles p WHERE NOT EXISTS (SELECT 1 FROM auth.users u WHERE u.id = p.id)) || ', users without profile ' || (SELECT count(*) FROM auth.users u WHERE NOT EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = u.id));")"
 
 if [ "${SKIP_STORAGE}" -eq 0 ]; then
   echo "== 5. Storage delta"
@@ -233,7 +241,14 @@ echo "== 6. Cleanup + parity"
 cleanup; trap - EXIT
 echo "dumps securely deleted"
 if [ "${SKIP_PARITY}" -eq 0 ]; then
-  bash "${SCRIPT_DIR}/verify-staging-parity-deep.sh" | grep -E 'DIFF|ERROR|FAILED|passed|^[<>]' || true
+  prc=0
+  bash "${SCRIPT_DIR}/verify-staging-parity-deep.sh" > "${REPO_ROOT}/backups/parity-${STAMP}.log" 2>&1 || prc=$?
+  grep -E 'DIFF|ERROR|FAILED|passed|HARD gates OK|^[<>]' "${REPO_ROOT}/backups/parity-${STAMP}.log" || true
+  if [ "${prc}" -ne 0 ]; then
+    echo "PARITY FAILED (exit ${prc}) — full log: backups/parity-${STAMP}.log"; fail=1
+  else
+    echo "parity: HARD OK (full log: backups/parity-${STAMP}.log)"
+  fi
 fi
 echo "Done (snapshot ${ZFS_DATASET}@${snap} to roll back)."
 exit "${fail}"

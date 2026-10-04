@@ -21,6 +21,9 @@
 #   extensions  installed extension names, minus ACCEPTED_MISSING_EXTENSIONS
 #               (default "pgjwt pgsodium": hosted-only, absent from the PG17 image,
 #               accepted 2026-10-04; still listed in the SOFT versions section)
+#               plus ACCEPTED_EXTRA_EXTENSIONS (default "hypopg index_advisor":
+#               self-host-only, installed by Studio's index advisor, read-only
+#               planner helpers; accepted 2026-10-04)
 # SOFT sections (printed for a human verdict): sequence last_values,
 # extension versions, snapshot-RPC output hashes.
 #
@@ -164,7 +167,7 @@ fi
 
 if want extensions; then
   echo "--- HARD: extensions (names) ---"
-  accepted="$(printf "'%s'," ${ACCEPTED_MISSING_EXTENSIONS-pgjwt pgsodium} '')"
+  accepted="$(printf "'%s'," ${ACCEPTED_MISSING_EXTENSIONS-pgjwt pgsodium} ${ACCEPTED_EXTRA_EXTENSIONS-hypopg index_advisor} '')"
   compare_section "extensions" "SELECT extname FROM pg_extension WHERE extname NOT IN (${accepted%,}) ORDER BY 1;"
 fi
 
