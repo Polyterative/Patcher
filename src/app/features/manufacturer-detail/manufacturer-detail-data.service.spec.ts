@@ -30,6 +30,9 @@ describe('ManufacturerDetailDataService', () => {
       manufacturerWithId: jasmine.Spy<ManufacturerWithId>;
       modulesBySameManufacturer: jasmine.Spy<ModulesBySameManufacturer>;
     };
+    auth: {
+      hasAdminRole$: jasmine.Spy<() => Observable<boolean>>;
+    };
     storage: {
       publicUrlBases: {
         manufacturerLogos: string;
@@ -86,6 +89,9 @@ describe('ManufacturerDetailDataService', () => {
       get: {
         manufacturerWithId: jasmine.createSpy<ManufacturerWithId>('manufacturerWithId').and.returnValue(of(mockManufacturer)),
         modulesBySameManufacturer: jasmine.createSpy<ModulesBySameManufacturer>('modulesBySameManufacturer').and.returnValue(of(mockModules))
+      },
+      auth: {
+        hasAdminRole$: jasmine.createSpy<() => Observable<boolean>>('hasAdminRole$').and.returnValue(of(false))
       },
       storage: {
         publicUrlBases: {

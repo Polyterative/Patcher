@@ -47,7 +47,8 @@
             featured: (featuredModules$ | async),
             analytics: (analyticsRows$ | async),
             widget: (widgetCard$ | async),
-            widgetSnippet: (widgetEmbedSnippet$ | async)
+            widgetSnippet: (widgetEmbedSnippet$ | async),
+            isAdmin: (dataService.isAdmin$ | async)
           }; as extra) {
             @if (extra.featured && extra.featured.length > 0) {
               <section
@@ -90,7 +91,7 @@
               }
             </section>
 
-            @if (extra.widget) {
+            @if (extra.widget && (appState.isDev || extra.isAdmin)) {
               <section
                 class="manufacturer-section"
                 aria-label="Widget embed preview"

@@ -60,6 +60,7 @@ function build() {
   const manufacturerData$ = new BehaviorSubject<ManufacturerDetail | null>(null);
   const modulesData$       = new BehaviorSubject<ModuleList>(null);
   const displayAggregateRows$ = new BehaviorSubject<unknown>([]);
+  const isAdmin$ = new BehaviorSubject<boolean>(false);
   const updateManufacturerNext = jasmine.createSpy<(id: number) => void>('updateManufacturer$.next');
 
   const dataService = {
@@ -67,6 +68,7 @@ function build() {
     manufacturerData$,
     modulesData$,
     displayAggregateRows$,
+    isAdmin$,
     updateManufacturer$: {next: updateManufacturerNext},
   } as unknown as ManufacturerDetailDataService;
 
@@ -82,12 +84,15 @@ function build() {
   const urlCopySpy = jasmine.createSpy('copyTextToClipboard');
   const urlCreatorService = {copyTextToClipboard: urlCopySpy} as unknown as UrlCreatorService;
 
+  const appState = {isDev: false} as unknown as import('src/app/shared-interproject/app-state.service').AppStateService;
+
   const component = new ManufacturerDetailComponent(
     dataService,
     route,
     seoService,
     timeago,
     urlCreatorService,
+    appState,
   );
 
   return {
@@ -95,6 +100,7 @@ function build() {
     manufacturerData$,
     modulesData$,
     displayAggregateRows$,
+    isAdmin$,
     updateManufacturerNext,
     routeParams$,
     seoUpdateSpy,
