@@ -8,17 +8,17 @@
 # recreates only the gateway. Re-run after every upstream upgrade of the envoy template.
 #
 # Usage: bash scripts/ops/selfhost-public-listener.sh [--apply]
-# Env: SSH_HOST (NAS), PUBLIC_PORT (8001), ZFS_DATASET (<zfs-dataset>)
+# Env: SSH_HOST, ZFS_DATASET, PROJECT_DIR, APP_COMPOSE, COMPOSE_PROJECT (.env.selfhost-ops), PUBLIC_PORT (8001)
 # The Cloudflare tunnel's service URL must point at http://<server>:PUBLIC_PORT (owner step).
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
-SSH_HOST="${SSH_HOST:-NAS}"
+source "$(dirname "${BASH_SOURCE[0]}")/lib/selfhost-env.sh"
+selfhost_require SSH_HOST ZFS_DATASET PROJECT_DIR APP_COMPOSE COMPOSE_PROJECT
 PUBLIC_PORT="${PUBLIC_PORT:-8001}"
-ZFS_DATASET="${ZFS_DATASET:-<zfs-dataset>}"
-PROJECT=<project-dir>
-RENDERED=<app-compose>
+PROJECT="${PROJECT_DIR}"
+RENDERED="${APP_COMPOSE}"
 APPLY=0
 [ "${1:-}" = "--apply" ] && APPLY=1
 
@@ -53,7 +53,7 @@ ssh "${SSH_HOST}" "python3 - ${PROJECT}/volumes/api/envoy/lds.template.yaml /tmp
 
 echo "== test in a throwaway gateway (:18000 LAN copy, :18001 public)"
 ssh "${SSH_HOST}" "cd ${PROJECT} && docker rm -f h5-envoy-test >/dev/null 2>&1; \
-  docker compose -p <compose-project> -f ${RENDERED} run -d --rm --no-deps --name h5-envoy-test \
+  docker compose -p ${COMPOSE_PROJECT} -f ${RENDERED} run -d --rm --no-deps --name h5-envoy-test \
   -p 18000:8000 -p 18001:${PUBLIC_PORT} -v /tmp/lds.h5.yaml:/etc/envoy/lds.template.yaml:ro api-gw >/dev/null"
 trap 'ssh "${SSH_HOST}" "docker rm -f h5-envoy-test >/dev/null 2>&1" || true' EXIT
 for _ in $(seq 1 30); do
@@ -82,7 +82,7 @@ ssh "${SSH_HOST}" "set -e; cd ${PROJECT}; \
     sed -i 's|^      - \${API_GW_HTTP_PORT:-\${KONG_HTTP_PORT:-8000}}:8000/tcp$|&\n      - \${API_GW_PUBLIC_PORT:-${PUBLIC_PORT}}:${PUBLIC_PORT}/tcp  # H5 API-only listener for the tunnel|' docker-compose.yml; \
   fi; \
   grep -q 'API_GW_PUBLIC_PORT' docker-compose.yml || { echo 'port mapping not added' >&2; exit 1; }; \
-  docker compose -p <compose-project> -f ${RENDERED} up -d --no-deps --force-recreate api-gw 2>&1 | tail -2"
+  docker compose -p ${COMPOSE_PROJECT} -f ${RENDERED} up -d --no-deps --force-recreate api-gw 2>&1 | tail -2"
 for _ in $(seq 1 30); do
   [ "$(code "http://${HOST_IP}:${PUBLIC_PORT}/")" = 404 ] && break; sleep 1
 done

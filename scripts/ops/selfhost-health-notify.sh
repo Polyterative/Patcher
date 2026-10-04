@@ -19,7 +19,10 @@
 # On the NAS (what the cron runs): bash $OPS_DIR/selfhost-health-notify.sh
 set -uo pipefail
 
-OPS_DIR="${OPS_DIR:-<ops-dir>}"
+# NAS values: on the Mac from .env.selfhost-ops, on the NAS from selfhost-ops.env (copied by --install).
+if [ -f "$(dirname "$0")/selfhost-ops.env" ]; then set -a; . "$(dirname "$0")/selfhost-ops.env"; set +a
+else source "$(dirname "${BASH_SOURCE[0]}")/lib/selfhost-env.sh"; fi
+OPS_DIR="${OPS_DIR:?set OPS_DIR in .env.selfhost-ops}"
 NTFY_SERVER="${NTFY_SERVER:-https://ntfy.sh}"
 PUBLIC_URL="${PUBLIC_URL-https://supabase.patcher.xyz}"
 REMIND_H="${REMIND_H:-4}"
@@ -28,11 +31,13 @@ CRON_DESC="Self-host Supabase health check + ntfy alerts (item 17)"
 
 case "${1:-}" in
   --install|--test)
-    SSH_HOST="${SSH_HOST:-NAS}"
+    SSH_HOST="${SSH_HOST:?set SSH_HOST in .env.selfhost-ops}"
     here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     if [ "$1" = --install ]; then
       ssh "$SSH_HOST" "mkdir -p '$OPS_DIR' && chmod 700 '$OPS_DIR'"
       scp -q "$here/selfhost-health-notify.sh" "$here/lib/selfhost-health-remote.sh" "$SSH_HOST:$OPS_DIR/"
+      ( umask 077; for v in SSH_HOST PROJECT_DIR ZFS_DATASET REPLICA_DATASET DUMP_DIR OPS_DIR; do echo "$v=${!v:-}"; done ) \
+        | ssh "$SSH_HOST" "umask 077; cat > '$OPS_DIR/selfhost-ops.env'"
       ssh "$SSH_HOST" "set -e; cd '$OPS_DIR'; chmod 700 *.sh; \
         [ -s ntfy-topic ] || { (umask 077; echo \"patcher-selfhost-\$(openssl rand -hex 12)\" > ntfy-topic); echo 'new topic created'; }"
       ssh "$SSH_HOST" "python3 - '$OPS_DIR' '$CRON_DESC'" <<'PY'
@@ -69,7 +74,7 @@ push() { # title priority tags body
   curl -fsS -m 20 -o /dev/null -H "Title: $1" -H "Priority: $2" -H "Tags: $3" -d "$4" "$NTFY_SERVER/$topic"
 }
 
-out="$(PUBLIC_URL="$PUBLIC_URL" bash "$OPS_DIR/selfhost-health-remote.sh" 2>&1)"; rc=$?
+out="$(PUBLIC_URL="$PUBLIC_URL" DUMP_DIR="$DUMP_DIR" ZFS_DATASET="$ZFS_DATASET" REPLICA_DATASET="$REPLICA_DATASET" bash "$OPS_DIR/selfhost-health-remote.sh" 2>&1)"; rc=$?
 now=$(date +%s)
 state=ok; [ "$rc" -eq 0 ] || state=fail
 prev=ok; last_push=0
@@ -92,7 +97,7 @@ if [ "$(date +%H)" = "$HEARTBEAT_HOUR" ] && [ "$(cat "$heartbeat_file" 2>/dev/nu
     "${summary:-All checks OK. (Daily heartbeat - if this stops arriving, the NAS or its internet is down.)}" \
     && echo "$today" > "$heartbeat_file"
   # Item 21: once a day, tell the owner when a newer self-hosted release exists (once per tag).
-  current="$(sed -n 's/^ref=//p' <project-dir>/.supabase-version 2>/dev/null)"
+  current="$(sed -n 's/^ref=//p' "$PROJECT_DIR/.supabase-version" 2>/dev/null)"
   latest="$(git ls-remote --tags https://github.com/supabase/supabase 'refs/tags/self-hosted/v*' 2>/dev/null \
     | awk '{print $2}' | grep -v '\^{}' | sed 's|refs/tags/||' | sort -V | tail -1)"
   if [ -n "$latest" ] && [ -n "$current" ] && [ "$latest" != "$current" ] \

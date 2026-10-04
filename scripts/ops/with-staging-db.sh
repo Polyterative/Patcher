@@ -4,21 +4,20 @@
 # mode, port 5432). The NAS has AllowTcpForwarding=no, so the runbook's
 # `ssh -L` tunnel does not work.
 #
-# The password and tenant id are read from the server .env over `ssh NAS`
+# The password and tenant id are read from the server .env over `ssh $SSH_HOST`
 # at run time; the URL is exported only to the child command, never printed.
 #
 # Usage:
 #   bash scripts/ops/with-staging-db.sh <command> [args...]
 #   e.g. bash scripts/ops/with-staging-db.sh bash scripts/ops/import-auth-to-selfhost.sh
 #
-# Env: SSH_HOST (default NAS), STAGING_HOST (default <nas-lan-ip>),
-#      PROJECT_DIR (default <project-dir>).
+# Env: SSH_HOST, SELFHOST_LAN_HOST, PROJECT_DIR (.env.selfhost-ops).
 
 set -euo pipefail
 
-SSH_HOST="${SSH_HOST:-NAS}"
-STAGING_HOST="${STAGING_HOST:-<nas-lan-ip>}"
-PROJECT_DIR="${PROJECT_DIR:-<project-dir>}"
+source "$(dirname "${BASH_SOURCE[0]}")/lib/selfhost-env.sh"
+selfhost_require SSH_HOST SELFHOST_LAN_HOST PROJECT_DIR
+STAGING_HOST="${STAGING_HOST:-${SELFHOST_LAN_HOST}}"
 
 [ $# -gt 0 ] || { sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//' >&2; exit 1; }
 
