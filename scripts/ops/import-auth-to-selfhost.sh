@@ -80,7 +80,7 @@ fi
 
 echo "== Preflight (read-only) =="
 echo "target: $(mask_db_url "${TARGET_DB_URL}")"
-require_selfhost_target "${TARGET_DB_URL}"
+require_staging_target "${TARGET_DB_URL}"
 echo "target marker: OK"
 
 if [ "$(pg_q "${TARGET_DB_URL}" "SELECT rolsuper FROM pg_roles WHERE rolname = current_user;")" != "t" ]; then

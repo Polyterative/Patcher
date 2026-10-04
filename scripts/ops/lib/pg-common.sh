@@ -9,8 +9,14 @@
 #   schema/data dump, so hosted Supabase can never carry it by accident.
 #   One-time setup on the self-host (owner, superuser):
 #     CREATE ROLE patcher_selfhost_marker NOLOGIN;
+# - Live lock: once the self-host is production it also carries
+#   `patcher_selfhost_live` (selfhost-live-lock.sh on, runbook §10). Scripts that
+#   REPLACE data (refresh, auth import, history copy, grants replay) call
+#   require_staging_target and refuse a live target. No flag bypasses it; only an
+#   owner `DROP ROLE patcher_selfhost_live` (after a rollback) re-opens staging use.
 
 PATCHER_SELFHOST_MARKER_ROLE="patcher_selfhost_marker"
+PATCHER_SELFHOST_LIVE_ROLE="patcher_selfhost_live"
 
 # Deterministic text output for hashing across servers/versions.
 export PGOPTIONS="${PGOPTIONS:-} -c TimeZone=UTC -c DateStyle=ISO,YMD -c IntervalStyle=postgres -c extra_float_digits=1 -c statement_timeout=600000"
@@ -57,6 +63,19 @@ require_selfhost_target() {
   elif [ "${rc}" -ne 0 ]; then
     echo "ERROR: target lacks the '${PATCHER_SELFHOST_MARKER_ROLE}' role, so it is not proven to be the self-host." >&2
     echo "       One-time owner setup on the self-host: CREATE ROLE ${PATCHER_SELFHOST_MARKER_ROLE} NOLOGIN;" >&2
+    exit 1
+  fi
+}
+
+# Self-host AND not live: for scripts that replace data wholesale.
+require_staging_target() {
+  local url="$1" found
+  require_selfhost_target "${url}"
+  found="$(pg_q "${url}" "SELECT count(*) FROM pg_roles WHERE rolname = '${PATCHER_SELFHOST_LIVE_ROLE}';")" || {
+    echo "ERROR: could not check the live lock on the target." >&2; exit 1; }
+  if [ "${found}" != "0" ]; then
+    echo "ERROR: target carries '${PATCHER_SELFHOST_LIVE_ROLE}' — the self-host IS production now." >&2
+    echo "       This script replaces data wholesale and is staging-only; refusing. No flag bypasses this." >&2
     exit 1
   fi
 }
