@@ -48,8 +48,8 @@ export class UserManagementAuthFlowService {
     );
   }
 
-  resetPassword$(email: string, ctx: UserManagementContext): Observable<void> {
-    return ctx.backend.auth.resetPassword$(email).pipe(
+  resetPassword$(email: string, ctx: UserManagementContext, captchaToken?: string): Observable<void> {
+    return ctx.backend.auth.resetPassword$(email, undefined, captchaToken).pipe(
       catchError((error) => {
         ctx.analytics.capture('auth.password_reset_request_failed', {});
         return throwError(() => error);

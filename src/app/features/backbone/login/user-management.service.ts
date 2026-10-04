@@ -208,8 +208,8 @@ export class UserManagementService extends SubManager {
   /**
    * @deprecated This should be refactored to use a signup$ action subject
    */
-  signup(username: string, email: string, password: string): SupabaseSignupResponse {
-    return this.backend.auth.signup$(username, email, password);
+  signup(username: string, email: string, password: string, captchaToken?: string): SupabaseSignupResponse {
+    return this.backend.auth.signup$(username, email, password, captchaToken);
   }
   
   /**
@@ -232,8 +232,8 @@ export class UserManagementService extends SubManager {
    * Sends a password reset email to the user
    * @deprecated Components should eventually use the resetPasswordAction$ subject directly
    */
-  resetPassword$(email: string) {
-    return this.authFlow.resetPassword$(email, this.context);
+  resetPassword$(email: string, captchaToken?: string) {
+    return this.authFlow.resetPassword$(email, this.context, captchaToken);
   }
   
   /**

@@ -102,6 +102,7 @@
                       <p #resetErrorMessage tabindex="-1">{{ errorMessage }}</p>
                     </div>
                   }
+                  <app-turnstile-widget [state]="dataService.captcha" action="password-reset"></app-turnstile-widget>
                   <app-brand-primary-button
                     class="auth-submit-button"
                     [disabled]="(dataService.isSubmittingReset$ | async) || dataService.fields.user.control.invalid"

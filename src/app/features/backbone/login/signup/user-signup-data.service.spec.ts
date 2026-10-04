@@ -10,6 +10,15 @@ import { SupabaseLoginResponse } from 'src/app/features/backend/supabase.types';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { UserManagementService } from '../user-management.service';
 import { UserSignupDataService } from './user-signup-data.service';
+import { CaptchaState } from 'src/app/shared-interproject/components/@smart/turnstile-widget/captcha-state';
+
+/** Deterministic captcha regardless of the generated environment's site key. */
+function solvedCaptcha(svc: UserSignupDataService, token: string | null = 'captcha-token'): CaptchaState {
+  const captcha = new CaptchaState('test-site-key');
+  captcha.token$.next(token);
+  (svc as unknown as {captcha: CaptchaState}).captcha = captcha;
+  return captcha;
+}
 
 
 describe('UserSignupDataService', () => {
@@ -57,6 +66,7 @@ describe('UserSignupDataService', () => {
     });
 
     service = TestBed.inject(UserSignupDataService);
+    solvedCaptcha(service);
     service.fields.username.control.setValue('newuser');
     service.fields.email.control.setValue('new@example.com');
     service.fields.password.control.setValue('password123');
@@ -144,6 +154,7 @@ describe('UserSignupDataService', () => {
       ]
     });
     const svc = TestBed.inject(UserSignupDataService);
+    solvedCaptcha(svc);
     svc.fields.username.control.setValue('returnuser');
     svc.fields.email.control.setValue('x@x.com');
     svc.fields.password.control.setValue('pass1234');
@@ -179,6 +190,7 @@ describe('UserSignupDataService', () => {
       ]
     });
     const svc = TestBed.inject(UserSignupDataService);
+    solvedCaptcha(svc);
     svc.fields.username.control.setValue('returnuser');
     svc.fields.email.control.setValue('x@x.com');
     svc.fields.password.control.setValue('pass1234');
@@ -235,7 +247,7 @@ describe('UserSignupDataService', () => {
 
     expect(service.fields.username.control.value).toBe('trimuser');
     expect(userManagementService.isUsernameAvailableForSignup$).toHaveBeenCalledOnceWith('trimuser');
-    expect(userManagementService.signup).toHaveBeenCalledOnceWith('trimuser', 'new@example.com', 'password123');
+    expect(userManagementService.signup).toHaveBeenCalledOnceWith('trimuser', 'new@example.com', 'password123', 'captcha-token');
   });
 
   it('uses the shared username format rules before checking availability', () => {
@@ -276,7 +288,7 @@ describe('UserSignupDataService', () => {
 
     service.mailSignClick$.next();
 
-    expect(userManagementService.signup).toHaveBeenCalledOnceWith('newuser', 'username@sub.domain.tld', 'password123');
+    expect(userManagementService.signup).toHaveBeenCalledOnceWith('newuser', 'username@sub.domain.tld', 'password123', 'captcha-token');
   });
 
   it('blocks signup when the email has no valid format', () => {
@@ -286,5 +298,28 @@ describe('UserSignupDataService', () => {
 
     expect(service.fields.email.control.invalid).toBeTrue();
     expect(userManagementService.signup).not.toHaveBeenCalled();
+  });
+
+  it('does not sign up while the captcha token is pending', () => {
+    spyOn(SharedConstants, 'errorSignup').and.callFake(() => {});
+    solvedCaptcha(service, null);
+
+    service.mailSignClick$.next();
+
+    expect(userManagementService.isUsernameAvailableForSignup$).not.toHaveBeenCalled();
+    expect(userManagementService.signup).not.toHaveBeenCalled();
+    expect(SharedConstants.errorSignup).toHaveBeenCalledWith(jasmine.anything(), SharedConstants.messages.captchaPending);
+  });
+
+  it('resets the single-use captcha token after a signup attempt', () => {
+    spyOn(SharedConstants, 'confirmMail').and.callFake(() => {});
+    const captcha = solvedCaptcha(service);
+    const reset = jasmine.createSpy('reset');
+    captcha.reset$.subscribe(reset);
+    userManagementService.signup.and.returnValue(of({user: null, requiresEmailConfirmation: true}));
+
+    service.mailSignClick$.next();
+
+    expect(reset).toHaveBeenCalledTimes(1);
   });
 });

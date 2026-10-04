@@ -16,6 +16,7 @@ import {
   catchError,
   concatMap,
   exhaustMap,
+  finalize,
   map,
   switchMap,
   tap
@@ -27,6 +28,7 @@ import { UserManagementService } from '../user-management.service';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { normalizeInternalReturnUrl } from '../safe-return-url';
 import { isPasswordResetRateLimited } from '../../../backend/supabase-auth.helpers';
+import { CaptchaState } from 'src/app/shared-interproject/components/@smart/turnstile-widget/captcha-state';
 
 
 interface PasswordResetResult {
@@ -85,6 +87,7 @@ export class UserLoginDataService extends SubManager {
   public readonly mailLoginClick$ = new Subject<void>();
   public readonly togglePasswordReset$ = new Subject<boolean>();
   public readonly requestPasswordReset$ = new Subject<void>();
+  public readonly captcha = new CaptchaState();
   
   constructor(
     private router: Router,
@@ -181,10 +184,19 @@ export class UserLoginDataService extends SubManager {
       });
     }
     
+    if (!this.captcha.ready) {
+      return of({
+        success: false,
+        message: SharedConstants.messages.captchaPending
+      });
+    }
+
     // Set loading state and submit
     this.isSubmittingReset$.next(true);
     
-    return this.loginInteraction.resetPassword$(email).pipe(
+    return this.loginInteraction.resetPassword$(email, this.captcha.tokenForRequest).pipe(
+      // Turnstile tokens are single-use.
+      finalize(() => this.captcha.reset$.next()),
       map(() => ({
         success: true,
         message: 'Check your email! We\'ve sent you a link to reset your password.'

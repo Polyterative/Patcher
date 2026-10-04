@@ -4,6 +4,8 @@ export interface EnvironmentModel {
     url: string
     key: string
   };
+  /** Cloudflare Turnstile site key for signup + password-reset; empty disables the widget. */
+  turnstileSiteKey: string;
   features: {
     collectionsEnabled: boolean;
     coolReactionsEnabled: boolean;
