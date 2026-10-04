@@ -32,7 +32,9 @@ Status: watchdog live; auth gate live in `log` mode; client widget on `develop`,
 
 ## Layer 3 — Polish / rollout (owner-gated)
 
-- [ ] At the self-host cutover: set Vercel `TURNSTILE_SITE_KEY` for Production (and Preview), redeploy.
+- [x] Vercel `TURNSTILE_SITE_KEY` set for Preview (develop) 2026-10-05; takes effect on the next develop build
+  (develop preview already points at the self-host, so its signup/reset traffic exercises the gate).
+- [ ] At the self-host cutover: set Vercel `TURNSTILE_SITE_KEY` for Production, redeploy (step added to the private switch checklist).
 - [ ] After a day of `log` lines showing `pass (verified)` from real users: set `MODE` to `enforce` and redeploy the gate.
 - [ ] After cutover: set watchdog `HOSTED_URL` to `""` and redeploy.
 
