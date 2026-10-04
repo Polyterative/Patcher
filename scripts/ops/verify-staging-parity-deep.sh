@@ -71,12 +71,17 @@ want() { [ -z "${ONLY}" ] || [ "${ONLY}" = "$1" ]; }
 # Run SQL on both sides and diff the sorted row output. Prints up to 25 lines.
 compare_section() {
   local name="$1" sql="$2" s t
+  # Same search_path on both sides: pg_get_expr/pg_get_triggerdef only
+  # schema-qualify names outside it, and role defaults differ (hosted postgres
+  # vs self-host supabase_admin), which made identical policies/triggers DIFF.
+  sql="SET search_path = public; ${sql}"
   if ! s="$(pg_rows "${SOURCE_DB_URL}" "${sql}" 2>&1)"; then
     echo "${name}: ERROR on source: ${s%%$'\n'*}"; hard_fail=$((hard_fail + 1)); return
   fi
   if ! t="$(pg_rows "${TARGET_DB_URL}" "${sql}" 2>&1)"; then
     echo "${name}: ERROR on target: ${t%%$'\n'*}"; hard_fail=$((hard_fail + 1)); return
   fi
+  s="${s#SET}"; s="${s#$'\n'}"; t="${t#SET}"; t="${t#$'\n'}"   # drop the SET command tag
   if [ "${s}" = "${t}" ]; then
     echo "${name}: OK ($(printf '%s\n' "${s}" | grep -c .) rows)"
   else
@@ -88,7 +93,7 @@ compare_section() {
 
 # private.patcher_freeze_reject() is write-freeze.sh maintenance state, not schema: exempt it.
 FREEZE_FN_EXEMPT="NOT (n.nspname = 'private' AND p.proname = 'patcher_freeze_reject')"
-ACL_FMT="coalesce((SELECT string_agg(x, ',' ORDER BY x) FROM (SELECT CASE WHEN a.grantee = 0 THEN 'PUBLIC' ELSE a.grantee::regrole::text END || ':' || a.privilege_type || CASE WHEN a.is_grantable THEN '*' ELSE '' END AS x FROM aclexplode(%s) a) acl), '<default>')"
+ACL_FMT="coalesce((SELECT string_agg(x, ',' ORDER BY x COLLATE \"C\") FROM (SELECT CASE WHEN a.grantee = 0 THEN 'PUBLIC' ELSE a.grantee::regrole::text END || ':' || a.privilege_type || CASE WHEN a.is_grantable THEN '*' ELSE '' END AS x FROM aclexplode(%s) a) acl), '<default>')"
 
 if want content; then
   echo "--- HARD: content (count + order-independent row-hash sum) ---"
