@@ -18,7 +18,7 @@
 #      MAINTAIN), verify counts / auth trigger / orphans
 #   5. storage delta by SQL metadata (bucket, name, eTag, size): copy new or
 #      changed objects (copy-storage-to-staging.mjs, md5-verified), delete
-#      objects gone from hosted; private buckets need SOURCE_SERVICE_KEY
+#      objects gone from hosted, carry object owners; private buckets need SOURCE_SERVICE_KEY
 #   6. rm -P the dumps, run verify-staging-parity-deep.sh
 # Schema is NOT re-dumped: the preflight aborts if the public table/column
 # fingerprint differs (apply the new migrations to the self-host first).
@@ -218,6 +218,10 @@ if [ "${SKIP_STORAGE}" -eq 0 ]; then
     ' "${WORK}/del-${b}.txt")
     echo "deleted from ${b}: $(grep -c . "${WORK}/del-${b}.txt")"
   done
+  # API uploads leave owner empty: carry storage.objects owner / owner_id from hosted.
+  pg_q "${SOURCE_DB_URL}" "SELECT format('UPDATE storage.objects SET owner = %L, owner_id = %L WHERE bucket_id = %L AND name = %L AND owner_id IS DISTINCT FROM %L;', owner, owner_id, bucket_id, name, owner_id) FROM storage.objects WHERE owner_id IS NOT NULL;" > "${WORK}/owners.sql"
+  psql "${TARGET_DB_URL}" -X -q -v ON_ERROR_STOP=1 --single-transaction -f "${WORK}/owners.sql" > /dev/null \
+    && echo "object owners synced ($(grep -c . "${WORK}/owners.sql") owned objects on hosted)" || fail=1
   nokey="$(grep -c '^nokey' "${WORK}/storage-plan.tsv" || true)"
   [ "${nokey}" = "0" ] || echo "NOT copied: ${nokey} private object(s) — set SOURCE_SERVICE_KEY to include them."
 fi
