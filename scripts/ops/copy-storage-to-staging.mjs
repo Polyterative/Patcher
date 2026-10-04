@@ -71,6 +71,15 @@ const sourceObjectUrl = (bucket, n) =>
   SOURCE_BASE + '/storage/v1/object/' + (SOURCE_KEY ? 'authenticated/' : 'public/') + bucket + '/' + enc(n);
 // Strip parameters (e.g. "; charset=") for comparison only.
 const baseType = (ct) => (ct || '').split(';')[0].trim().toLowerCase();
+// Hosted Storage answers 429 under sustained load: back off and retry (honours Retry-After).
+async function sourceFetch(url, init) {
+  for (let attempt = 0; ; attempt++) {
+    const r = await fetch(url, init);
+    if (r.status !== 429 || attempt >= 6) return r;
+    const wait = (parseInt(r.headers.get('retry-after') || '0', 10) * 1000) || 2000 * 2 ** attempt;
+    await new Promise((res) => setTimeout(res, wait));
+  }
+}
 
 (async () => {
   let invFile = process.env.INVENTORY || '';
@@ -115,12 +124,12 @@ const baseType = (ct) => (ct || '').split(';')[0].trim().toLowerCase();
         const n = queue.pop();
         try {
           if (!APPLY) {
-            const h = await fetch(sourceObjectUrl(bucket, n), { method: 'HEAD', headers: sourceHeaders });
+            const h = await sourceFetch(sourceObjectUrl(bucket, n), { method: 'HEAD', headers: sourceHeaders });
             if (h.ok) rec.copied++;
             else rec.skippedNeedsFate.push(n + ' (source ' + h.status + ')');
             continue;
           }
-          const r = await fetch(sourceObjectUrl(bucket, n), { headers: sourceHeaders });
+          const r = await sourceFetch(sourceObjectUrl(bucket, n), { headers: sourceHeaders });
           if (!r.ok) { rec.skippedNeedsFate.push(n + ' (source ' + r.status + ')'); continue; }
           const buf = Buffer.from(await r.arrayBuffer());
           if (!buf.length) { rec.skippedNeedsFate.push(n + ' (source empty)'); continue; }
