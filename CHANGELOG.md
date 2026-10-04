@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.7.26](https://github.com/Polyterative/Patcher/compare/v6.7.25...v6.7.26) (2026-10-04)
+
+
+### Bug Fixes
+
+* **backend-tests:** honor self-hosted config and skip live tests on demo key ([73d4aab](https://github.com/Polyterative/Patcher/commit/73d4aab449e3832216cdde3a7e256e9077bd515c))
+* **manufacturer-detail:** gate widget embed preview behind admin check ([76bd3da](https://github.com/Polyterative/Patcher/commit/76bd3dafacd2af504c390a1f2081dcfb33822b3d))
+
 ### [6.7.25](https://github.com/Polyterative/Patcher/compare/v6.7.24...v6.7.25) (2026-09-30)
 
 
