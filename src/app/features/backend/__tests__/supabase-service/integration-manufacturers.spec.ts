@@ -10,7 +10,25 @@ import { DBManufacturer } from '../../../../models/manufacturer';
 import { environment } from 'src/environments/environment';
 import { type PostgrestError } from '@supabase/supabase-js';
 
-const hasRealCredentials = !!environment.supabase.url && !environment.supabase.url.includes('placeholder');
+const hasRealCredentials = !!environment.supabase.url
+  && !environment.supabase.url.includes('placeholder')
+  && isAuthenticatingKey(environment.supabase.key);
+
+/**
+ * The committed environment.ts stand-in credentials (placeholder values or the
+ * public supabase-js docs demo JWT, iss supabase-demo) cannot authenticate
+ * against any backend, so live tests stay excluded until real credentials
+ * are configured — same contract as the URL check above.
+ */
+function isAuthenticatingKey(key: string | undefined): boolean {
+  if (!key || key.includes('placeholder')) return false;
+  try {
+    const payload = JSON.parse(atob(key.split('.')[1] ?? '')) as {iss?: unknown} | null;
+    return payload?.iss !== 'supabase-demo';
+  } catch {
+    return false;
+  }
+}
 
 interface ManufacturerListResponse {
   count: number | null;

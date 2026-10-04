@@ -4,6 +4,7 @@ import {
 } from './test-setup';
 import { getSupabaseClientDouble } from './supabase-query-test-doubles';
 import { SupabaseService } from '../../supabase.service';
+import { environment } from 'src/environments/environment';
 
 
 type GetMethod = Extract<keyof SupabaseService['GET'], string>;
@@ -40,8 +41,10 @@ describe('SupabaseService - Database Connection Health', () => {
     expect(supabaseClient.supabaseUrl).withContext('URL should be configured').toBeDefined();
     expect(supabaseClient.supabaseKey).withContext('Key should be configured').toBeDefined();
     
-    // Validate URL format
-    expect(supabaseClient.supabaseUrl).withContext('URL should be valid Supabase endpoint').toMatch(/^https:\/\/.*\.supabase\.co$/);
+    // The client must honor the configured environment (hosted or self-hosted),
+    // not assume a particular hosting shape.
+    expect(supabaseClient.supabaseUrl).withContext('URL should match environment configuration').toBe(environment.supabase.url);
+    expect(supabaseClient.supabaseUrl).withContext('URL should be a valid HTTP(S) endpoint').toMatch(/^https?:\/\/.+/);
   });
   
   it('should handle connection without throwing synchronous errors', () => {

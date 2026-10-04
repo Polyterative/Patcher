@@ -5,6 +5,7 @@ import {
 import { SupabaseService } from '../../supabase.service';
 import type { SupabaseServiceTestSetup } from './test-setup';
 import { getSupabaseClientDouble } from './supabase-query-test-doubles';
+import { environment } from 'src/environments/environment';
 
 
 /**
@@ -50,7 +51,9 @@ describe('SupabaseService - Initialization', () => {
     const supabaseClient = getSupabaseClientDouble(service);
     expect(supabaseClient.supabaseUrl).toBeDefined();
     expect(supabaseClient.supabaseKey).toBeDefined();
-    expect(supabaseClient.supabaseUrl).toContain('supabase.co');
+    // Honoring the configured environment covers hosted and self-hosted setups.
+    expect(supabaseClient.supabaseUrl).toBe(environment.supabase.url);
+    expect(supabaseClient.supabaseUrl).toMatch(/^https?:\/\/.+/);
   });
   
   it('should initialize user management observables', () => {
