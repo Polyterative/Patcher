@@ -17,6 +17,7 @@ import {
   catchError,
   exhaustMap,
   filter,
+  finalize,
   switchMap,
   tap
 } from 'rxjs/operators';
@@ -33,6 +34,7 @@ import {
 } from '../username-validation';
 import { emailValidators } from '../email-validation';
 import { normalizeInternalReturnUrl } from '../safe-return-url';
+import { CaptchaState } from 'src/app/shared-interproject/components/@smart/turnstile-widget/captcha-state';
 
 
 @Injectable()
@@ -103,6 +105,7 @@ export class UserSignupDataService extends SubManager {
   };
   mailSignClick$ = new Subject<void>();
   googleSignClick$ = new Subject<void>();
+  readonly captcha = new CaptchaState();
   
   constructor(
     public router: Router,
@@ -133,6 +136,11 @@ export class UserSignupDataService extends SubManager {
             return EMPTY;
           }
 
+          if (!this.captcha.ready) {
+            SharedConstants.errorSignup(snackBar, SharedConstants.messages.captchaPending);
+            return EMPTY;
+          }
+
           return this.loginInteraction.isUsernameAvailableForSignup$(username).pipe(
             catchError((error: Error) => {
               applyUsernameAvailabilityError(this.fields.username.control, ErrorCodes.form.errorCode.custom.usernameAvailabilityCheckFailed);
@@ -148,12 +156,15 @@ export class UserSignupDataService extends SubManager {
               return this.loginInteraction.signup(
                 username,
                 this.fields.email.control.value,
-                this.fields.password.control.value
+                this.fields.password.control.value,
+                this.captcha.tokenForRequest
               ).pipe(
                 catchError((error: Error) => {
                   SharedConstants.errorSignup(snackBar, error?.message);
                   return EMPTY;
-                })
+                }),
+                // Turnstile tokens are single-use.
+                finalize(() => this.captcha.reset$.next())
               );
             })
           );

@@ -11,6 +11,7 @@ import { PasswordResetError } from 'src/app/features/backend/supabase-auth.helpe
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { UserManagementService } from '../user-management.service';
 import { UserLoginDataService } from './user-login-data.service';
+import { CaptchaState } from 'src/app/shared-interproject/components/@smart/turnstile-widget/captcha-state';
 
 
 describe('UserLoginDataService', () => {
@@ -39,6 +40,10 @@ describe('UserLoginDataService', () => {
       loginInteraction,
       snackBar
     );
+    // Deterministic captcha regardless of the generated environment's site key.
+    const captcha = new CaptchaState('test-site-key');
+    captcha.token$.next('captcha-token');
+    (service as unknown as {captcha: CaptchaState}).captcha = captcha;
     return {service, loginInteraction, router, snackBar};
   }
 
@@ -156,7 +161,7 @@ describe('UserLoginDataService', () => {
 
     service.requestPasswordReset$.next();
 
-    expect(loginInteraction.resetPassword$).toHaveBeenCalledWith('valid@example.com');
+    expect(loginInteraction.resetPassword$).toHaveBeenCalledWith('valid@example.com', 'captcha-token');
     expect(service.resetSuccessMessage$.value).toContain('email');
     expect(service.isSubmittingReset$.value).toBeFalse();
   });
@@ -247,5 +252,27 @@ describe('UserLoginDataService', () => {
 
     expect(loginInteraction.resetPassword$).toHaveBeenCalledTimes(3);
     expect(service.resetSuccessMessage$.value).toContain('email');
+  });
+
+  it('does not request a reset while the captcha token is pending', () => {
+    const {service, loginInteraction} = build();
+    service.captcha.token$.next(null);
+    service.fields.user.control.setValue('valid@example.com');
+
+    service.requestPasswordReset$.next();
+
+    expect(loginInteraction.resetPassword$).not.toHaveBeenCalled();
+    expect(service.resetErrorMessage$.value).toBe(SharedConstants.messages.captchaPending);
+  });
+
+  it('resets the single-use captcha token after a reset request', () => {
+    const {service} = build();
+    const reset = jasmine.createSpy('reset');
+    service.captcha.reset$.subscribe(reset);
+    service.fields.user.control.setValue('valid@example.com');
+
+    service.requestPasswordReset$.next();
+
+    expect(reset).toHaveBeenCalledTimes(1);
   });
 });

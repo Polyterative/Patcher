@@ -35,6 +35,11 @@ if (!supabaseAnonKey) {
   console.warn('[generate-env] WARNING: SUPABASE_ANON_KEY is not set. Environment files will have an empty anon key.');
 }
 
+// Turnstile site keys are public. Empty disables the captcha widget (prod until the self-host cutover).
+const DEV_TURNSTILE_SITE_KEY = '0x4AAAAAAFNy2CcbfwOPeWeo';
+const prodTurnstileSiteKey = process.env.TURNSTILE_SITE_KEY || '';
+const devTurnstileSiteKey = process.env.TURNSTILE_SITE_KEY ?? DEV_TURNSTILE_SITE_KEY;
+
 const prodEnvContent = `
 export const environment = {
   production: true,
@@ -42,6 +47,7 @@ export const environment = {
     url: '${supabaseUrl}', // SAFE to expose — anon key with RLS enforced
     key: '${supabaseAnonKey}' // SAFE to expose — anon key with RLS enforced
   },
+  turnstileSiteKey: '${prodTurnstileSiteKey}',
   features: {
     collectionsEnabled: false,
     coolReactionsEnabled: false,
@@ -61,6 +67,7 @@ export const environment = {
     url: '${supabaseUrl}', // SAFE to expose — anon key with RLS enforced
     key: '${supabaseAnonKey}' // SAFE to expose — anon key with RLS enforced
   },
+  turnstileSiteKey: '${devTurnstileSiteKey}',
   features: {
     collectionsEnabled: true,
     coolReactionsEnabled: true,

@@ -30,6 +30,8 @@
     </mat-error>
   }
   
+  <app-turnstile-widget [state]="dataService.captcha" action="signup"></app-turnstile-widget>
+
   <app-brand-primary-button class="auth-submit-button"
                             innerFlex="auto"
                             theme="positive"

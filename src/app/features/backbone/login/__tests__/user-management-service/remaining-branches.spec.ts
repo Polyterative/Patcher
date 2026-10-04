@@ -115,7 +115,7 @@ describe('UserManagementService - Remaining Branches', () => {
     
     const out = service.signup('name', 'mail@example.com', 'pass');
     out.subscribe(res => expect(res).toEqual(response));
-    expect(mockSupabaseService.auth.signup$).toHaveBeenCalledWith('name', 'mail@example.com', 'pass');
+    expect(mockSupabaseService.auth.signup$).toHaveBeenCalledWith('name', 'mail@example.com', 'pass', undefined);
   });
   
   it('public resetPassword$ handles over-limit, generic errors, and success', fakeAsync(() => {
