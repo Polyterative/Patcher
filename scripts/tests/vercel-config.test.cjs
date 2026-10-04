@@ -44,6 +44,10 @@ test('csp allows the analytics and self-host api hosts the app calls', () => {
   assert.match(directive('connect-src'), /https:\/\/eu\.i\.posthog\.com/);
   assert.match(directive('connect-src'), /https:\/\/supabase\.patcher\.xyz/);
   assert.match(directive('script-src'), /https:\/\/eu-assets\.i\.posthog\.com/);
+  assert.match(directive('connect-src'), /https:\/\/\*\.ingest\.us\.sentry\.io/);
+  assert.match(directive('connect-src'), /wss:\/\/supabase\.patcher\.xyz/);
+  assert.match(directive('img-src'), /https:\/\/images\.patcher\.xyz/);
+  assert.match(directive('img-src'), /https:\/\/c5\.patreon\.com/);
 });
 
 test('cache rules keep the shell uncached and fonts immutable', () => {
