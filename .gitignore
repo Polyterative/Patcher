@@ -99,3 +99,4 @@ supabase/.temp/
 
 # Local agent screenshots
 .openchamber/
+.vercel
