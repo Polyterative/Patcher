@@ -63,10 +63,11 @@ export function buildProbes(env: WatchdogEnv): Probe[] {
   const apikey = { apikey: env.SUPABASE_ANON_KEY };
   const probes: Probe[] = [
     {
+      // Static file served from Vercel's edge cache: probing / ran a full SSR render every 5 min.
       name: 'site',
-      url: 'https://patcher.xyz/',
+      url: 'https://patcher.xyz/robots.txt',
       expectStatus: [200],
-      expectBody: body => body.includes('<app-root'),
+      expectBody: body => body.includes('Sitemap:'),
     },
     { name: 'selfhost auth', url: `${selfhost}/auth/v1/health`, headers: apikey, expectStatus: [200] },
     {
