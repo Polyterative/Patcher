@@ -140,7 +140,7 @@ test('the default cache is shared across calls and can be reset', async () => {
 
 test('the hyperdrive provider validates the digest before touching the database', async () => {
   const provider = createHyperdriveApiKeyMetadataProvider({ connectionString: 'postgres://invalid.invalid/db' });
-  for (const bad of ['', 'abc', 'G'.repeat(64), digest(1).toUpperCase(), `${digest(1)}0`, `${digest(1).slice(1)}`, "'; drop table x; --", ' '.repeat(64)]) {
+  for (const bad of ['', 'abc', 'G'.repeat(64), digest(255).toUpperCase(), `${digest(1)}0`, `${digest(1).slice(1)}`, "'; drop table x; --", ' '.repeat(64)]) {
     await assert.rejects(() => provider.verifyApiKeyHash(bad), /SHA-256 hex/, JSON.stringify(bad));
   }
 });
