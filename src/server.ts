@@ -21,6 +21,7 @@ import {
   resolve
 } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { isKnownApplicationRoute } from './known-routes';
 
 // AppServerModule is exported as default from main.server.ts
 import AppServerModule from './main.server';
@@ -156,44 +157,8 @@ function resolveSsrRedirect(responseInit: ResponseInit): { status: number; locat
 function resolveSsrStatusCode(originalUrl: string): number {
   try {
     const pathname = new URL(originalUrl, 'https://patcher.xyz').pathname;
-    return isKnownApplicationRoute(pathname) && pathname !== '/404' ? 200 : 404;
+    return isKnownApplicationRoute(pathname, environment.features) && pathname !== '/404' ? 200 : 404;
   } catch {
     return 200;
   }
-}
-
-function isKnownApplicationRoute(pathname: string): boolean {
-  return getKnownApplicationRoutePatterns().some(pattern => pattern.test(pathname));
-}
-
-function getKnownApplicationRoutePatterns(): RegExp[] {
-  const routePatterns = [
-    /^\/$/,
-    /^\/home\/?$/,
-    /^\/admin\/?$/,
-    /^\/auth\/(?:login|signup|reset-password|callback|complete-profile)\/?$/,
-    /^\/u\/[^/]+\/?$/,
-    /^\/user\/account\/?$/,
-    /^\/user\/area\/?$/,
-    /^\/racks(?:\/browser|\/details\/\d+|\/[^/]+)?\/?$/,
-    /^\/patches(?:\/browser|\/details\/\d+|\/[^/]+)?\/?$/,
-    /^\/modules(?:\/browser|\/details\/\d+|\/add)?\/?$/,
-    /^\/manufacturers(?:\/browser|\/details\/\d+)?\/?$/,
-    /^\/info\/(?:changelog|insights)\/?$/,
-    /^\/links\/retired\/?$/,
-    /^\/404\/?$/,
-  ];
-
-  if (environment.features.collectionsEnabled) {
-    routePatterns.push(
-      /^\/collections(?:\/browser|\/manage\/[^/]+|\/[^/]+)?\/?$/,
-      /^\/collection\/[^/]+\/?$/,
-    );
-  }
-
-  if (environment.features.marketplaceEnabled) {
-    routePatterns.push(/^\/marketplace(?:\/[^/]+)?\/?$/);
-  }
-
-  return routePatterns;
 }
