@@ -46,6 +46,82 @@ describe('FileDragHostComponent', () => {
     });
   });
 
+  describe('image snapshot on pick', () => {
+    function pick(comp: FileDragHostComponent, files: File[]): HTMLInputElement {
+      const input = document.createElement('input');
+      Object.defineProperty(input, 'files', {configurable: true, value: files});
+      comp.onFilePickerChange(new Event('change'), input);
+      return input;
+    }
+
+    function addedFiles(service: FileDragHostService): Promise<File[]> {
+      return new Promise(resolve => {
+        service.fileAdd$.subscribe(event => resolve(event.addedFiles));
+      });
+    }
+
+    function makeImageComp(): { comp: FileDragHostComponent; service: FileDragHostService } {
+      const service = makeServiceMock();
+      const comp = makeComp(service);
+      Object.defineProperty(comp, 'isImageOnlyMode', {configurable: true, value: true});
+      comp.acceptedFileType = 'image/jpeg';
+      return {comp, service};
+    }
+
+    it('adds an in-memory copy that keeps name, type and bytes in image mode', async () => {
+      const {comp, service} = makeImageComp();
+      const original = new File([new Uint8Array([1, 2, 3])], 'shot (tagged).jpg', {type: 'image/jpeg', lastModified: 1234});
+      const added = addedFiles(service);
+
+      pick(comp, [original]);
+      const [copy] = await added;
+
+      expect(copy).not.toBe(original);
+      expect(copy.name).toBe(original.name);
+      expect(copy.type).toBe('image/jpeg');
+      expect(copy.lastModified).toBe(1234);
+      expect(new Uint8Array(await copy.arrayBuffer())).toEqual(new Uint8Array([1, 2, 3]));
+    });
+
+    it('still reads the bytes after the original file can no longer be read', async () => {
+      const {comp, service} = makeImageComp();
+      const original = new File([new Uint8Array([9, 9])], 'a.jpg', {type: 'image/jpeg'});
+      const added = addedFiles(service);
+
+      pick(comp, [original]);
+      spyOn(original, 'arrayBuffer').and.rejectWith(new DOMException('gone', 'NotFoundError'));
+      const [copy] = await added;
+
+      expect((await copy.arrayBuffer()).byteLength).toBe(2);
+    });
+
+    it('reports an unreadable file instead of adding it', async () => {
+      const {comp, service} = makeImageComp();
+      const original = new File([''], 'a.jpg', {type: 'image/jpeg'});
+      spyOn(original, 'arrayBuffer').and.rejectWith(new DOMException('gone', 'NotFoundError'));
+      spyOn(console, 'error');
+      spyOn(service, 'addFiles');
+      spyOn(service, 'reportUnreadableFile');
+
+      pick(comp, [original]);
+      await new Promise(resolve => setTimeout(resolve));
+
+      expect(service.reportUnreadableFile).toHaveBeenCalled();
+      expect(service.addFiles).not.toHaveBeenCalled();
+    });
+
+    it('passes files through untouched when not in image mode', () => {
+      const service = makeServiceMock();
+      const comp = makeComp(service);
+      spyOn(service, 'addFiles');
+      const original = new File(['x'], 'a.txt', {type: 'text/plain'});
+
+      pick(comp, [original]);
+
+      expect(service.addFiles).toHaveBeenCalledWith([original], undefined as unknown as string);
+    });
+  });
+
   describe('openFilePicker', () => {
     it('opens the native file picker from keyboard activation', () => {
       const comp = makeComp();
