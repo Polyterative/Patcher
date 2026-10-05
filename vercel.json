@@ -87,22 +87,18 @@
     },
     {
       "src": "/",
-      "dest": "/api/ssr"
+      "dest": "/index.csr.html"
     },
     {
       "src": "/__patcher_chunk_recovery/(.*)",
-      "dest": "/api/ssr"
-    },
-    {
-      "src": "/index.csr.html",
-      "dest": "/api/ssr"
+      "dest": "/index.csr.html"
     },
     {
       "handle": "filesystem"
     },
     {
       "src": "/(.*)",
-      "dest": "/api/ssr"
+      "dest": "/index.csr.html"
     }
   ],
   "functions": {

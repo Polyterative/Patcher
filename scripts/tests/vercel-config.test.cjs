@@ -56,3 +56,13 @@ test('cache rules keep the shell uncached and fonts immutable', () => {
   assert.match(headersFor('/assets/font/a.woff2')['Cache-Control'], /immutable/);
   assert.equal(headersFor('/modules/browser')['Cache-Control'], undefined);
 });
+
+test('page routes serve the static client shell instead of the ssr function', () => {
+  // Bots get share metadata from middleware.ts; humans run the app client-side, so a
+  // per-request SSR render only cost Fast Origin Transfer.
+  const routing = config.routes.filter(route => !route.continue && route.dest);
+  assert.ok(routing.every(route => route.dest !== '/api/ssr'));
+  for (const src of ['/', '/(.*)', '/__patcher_chunk_recovery/(.*)']) {
+    assert.equal(routing.find(route => route.src === src)?.dest, '/index.csr.html', src);
+  }
+});
