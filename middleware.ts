@@ -151,6 +151,7 @@ export default async function middleware(request: Request): Promise<Response | v
   const isUnknownRoute = !isKnownApplicationRoute(pathname, KNOWN_ROUTE_FEATURES) || pathname === '/404';
   const isMissingEntity = isDetailRoute && metadata.source.endsWith('-not-found');
   const isNotFound = isUnknownRoute || isMissingEntity;
+  const isLookupError = isDetailRoute && metadata.source.endsWith('-lookup-error');
   const isNoIndexPath = isPrivatePath(pathname);
   const robotsTag = isPreviewDeployment
     ? 'noindex, nofollow, noarchive'
@@ -158,13 +159,16 @@ export default async function middleware(request: Request): Promise<Response | v
       ? 'noindex, nofollow, noarchive'
       : 'index, follow, max-image-preview:large');
   const html = renderHtml(metadata, robotsTag);
-  const cacheControl = isUnknownRoute
+  const cacheControl = isLookupError
+    ? 'no-store'
+    : isUnknownRoute
     ? 'public, s-maxage=300, stale-while-revalidate=3600'
     : resolveCacheControl(metadata, isDetailRoute);
 
   return new Response(html, {
-    status: isNotFound ? 404 : 200,
+    status: isNotFound ? 404 : (isLookupError ? 503 : 200),
     headers: {
+      ...(isLookupError ? {'retry-after': '300'} : {}),
       'content-type': 'text/html; charset=utf-8',
       'cache-control': cacheControl,
       'x-content-type-options': 'nosniff',
@@ -286,32 +290,39 @@ async function buildMetadata(routeMatch: RouteMatch | undefined, canonicalUrl: s
     return defaultMetadata(canonicalUrl, siteOrigin, `${ routeMatch.type }-no-key`);
   }
 
-  if (routeMatch.type === 'module') {
-    const moduleMetadata = await getModuleMetadata(routeMatch.id, canonicalUrl, siteOrigin);
-    if (moduleMetadata) {
-      return moduleMetadata;
+  try {
+    if (routeMatch.type === 'module') {
+      const moduleMetadata = await getModuleMetadata(routeMatch.id, canonicalUrl, siteOrigin);
+      if (moduleMetadata) {
+        return moduleMetadata;
+      }
     }
-  }
 
-  if (routeMatch.type === 'patch') {
-    const patchMetadata = await getPatchMetadata(routeMatch.id, canonicalUrl, siteOrigin);
-    if (patchMetadata) {
-      return patchMetadata;
+    if (routeMatch.type === 'patch') {
+      const patchMetadata = await getPatchMetadata(routeMatch.id, canonicalUrl, siteOrigin);
+      if (patchMetadata) {
+        return patchMetadata;
+      }
     }
-  }
 
-  if (routeMatch.type === 'rack') {
-    const rackMetadata = await getRackMetadata(routeMatch.id, canonicalUrl, siteOrigin);
-    if (rackMetadata) {
-      return rackMetadata;
+    if (routeMatch.type === 'rack') {
+      const rackMetadata = await getRackMetadata(routeMatch.id, canonicalUrl, siteOrigin);
+      if (rackMetadata) {
+        return rackMetadata;
+      }
     }
-  }
 
-  if (routeMatch.type === 'manufacturer') {
-    const manufacturerMetadata = await getManufacturerMetadata(routeMatch.id, canonicalUrl, siteOrigin);
-    if (manufacturerMetadata) {
-      return manufacturerMetadata;
+    if (routeMatch.type === 'manufacturer') {
+      const manufacturerMetadata = await getManufacturerMetadata(routeMatch.id, canonicalUrl, siteOrigin);
+      if (manufacturerMetadata) {
+        return manufacturerMetadata;
+      }
     }
+  } catch (error) {
+    if (error instanceof SupabaseLookupError) {
+      return defaultMetadata(canonicalUrl, siteOrigin, `${ routeMatch.type }-lookup-error`);
+    }
+    throw error;
   }
 
   return defaultMetadata(canonicalUrl, siteOrigin, `${ routeMatch.type }-not-found`);
@@ -722,6 +733,9 @@ function normalizeRackStoragePath(imagePath: string): string {
     .join('/');
 }
 
+class SupabaseLookupError extends Error {}
+
+/** Resolves to undefined only when the lookup succeeded and no row exists; throws SupabaseLookupError on failure. */
 async function fetchSupabaseRow<T>(tableName: string, params: URLSearchParams): Promise<T | undefined> {
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
     return undefined;
@@ -739,13 +753,14 @@ async function fetchSupabaseRow<T>(tableName: string, params: URLSearchParams): 
   }).catch(() => undefined);
   clearTimeout(timeoutHandle);
 
+  // Errors, timeouts and non-2xx responses are not "missing": throw so callers can tell them apart.
   if (!response || !response.ok) {
-    return undefined;
+    throw new SupabaseLookupError();
   }
 
   const payload = await response.json().catch(() => undefined);
-  if (!payload) {
-    return undefined;
+  if (payload === undefined || payload === null) {
+    throw new SupabaseLookupError();
   }
 
   if (Array.isArray(payload)) {

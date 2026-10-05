@@ -437,3 +437,37 @@ test('bot page body escapes entity text', async () => {
   assert.doesNotMatch(body, /<script>alert/);
   assert.doesNotMatch(body, /<b>bold/);
 });
+
+test('Supabase errors, timeouts and 5xx return 503 with Retry-After and no-store, not 404', async () => {
+  const failures = {
+    'network error': async () => { throw new Error('boom'); },
+    'HTTP 500': async () => ({ok: false, status: 500, async json() { return {}; }}),
+    'HTTP 503': async () => ({ok: false, status: 503, async json() { return {}; }}),
+    'invalid JSON': async () => ({ok: true, async json() { throw new Error('bad json'); }})
+  };
+
+  for (const [label, impl] of Object.entries(failures)) {
+    const middleware = loadMiddleware('test-key');
+    global.fetch = impl;
+
+    const first = await middleware(makeRequest('/modules/details/72'));
+    assert.equal(first.status, 503, label);
+    assert.equal(first.headers.get('retry-after'), '300', label);
+    assert.equal(first.headers.get('cache-control'), 'no-store', label);
+    assert.equal(first.headers.get('x-patcher-seo-source'), 'module-lookup-error', label);
+    assert.match(await first.text(), /Patcher\.xyz/, label);
+
+    // Must not be cached: a recovered backend is picked up on the next request.
+    stubFetchWithPayload(modulePayload);
+    const second = await middleware(makeRequest('/modules/details/72'));
+    assert.equal(second.status, 200, label);
+  }
+});
+
+test('confirmed empty lookup is still a 404 without Retry-After', async () => {
+  const middleware = loadMiddleware('test-key');
+  stubFetchWithPayload(() => []);
+  const response = await middleware(makeRequest('/patches/details/12345'));
+  assert.equal(response.status, 404);
+  assert.equal(response.headers.get('retry-after'), null);
+});
