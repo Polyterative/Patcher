@@ -34,6 +34,10 @@ function runGenerator() {
         return path;
       }
 
+      if (moduleName.endsWith('features.json')) {
+        return require(path.join(repoRoot, moduleName));
+      }
+
       throw new Error(`Unexpected module: ${moduleName}`);
     }
   });
@@ -65,6 +69,10 @@ function runGeneratorWithoutSupabaseUrl() {
 
       if (moduleName === 'path') {
         return path;
+      }
+
+      if (moduleName.endsWith('features.json')) {
+        return require(path.join(repoRoot, moduleName));
       }
 
       throw new Error(`Unexpected module: ${moduleName}`);
@@ -127,6 +135,10 @@ function runGeneratorWithExistingFile(existingContent) {
 
       if (moduleName === 'path') {
         return path;
+      }
+
+      if (moduleName.endsWith('features.json')) {
+        return require(path.join(repoRoot, moduleName));
       }
 
       throw new Error(`Unexpected module: ${moduleName}`);

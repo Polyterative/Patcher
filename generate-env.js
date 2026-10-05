@@ -40,6 +40,13 @@ const DEV_TURNSTILE_SITE_KEY = '0x4AAAAAAFNy2CcbfwOPeWeo';
 const prodTurnstileSiteKey = process.env.TURNSTILE_SITE_KEY || '';
 const devTurnstileSiteKey = process.env.TURNSTILE_SITE_KEY ?? DEV_TURNSTILE_SITE_KEY;
 
+// Single source of truth for feature flags; middleware.ts imports the production block too.
+const featureFlags = require('./src/environments/features.json');
+
+function renderFeatures(flags) {
+  return Object.entries(flags).map(([name, enabled]) => `    ${name}: ${enabled}`).join(',\n');
+}
+
 const prodEnvContent = `
 export const environment = {
   production: true,
@@ -49,11 +56,7 @@ export const environment = {
   },
   turnstileSiteKey: '${prodTurnstileSiteKey}',
   features: {
-    collectionsEnabled: false,
-    coolReactionsEnabled: false,
-    developerApiEnabled: true,
-    modularGridImportEnabled: true,
-    marketplaceEnabled: false
+${renderFeatures(featureFlags.production)}
   }
 };
 `;
@@ -69,11 +72,7 @@ export const environment = {
   },
   turnstileSiteKey: '${devTurnstileSiteKey}',
   features: {
-    collectionsEnabled: true,
-    coolReactionsEnabled: true,
-    developerApiEnabled: true,
-    modularGridImportEnabled: true,
-    marketplaceEnabled: true
+${renderFeatures(featureFlags.development)}
   }
 };
 `;

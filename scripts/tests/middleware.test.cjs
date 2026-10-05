@@ -401,6 +401,33 @@ test('feature-flagged routes are 404 for bots while their flags are off', async 
   assert.equal((await middleware(makeRequest('/collections/browser'))).status, 404);
 });
 
+test('middleware route flags agree with the production flags generate-env writes', async () => {
+  const fs = require('node:fs');
+  const vm = require('node:vm');
+  const repoRoot = path.resolve(__dirname, '../..');
+  const writes = new Map();
+  vm.runInNewContext(fs.readFileSync(path.join(repoRoot, 'generate-env.js'), 'utf8'), {
+    __dirname: repoRoot,
+    console: {log() {}, warn() {}},
+    process: {env: {SUPABASE_URL: 'https://example.supabase.co', SUPABASE_ANON_KEY: 'k'}},
+    require(name) {
+      if (name === 'fs') {
+        return {existsSync: () => false, writeFileSync: (file, content) => writes.set(file, content)};
+      }
+      return require(name.startsWith('./') ? path.join(repoRoot, name) : name);
+    }
+  });
+  const prodEnv = [...writes.entries()].find(([file]) => file.endsWith('environment.prod.ts'))[1];
+  const flag = (name) => new RegExp(`${ name }: (true|false)`).exec(prodEnv)[1] === 'true';
+
+  const middleware = loadMiddleware('test-key');
+  stubFetchWithPayload(() => []);
+  const status = async (route) => (await middleware(makeRequest(route))).status;
+
+  assert.equal(await status('/collections/browser') === 200, flag('collectionsEnabled'));
+  assert.equal(await status('/marketplace') === 200, flag('marketplaceEnabled'));
+});
+
 test('missing detail entity returns 404, existing entity returns 200', async () => {
   const middleware = loadMiddleware('test-key');
   stubFetchWithPayload(() => []);
