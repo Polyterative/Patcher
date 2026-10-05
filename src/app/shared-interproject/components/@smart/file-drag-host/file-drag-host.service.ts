@@ -60,6 +60,14 @@ export class FileDragHostService extends SubManager implements OnDestroy {
     this.fileAdd$.emit({ addedFiles, rejectedFiles });
   }
 
+  reportUnreadableFile(): void {
+    this.snackBar.open(
+      'Could not read this file. Make sure it is fully downloaded and not being changed, then pick it again.',
+      undefined,
+      {duration: 8000, panelClass: 'snack-error'}
+    );
+  }
+
   private setupFileAdder(): void {
     this.removeFile$
         .pipe(this.takeUntilDestroyed())
