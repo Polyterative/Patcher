@@ -1,3 +1,4 @@
+import featureFlags from './src/environments/features.json';
 import { isKnownApplicationRoute } from './src/known-routes';
 
 const DEFAULT_PRIMARY_SITE_URL = 'https://patcher.xyz';
@@ -17,11 +18,8 @@ const DETAIL_METADATA_CACHE_TTL_MS = 60 * 1000;
 const NON_DETAIL_METADATA_CACHE_TTL_MS = 5 * 60 * 1000;
 const METADATA_CACHE_MAX_ENTRIES = 2000;
 
-// Mirrors the build-time feature flags; production builds ship both disabled.
-const KNOWN_ROUTE_FEATURES = {
-  collectionsEnabled: process.env.COLLECTIONS_ENABLED === 'true',
-  marketplaceEnabled: process.env.MARKETPLACE_ENABLED === 'true'
-};
+// Production feature flags, shared with generate-env.js via src/environments/features.json.
+const KNOWN_ROUTE_FEATURES = featureFlags.production;
 const BOT_UA_REGEX = /(facebookexternalhit|facebot|twitterbot|slackbot|whatsapp|telegrambot|linkedinbot|discordbot|googlebot|bingbot|applebot|chatgpt-user|gptbot|perplexitybot|duckassistbot|bytespider|yandexbot|embedly)/i;
 const STATIC_ASSET_REGEX = /\.(?:css|js|map|json|txt|xml|png|jpg|jpeg|gif|webp|svg|ico|woff2?|ttf|otf|eot)$/i;
 

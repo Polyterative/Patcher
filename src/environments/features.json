@@ -1,0 +1,16 @@
+{
+  "production": {
+    "collectionsEnabled": false,
+    "coolReactionsEnabled": false,
+    "developerApiEnabled": true,
+    "modularGridImportEnabled": true,
+    "marketplaceEnabled": false
+  },
+  "development": {
+    "collectionsEnabled": true,
+    "coolReactionsEnabled": true,
+    "developerApiEnabled": true,
+    "modularGridImportEnabled": true,
+    "marketplaceEnabled": true
+  }
+}
