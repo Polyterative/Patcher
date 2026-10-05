@@ -1,3 +1,5 @@
+import { isKnownApplicationRoute } from './src/known-routes';
+
 const DEFAULT_PRIMARY_SITE_URL = 'https://patcher.xyz';
 const SITE_NAME = 'Patcher.xyz';
 const DEFAULT_DESCRIPTION = 'Manager and database for musicians using modular gear, with a focus on saving and visualizing patch-notes.';
@@ -15,6 +17,11 @@ const DETAIL_METADATA_CACHE_TTL_MS = 60 * 1000;
 const NON_DETAIL_METADATA_CACHE_TTL_MS = 5 * 60 * 1000;
 const METADATA_CACHE_MAX_ENTRIES = 2000;
 
+// Mirrors the build-time feature flags; production builds ship both disabled.
+const KNOWN_ROUTE_FEATURES = {
+  collectionsEnabled: process.env.COLLECTIONS_ENABLED === 'true',
+  marketplaceEnabled: process.env.MARKETPLACE_ENABLED === 'true'
+};
 const BOT_UA_REGEX = /(facebookexternalhit|facebot|twitterbot|slackbot|whatsapp|telegrambot|linkedinbot|discordbot|googlebot|bingbot|applebot|chatgpt-user|gptbot|perplexitybot|duckassistbot|bytespider|yandexbot|embedly)/i;
 const STATIC_ASSET_REGEX = /\.(?:css|js|map|json|txt|xml|png|jpg|jpeg|gif|webp|svg|ico|woff2?|ttf|otf|eot)$/i;
 
@@ -141,17 +148,22 @@ export default async function middleware(request: Request): Promise<Response | v
     writeMetadataCache(canonicalUrl, metadata, isDetailRoute);
   }
 
+  const isUnknownRoute = !isKnownApplicationRoute(pathname, KNOWN_ROUTE_FEATURES) || pathname === '/404';
+  const isMissingEntity = isDetailRoute && metadata.source.endsWith('-not-found');
+  const isNotFound = isUnknownRoute || isMissingEntity;
   const isNoIndexPath = isPrivatePath(pathname);
   const robotsTag = isPreviewDeployment
     ? 'noindex, nofollow, noarchive'
-    : (isDetailFallback || isNoIndexPath
+    : (isNotFound || isDetailFallback || isNoIndexPath
       ? 'noindex, nofollow, noarchive'
       : 'index, follow, max-image-preview:large');
   const html = renderHtml(metadata, robotsTag);
-  const cacheControl = resolveCacheControl(metadata, isDetailRoute);
+  const cacheControl = isUnknownRoute
+    ? 'public, s-maxage=300, stale-while-revalidate=3600'
+    : resolveCacheControl(metadata, isDetailRoute);
 
   return new Response(html, {
-    status: 200,
+    status: isNotFound ? 404 : 200,
     headers: {
       'content-type': 'text/html; charset=utf-8',
       'cache-control': cacheControl,
@@ -754,6 +766,8 @@ function renderHtml(metadata: ShareMetadata, robotsTag: string): string {
   const redirectScriptTarget = JSON.stringify(redirectTarget);
   const jsonLd = JSON.stringify(metadata.jsonLd).replace(/</g, '\\u003c');
   const ogType = escapeHtml(metadata.ogType || 'website');
+  const heading = escapeHtml(metadata.title.replace(/\s*\|\s*Patcher\.xyz$/, '') || SITE_NAME);
+  const bodyDescription = escapeHtml(clampDescription(metadata.description, undefined, 300));
   
   const authorName = extractAuthorFromJsonLd(metadata.jsonLd);
   const authorTag = authorName ? `\n  <meta name="author" content="${ escapeHtml(authorName) }">` : '';
@@ -792,6 +806,8 @@ function renderHtml(metadata: ShareMetadata, robotsTag: string): string {
   <script>if(!(${ BOT_UA_REGEX }).test(navigator.userAgent)){window.location.replace(${ redirectScriptTarget });}</script>
 </head>
 <body>
+  <h1>${ heading }</h1>
+  <p>${ bodyDescription }</p>
   <p>Continue to <a href="${ canonical }">${ canonical }</a></p>
 </body>
 </html>`;

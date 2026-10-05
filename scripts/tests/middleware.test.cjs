@@ -313,7 +313,7 @@ test('detail fallback is noindex and not cached (private/nonexistent protection)
   const first = await middleware(makeRequest('/racks/details/999999'));
   const second = await middleware(makeRequest('/racks/details/999999'));
 
-  assert.equal(first.status, 200);
+  assert.equal(first.status, 404);
   assert.equal(first.headers.get('x-robots-tag'), 'noindex, nofollow, noarchive');
   assert.equal(first.headers.get('cache-control'), 'private, no-store, max-age=0');
   assert.equal(first.headers.get('x-patcher-seo-cache'), 'miss');
@@ -366,7 +366,74 @@ test('falls back to noindex default when manufacturer is not found', async () =>
 
   const response = await middleware(makeRequest('/manufacturers/details/9999'));
 
-  assert.equal(response.status, 200);
+  assert.equal(response.status, 404);
   assert.equal(response.headers.get('x-robots-tag'), 'noindex, nofollow, noarchive');
   assert.equal(response.headers.get('x-patcher-seo-source'), 'manufacturer-not-found');
+});
+
+test('known app route returns 200 for bots', async () => {
+  const middleware = loadMiddleware('test-key');
+  stubFetchWithPayload(modulePayload);
+
+  for (const route of ['/home', '/modules/browser', '/info/changelog']) {
+    const response = await middleware(makeRequest(route));
+    assert.equal(response.status, 200, route);
+  }
+});
+
+test('unknown route returns 404 with noindex for bots', async () => {
+  const middleware = loadMiddleware('test-key');
+  const getCalls = stubFetchWithPayload(modulePayload);
+
+  const response = await middleware(makeRequest('/definitely/not/a/page'));
+  assert.equal(response.status, 404);
+  assert.equal(response.headers.get('x-robots-tag'), 'noindex, nofollow, noarchive');
+  assert.match(await response.text(), /content="noindex, nofollow, noarchive"/);
+  assert.equal(getCalls(), 0);
+
+  const notFoundPage = await middleware(makeRequest('/404'));
+  assert.equal(notFoundPage.status, 404);
+});
+
+test('feature-flagged routes are 404 for bots while their flags are off', async () => {
+  const middleware = loadMiddleware('test-key');
+  assert.equal((await middleware(makeRequest('/marketplace'))).status, 404);
+  assert.equal((await middleware(makeRequest('/collections/browser'))).status, 404);
+});
+
+test('missing detail entity returns 404, existing entity returns 200', async () => {
+  const middleware = loadMiddleware('test-key');
+  stubFetchWithPayload(() => []);
+  assert.equal((await middleware(makeRequest('/modules/details/5'))).status, 404);
+
+  const ok = loadMiddleware('test-key');
+  stubFetchWithPayload(modulePayload);
+  assert.equal((await ok(makeRequest('/modules/details/72'))).status, 200);
+});
+
+test('bot page body renders h1 and description before the continue link', async () => {
+  const middleware = loadMiddleware('test-key');
+  stubFetchWithPayload(modulePayload);
+
+  const html = await (await middleware(makeRequest('/modules/details/72'))).text();
+  const body = html.slice(html.indexOf('<body>'));
+  assert.match(body, /<h1>Test Module by Acme<\/h1>/);
+  assert.match(body, /<p>Module description from Supabase 8 HP\.<\/p>/);
+  assert.ok(body.indexOf('<h1>') < body.indexOf('Continue to'));
+});
+
+test('bot page body escapes entity text', async () => {
+  const middleware = loadMiddleware('test-key');
+  stubFetchWithPayload(() => [{
+    ...modulePayload()[0],
+    name: '<script>alert(1)</script>',
+    description: 'Fish & "chips" <b>bold</b>'
+  }]);
+
+  const html = await (await middleware(makeRequest('/modules/details/72'))).text();
+  const body = html.slice(html.indexOf('<body>'));
+  assert.match(body, /<h1>&lt;script&gt;alert\(1\)&lt;\/script&gt; by Acme<\/h1>/);
+  assert.match(body, /Fish &amp; &quot;chips&quot; &lt;b&gt;bold&lt;\/b&gt;/);
+  assert.doesNotMatch(body, /<script>alert/);
+  assert.doesNotMatch(body, /<b>bold/);
 });
