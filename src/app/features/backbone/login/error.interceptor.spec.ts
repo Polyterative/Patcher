@@ -153,3 +153,59 @@ describe('ErrorInterceptor', () => {
     });
   });
 });
+
+describe('ErrorInterceptor — edge probing', () => {
+  beforeEach(() => spyOn(console, 'error'));
+
+  function run(err: unknown, user: LoggedUserState = simpleUserFixture()) {
+    const {interceptor, logoff$} = buildInterceptor(user);
+    let received: unknown = 'no-error';
+    interceptor.intercept(makeRequest(), makeHandler(throwError(() => err))).subscribe({
+      error: (e: unknown) => received = e
+    });
+    return {received, logoff$};
+  }
+
+  it('only 401 and 403 force a logoff; neighbouring statuses do not', () => {
+    for (const status of [0, 400, 402, 404, 405, 408, 409, 422, 429, 500, 502, 503]) {
+      const {logoff$} = run(makeErrorResponse(status, 'x', {}));
+      expect(logoff$).withContext(String(status)).not.toHaveBeenCalled();
+    }
+    for (const status of [401, 403]) {
+      const {logoff$} = run(makeErrorResponse(status, 'x', {}));
+      expect(logoff$).withContext(String(status)).toHaveBeenCalledTimes(1);
+    }
+  });
+
+  it('logs off exactly once per failing request even if the user stream re-emits', () => {
+    const {interceptor, logoff$, loggedUser$} = buildInterceptor();
+    interceptor.intercept(makeRequest(), makeHandler(throwError(() => makeErrorResponse(401, 'x', {})))).subscribe({error: () => undefined});
+    loggedUser$.next(simpleUserFixture('other'));
+    loggedUser$.next(simpleUserFixture('another'));
+    expect(logoff$).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not log off when there is no logged-in user', () => {
+    expect(run(makeErrorResponse(401, 'x', {}), null).logoff$).not.toHaveBeenCalled();
+    expect(run(makeErrorResponse(403, 'x', {}), null).logoff$).not.toHaveBeenCalled();
+  });
+
+  it('prefers the server message, then statusText, and does not leak the whole error object', () => {
+    expect(run(makeErrorResponse(500, 'Server Error', {message: 'Readable'})).received).toBe('Readable');
+    expect(run(makeErrorResponse(500, 'Server Error', {})).received).toBe('Server Error');
+    expect(run(makeErrorResponse(500, 'Server Error', {message: ''})).received).toBe('Server Error');
+  });
+
+  it('survives non-HttpErrorResponse failures (plain objects, strings, Error)', () => {
+    expect(() => run({status: 500, statusText: 'Boom'})).not.toThrow();
+    expect(run({status: 500, statusText: 'Boom'}).received).toBe('Boom');
+    expect(() => run('plain string')).not.toThrow();
+    expect(() => run(new Error('network'))).not.toThrow();
+  });
+
+  it('survives a null or undefined error value without crashing the interceptor', () => {
+    // The stream must still terminate with an error rather than hang or complete as success.
+    expect(run(null).received).not.toBe('no-error');
+    expect(run(undefined).received).not.toBe('no-error');
+  });
+});
