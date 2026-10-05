@@ -14,7 +14,7 @@ import {
   resolvePatchEditorSortStrategy,
   sortAndGroupEditorCards
 } from './patch-editor.component';
-import { BehaviorSubject, of } from 'rxjs';
+import { BehaviorSubject, of, Subject } from 'rxjs';
 import { PatchConnection, PatchModuleInstance } from 'src/app/models/connection';
 import { RackConnectionSelection } from './patch-editor-view.utils';
 import { LinkedRackPreviewCard } from './patch-editor.types';
@@ -58,6 +58,7 @@ function createPatchEditorHarness(options: {linkedRackState?: LinkedRackUiState}
     patchModuleInstances$: new BehaviorSubject<PatchModuleInstance[]>([]),
     editorConnections$: new BehaviorSubject([]),
     patchConnections$: new BehaviorSubject([]),
+    clearAddingCopyForModule$: new Subject<number>(),
     loadEditorCollectionModules$: jasmine.createSpy('loadEditorCollectionModules$').and.returnValue(of([])),
     loadLinkedRackPreview$: jasmine.createSpy('loadLinkedRackPreview$').and.returnValue(of(preview))
   } as unknown as PatchDetailDataService;
@@ -203,6 +204,7 @@ describe('PatchEditorComponent', () => {
       patchModuleInstances$: new BehaviorSubject<PatchModuleInstance[]>([]),
       editorConnections$: new BehaviorSubject([]),
       patchConnections$: new BehaviorSubject([]),
+      clearAddingCopyForModule$: new Subject<number>(),
       loadEditorCollectionModules$: jasmine.createSpy('loadEditorCollectionModules$').and.returnValue(of([
         {id: 10, name: 'Maths', possessionKind: 'HAS'} as unknown as DbModule
       ]))
@@ -242,6 +244,7 @@ describe('PatchEditorComponent', () => {
       patchModuleInstances$: new BehaviorSubject<PatchModuleInstance[]>([]),
       editorConnections$: new BehaviorSubject([]),
       patchConnections$: new BehaviorSubject([]),
+      clearAddingCopyForModule$: new Subject<number>(),
       loadEditorCollectionModules$: jasmine.createSpy('loadEditorCollectionModules$').and.returnValue(of([])),
       loadLinkedRackPreview$: jasmine.createSpy('loadLinkedRackPreview$').and.returnValue(of(preview))
     } as unknown as PatchDetailDataService;
