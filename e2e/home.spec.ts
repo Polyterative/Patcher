@@ -11,8 +11,8 @@ import {
  * Covers:
  *  - Page loads and hero heading renders
  *  - Auth entry-point CTAs are present and navigate correctly
- *  - Deferred content sections appear on scroll (proof showcase, statistics,
- *    open principles, workflow rail, invitation CTA)
+ *  - System tour tabs, ModularGrid anchor, API section, community rankings and
+ *    closing CTA render and behave
  *  - Mobile viewport: hero heading remains visible and readable
  */
 test.describe('Home Page', () => {
@@ -61,37 +61,36 @@ test.describe('Home Page', () => {
     await expect(page).toHaveURL(/auth\/login/, {timeout: 10_000});
   });
 
-  // ─── Deferred sections ─────────────────────────────────────────────────────
+  // ─── Sections ──────────────────────────────────────────────────────────────
 
-  test('at least one proof-showcase section is visible', async ({page}) => {
-    // The proof-list section contains deferred app-home-proof-showcase items.
-    // Scroll to trigger the viewport trigger.
-    await page.locator('section[aria-label="product walkthrough"]').scrollIntoViewIfNeeded();
-    const firstShowcase = page.locator('app-home-proof-showcase').first();
-    await expect(firstShowcase).toBeVisible({timeout: 15_000});
+  test('system tour switches panels from the tab list', async ({page}) => {
+    const tablist = page.getByRole('tablist', {name: /what patcher keeps track of/i});
+    await tablist.scrollIntoViewIfNeeded();
+    await expect(page.getByRole('tabpanel')).toHaveCount(1);
+    await tablist.getByRole('tab', {name: /patches/i}).click();
+    await expect(page.locator('#home-tour-panel-patches')).toBeVisible();
+    await expect(page.locator('#home-tour-panel-library')).toBeHidden();
   });
 
-  test('product walkthrough renders multiple showcase cards', async ({page}) => {
-    await page.locator('section[aria-label="product walkthrough"]').scrollIntoViewIfNeeded();
-    await expect.poll(
-      () => page.locator('app-home-proof-showcase').count(),
-      {timeout: 15_000}
-    ).toBeGreaterThanOrEqual(3);
+  test('ModularGrid hook in the hero scrolls to the switch section', async ({page}) => {
+    await page.getByRole('link', {name: /bring your racks/i}).click();
+    await expect(page.locator('#switch')).toBeInViewport({timeout: 5_000});
+    await expect(page.locator('#switch h2')).toContainText(/ModularGrid/);
   });
 
-  test('open principles section is visible', async ({page}) => {
-    await scrollUntilVisible(page, 'app-home-open-principles');
+  test('developer API section links to the public API reference', async ({page}) => {
+    const api = await scrollUntilVisible(page, 'app-home-api-section');
+    await expect(api.locator('a[href*="docs.patcher.xyz/reference/public-open-api"]')).toBeVisible();
   });
 
-  test('workflow rail section is visible', async ({page}) => {
-    await scrollUntilVisible(page, 'app-home-workflow-rail');
+  test('community rankings load on scroll', async ({page}) => {
+    await scrollUntilVisible(page, 'app-home-discovery-section');
   });
 
-  test('invitation CTA section contains a second set of action links', async ({page}) => {
-    const cta = await scrollUntilVisible(page, 'app-home-invitation-cta');
-    await expect(cta).toBeVisible({timeout: 15_000});
-    // The invitation CTA must expose at least one action link
-    await expect(cta.locator('a[href]').first()).toBeVisible({timeout: 5_000});
+  test('closing CTA exposes sign-up and browse actions', async ({page}) => {
+    const cta = await scrollUntilVisible(page, 'app-home-closing-cta');
+    await expect(cta.locator('a[href="/auth/signup"]')).toBeVisible();
+    await expect(cta.locator('a[href="/modules/browser"]')).toBeVisible();
   });
 
   // ─── Responsive ────────────────────────────────────────────────────────────

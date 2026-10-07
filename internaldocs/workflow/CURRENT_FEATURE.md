@@ -26,7 +26,7 @@
 
 #### Layer 2 — Structural
 
-- [ ] Art-directed light/dark screenshots, auth-aware CTAs, analytics, dead component cleanup, SEO, e2e
+- [x] Art-directed light/dark screenshots, auth-aware CTAs, analytics, dead component cleanup, SEO, e2e
 
 #### Layer 3 — Polish
 
