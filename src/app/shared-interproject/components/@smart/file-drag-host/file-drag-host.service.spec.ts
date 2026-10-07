@@ -121,4 +121,14 @@ describe('FileDragHostService', () => {
 
     expect(service.files$.value).toEqual([]);
   });
+
+  it('reportUnreadableFile shows an error snackbar', () => {
+    service.reportUnreadableFile();
+
+    expect(snackBar.open).toHaveBeenCalledWith(
+      jasmine.stringContaining('Could not read this file'),
+      undefined,
+      jasmine.objectContaining({panelClass: 'snack-error'})
+    );
+  });
 });

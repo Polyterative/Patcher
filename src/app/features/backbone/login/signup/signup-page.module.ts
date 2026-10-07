@@ -12,6 +12,7 @@ import { SSOButtonsComponent } from '../sso-buttons/sso-buttons.component';
 import { SignupEmailComponent } from './signup-email/signup-email.component';
 import { SignupPageComponent } from './signup-page.component';
 import { MatError } from "@angular/material/input";
+import { TurnstileWidgetComponent } from 'src/app/shared-interproject/components/@smart/turnstile-widget/turnstile-widget.component';
 
 
 @NgModule({
@@ -30,7 +31,8 @@ import { MatError } from "@angular/material/input";
     MatCardModule,
     RouterModule,
     MatError,
-    SSOButtonsComponent
+    SSOButtonsComponent,
+    TurnstileWidgetComponent
   ],
   exports: [
     SignupPageComponent,

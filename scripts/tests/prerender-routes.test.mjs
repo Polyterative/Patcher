@@ -93,6 +93,29 @@ test('adds capped public entity routes using canonical paths where available', a
   )));
 });
 
+// Regression: profiles has no `updated`/`created` columns (42703), which silently
+// dropped every /u/<username> route from the prerender list.
+test('queries profiles with updated_at/created_at columns', async () => {
+  const { calls, fetchImpl } = stubSupabaseResponses({
+    profiles: [{ username: 'alice' }]
+  });
+
+  await buildPrerenderRoutes({
+    fetchImpl,
+    supabaseUrl: 'https://test.supabase.co',
+    supabaseAnonKey: 'test-key',
+  });
+
+  const profilesCall = calls.find(url => url.includes('/rest/v1/profiles?'));
+  assert.ok(profilesCall);
+  const params = new URL(profilesCall).searchParams;
+  assert.deepEqual(params.get('select').split(','), ['username', 'updated_at', 'created_at']);
+  assert.equal(params.get('order'), 'updated_at.desc.nullslast,id.asc');
+
+  const modulesCall = calls.find(url => url.includes('/rest/v1/modules?'));
+  assert.equal(new URL(modulesCall).searchParams.get('order'), 'updated.desc.nullslast,id.asc');
+});
+
 test('fails open per table and deduplicates generated routes', async () => {
   const calls = [];
   const fetchImpl = async (url) => {

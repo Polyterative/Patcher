@@ -13,6 +13,7 @@ export class SharedConstants {
     passwordResetEmailSent: "Reset link sent — check your inbox (and spam, just in case).",
     passwordResetRequestReceived: "Request received. Your reset link is on its way.",
     passwordResetEmailFailed: "Couldn't send the reset email. Double-check the address or try again shortly.",
+    captchaPending: "Still running a quick security check — try again in a second.",
     noEmailFound: "No account found with that email address. Try a different one or reach out to support.",
     overEmailSendRateLimit: "You've requested too many resets in a short window. Wait a moment before trying again.",
     

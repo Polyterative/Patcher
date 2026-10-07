@@ -5,132 +5,105 @@
   "outputDirectory": "dist/Patcher/browser",
   "ignoreCommand": "bash scripts/build/vercel-ignore-build.sh",
   "routes": [
-    { "src": "/sitemap.xml", "dest": "/api/sitemap" },
-    { "src": "/", "dest": "/api/ssr" },
-    { "src": "/__patcher_chunk_recovery/(.*)", "dest": "/api/ssr" },
-    { "src": "/index.csr.html", "dest": "/api/ssr" },
-    { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/api/ssr" }
+    {
+      "src": "^/(.*)$",
+      "headers": {
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "DENY",
+        "X-XSS-Protection": "1; mode=block",
+        "Referrer-Policy": "strict-origin-when-cross-origin",
+        "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=()",
+        "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
+        "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline' https://eu-assets.i.posthog.com https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; worker-src blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://c5.patreon.com https://*.supabase.co https://supabase.com https://images.patcher.xyz https://supabase.patcher.xyz; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://supabase.patcher.xyz wss://supabase.patcher.xyz https://eu.i.posthog.com https://eu-assets.i.posthog.com https://*.ingest.us.sentry.io https://*.ingest.sentry.io; frame-ancestors 'none'; object-src 'none'; base-uri 'self';"
+      },
+      "continue": true
+    },
+    {
+      "src": "^/$",
+      "headers": {
+        "Cache-Control": "no-store, max-age=0"
+      },
+      "continue": true
+    },
+    {
+      "src": "^/index\\.html$",
+      "headers": {
+        "Cache-Control": "no-store, max-age=0"
+      },
+      "continue": true
+    },
+    {
+      "src": "^/index\\.csr\\.html$",
+      "headers": {
+        "Cache-Control": "no-store, max-age=0"
+      },
+      "continue": true
+    },
+    {
+      "src": "^/assets/font/(.*)$",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      },
+      "continue": true
+    },
+    {
+      "src": "^/assets/favicon/(.*)$",
+      "headers": {
+        "Cache-Control": "public, max-age=604800, stale-while-revalidate=604800"
+      },
+      "continue": true
+    },
+    {
+      "src": "^/assets/json/lottie/(.*)$",
+      "headers": {
+        "Cache-Control": "public, max-age=604800, stale-while-revalidate=604800"
+      },
+      "continue": true
+    },
+    {
+      "src": "^/assets/png/(.*)$",
+      "headers": {
+        "Cache-Control": "public, max-age=604800, stale-while-revalidate=604800"
+      },
+      "continue": true
+    },
+    {
+      "src": "^/assets/screenshots/(.*)$",
+      "headers": {
+        "Cache-Control": "public, max-age=604800, stale-while-revalidate=604800"
+      },
+      "continue": true
+    },
+    {
+      "src": "^/assets/svg/(.*)$",
+      "headers": {
+        "Cache-Control": "public, max-age=604800, stale-while-revalidate=604800"
+      },
+      "continue": true
+    },
+    {
+      "src": "/sitemap.xml",
+      "dest": "/api/sitemap"
+    },
+    {
+      "src": "/",
+      "dest": "/index.csr.html"
+    },
+    {
+      "src": "/__patcher_chunk_recovery/(.*)",
+      "dest": "/index.csr.html"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.csr.html"
+    }
   ],
   "functions": {
     "api/ssr.mjs": {
       "includeFiles": "dist/Patcher/**"
     }
-  },
-  "headers": [
-    {
-      "source": "/",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store, max-age=0"
-        }
-      ]
-    },
-    {
-      "source": "/index.html",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store, max-age=0"
-        }
-      ]
-    },
-    {
-      "source": "/index.csr.html",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store, max-age=0"
-        }
-      ]
-    },
-    {
-      "source": "/assets/font/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/assets/favicon/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=604800, stale-while-revalidate=604800"
-        }
-      ]
-    },
-    {
-      "source": "/assets/json/lottie/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=604800, stale-while-revalidate=604800"
-        }
-      ]
-    },
-    {
-      "source": "/assets/png/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=604800, stale-while-revalidate=604800"
-        }
-      ]
-    },
-    {
-      "source": "/assets/screenshots/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=604800, stale-while-revalidate=604800"
-        }
-      ]
-    },
-    {
-      "source": "/assets/svg/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=604800, stale-while-revalidate=604800"
-        }
-      ]
-    },
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "X-XSS-Protection",
-          "value": "1; mode=block"
-        },
-        {
-          "key": "Referrer-Policy",
-          "value": "strict-origin-when-cross-origin"
-        },
-        {
-          "key": "Permissions-Policy",
-          "value": "camera=(), microphone=(), geolocation=(), payment=()"
-        },
-        {
-          "key": "Strict-Transport-Security",
-          "value": "max-age=63072000; includeSubDomains; preload"
-        },
-        {
-          "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline'; worker-src blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://*.supabase.co https://supabase.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co; frame-ancestors 'none'; object-src 'none'; base-uri 'self';"
-        }
-      ]
-    }
-  ]
+  }
 }

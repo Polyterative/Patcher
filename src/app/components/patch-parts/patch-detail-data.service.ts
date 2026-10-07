@@ -139,6 +139,8 @@ export class PatchDetailDataService extends SubManager implements OnDestroy {
   readonly patchModuleInstances$ = new BehaviorSubject<PatchModuleInstance[]>([]);
   readonly addModuleInstance$ = new Subject<MinimalModule>();
   readonly removeModuleInstance$ = new Subject<PatchModuleInstance>();
+  readonly clearAddingCopyForModule$ = new Subject<number>();
+  readonly removingInstanceId$ = new BehaviorSubject<number | null>(null);
   /** User's collection modules — set by PatchEditorComponent on init */
   readonly collectionModules$ = new BehaviorSubject<DbModule[]>([]);
   readonly isCurrentPatchPrivate$ = new BehaviorSubject<boolean>(false);
@@ -158,6 +160,7 @@ export class PatchDetailDataService extends SubManager implements OnDestroy {
   readonly editorOperationMode$ = new BehaviorSubject<PatchEditorOperationMode>(PATCH_EDITOR_OPERATION_MODES.collection);
   readonly linkedRackPersistenceBlocked$ = new BehaviorSubject<boolean>(false);
   readonly linkedRackPersistenceHint$ = new BehaviorSubject<string | null>(null);
+  readonly linkedRackSaving$ = new BehaviorSubject<boolean>(false);
   readonly linkedRackSelectionBlocked$ = new BehaviorSubject<boolean>(false);
   readonly linkedRackSelectionHint$ = new BehaviorSubject<string | null>(null);
   readonly requestLinkedRackChange$ = new Subject<number | null>();

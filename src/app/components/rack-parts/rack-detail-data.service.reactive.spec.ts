@@ -1697,4 +1697,86 @@ describe('RackDetailDataService reactive flows', () => {
     expect(service.rowedRackedModules$.value[0].length).toBe(1);
   });
 
+  it('acks row add synchronously while rack persistence is pending', () => {
+    const {service, backend} = build();
+    service.singleRackData$.next(rack({id: 7, rows: 2}));
+    service.rowedRackedModules$.next([[moduleInRack(1, 0, 0)], []]);
+    expect(service.rowLayoutActionInProgress$.value).toBe(false);
+    const gate$ = new Subject<BackendResponse<Array<{id: number}>>>();
+    backend.update.rack.and.returnValue(gate$.asObservable());
+
+    service.requestAddNewRow$.next();
+
+    expect(service.rowLayoutActionInProgress$.value).toBe(true);
+    expect(service.singleRackData$.value.rows).toBe(3);
+
+    gate$.next({data: [{id: 7}]});
+    gate$.complete();
+
+    expect(service.rowLayoutActionInProgress$.value).toBe(false);
+    expect(service.singleRackData$.value.rows).toBe(3);
+  });
+
+  it('acks row remove synchronously while rack persistence is pending', () => {
+    const {service, backend} = build();
+    service.singleRackData$.next(rack({id: 7, rows: 2}));
+    service.rowedRackedModules$.next([[moduleInRack(1, 0, 0)], []]);
+    expect(service.rowLayoutActionInProgress$.value).toBe(false);
+    const gate$ = new Subject<BackendResponse<Array<{id: number}>>>();
+    backend.update.rack.and.returnValue(gate$.asObservable());
+
+    service.requestRemoveRow$.next();
+
+    expect(service.rowLayoutActionInProgress$.value).toBe(true);
+    expect(service.singleRackData$.value.rows).toBe(1);
+
+    gate$.next({data: [{id: 7}]});
+    gate$.complete();
+
+    expect(service.rowLayoutActionInProgress$.value).toBe(false);
+    expect(service.singleRackData$.value.rows).toBe(1);
+  });
+
+  it('acks row move synchronously while module persistence is pending', () => {
+    const {service, backend} = build();
+    service.singleRackData$.next(rack({id: 7, rows: 2}));
+    service.rowedRackedModules$.next([[moduleInRack(1, 0, 0)], [moduleInRack(2, 1, 0)]]);
+    expect(service.rowLayoutActionInProgress$.value).toBe(false);
+    const gate$ = new Subject<RackModuleMutationResponse>();
+    backend.update.rackedModules.and.returnValue(gate$.asObservable());
+
+    service.requestMoveRow$.next({rowId: 1, direction: 'up'});
+
+    expect(service.rowLayoutActionInProgress$.value).toBe(true);
+    expect(rackingIds(service.rowedRackedModules$.value[0])).toEqual([2]);
+
+    gate$.next({});
+    gate$.complete();
+
+    expect(service.rowLayoutActionInProgress$.value).toBe(false);
+    expect(rackingIds(service.rowedRackedModules$.value[0])).toEqual([2]);
+    expect(rackingIds(service.rowedRackedModules$.value[1])).toEqual([1]);
+  });
+
+  it('clears row layout pending when row delete persistence fails', () => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {});
+    const {service, backend} = build();
+    service.singleRackData$.next(rack({id: 7, rows: 3}));
+    service.rowedRackedModules$.next([[moduleInRack(1, 0, 0)], [], [moduleInRack(2, 2, 0)]]);
+    expect(service.rowLayoutActionInProgress$.value).toBe(false);
+    const gate$ = new Subject<RackModuleMutationResponse>();
+    backend.update.rackedModules.and.returnValue(gate$.asObservable());
+
+    service.requestDeleteRow$.next(1);
+
+    expect(service.rowLayoutActionInProgress$.value).toBe(true);
+
+    gate$.error(new Error('delete persist failed'));
+
+    expect(service.rowLayoutActionInProgress$.value).toBe(false);
+    expect(service.singleRackData$.value.rows).toBe(3);
+    expect(rowRackingIds(service.rowedRackedModules$.value)).toEqual([[1], [], [2]]);
+    expect(SharedConstants.errorCustom).toHaveBeenCalled();
+  });
+
 });

@@ -192,6 +192,7 @@ Project-scoped Copilot CLI skills in `.github/skills/`:
 - **`orchestrate`** — user-level Copilot session coordination for multi-session / multi-repo / stacked-PR work. Use only when the
   task shape calls for separate sessions, or when the user explicitly asks for it.
 - **`ai-dlc`** — opt-in only. Loads the AWS AI-DLC phased workflow from `.aidlc-rule-details/` on explicit request.
+- **`vercel-env`** — read/change Vercel env vars (e.g. branch-scoped Preview backend), redeploy, verify which backend a deployment calls.
 
 ## 10) Internal docs map
 

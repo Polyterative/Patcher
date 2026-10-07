@@ -10,7 +10,8 @@
   hasLinkedRack: (hasLinkedRack$|async),
   instanceMap: (linkedRackInstanceMap$|async),
   divergence: (linkedRackDivergence$|async),
-  orphanedConnectionCount: (orphanedConnectionCount$|async)
+  orphanedConnectionCount: (orphanedConnectionCount$|async),
+  removingInstanceId: (dataService.removingInstanceId$|async)
 }; as bag) {
   @if (bag.editorConnections == null) {
     <lib-auto-content-loading-indicator
@@ -161,16 +162,19 @@
                         @if (card.instanceCount > 1) {
                           <button mat-icon-button
                                   class="delete-instance-btn"
-                                  matTooltip="Remove this copy"
-                                  aria-label="Remove this copy"
+                                  [matTooltip]="bag.removingInstanceId === card.instance.id ? 'Removing…' : 'Remove this copy'"
+                                  [attr.aria-label]="bag.removingInstanceId === card.instance.id ? 'Removing…' : 'Remove this copy'"
+                                  [attr.aria-busy]="bag.removingInstanceId === card.instance.id"
+                                  [disabled]="bag.removingInstanceId === card.instance.id"
                                   (click)="dataService.removeModuleInstance$.next(card.instance)"
                           >
                             <mat-icon>delete_outline</mat-icon>
                           </button>
                         }
                         <button mat-icon-button
-                                [matTooltip]="card.instanceCount >= maxInstances ? 'Maximum of ' + maxInstances + ' copies reached' : 'Add another copy of this module'"
-                                [attr.aria-label]="card.instanceCount >= maxInstances ? 'Maximum of ' + maxInstances + ' copies reached' : 'Add another copy of this module'"
+                                [matTooltip]="addingCopy.has(card.module.id) ? 'Adding…' : (card.instanceCount >= maxInstances ? 'Maximum of ' + maxInstances + ' copies reached' : 'Add another copy of this module')"
+                                [attr.aria-label]="addingCopy.has(card.module.id) ? 'Adding…' : (card.instanceCount >= maxInstances ? 'Maximum of ' + maxInstances + ' copies reached' : 'Add another copy of this module')"
+                                [attr.aria-busy]="addingCopy.has(card.module.id)"
                                 [disabled]="card.instanceCount >= maxInstances || addingCopy.has(card.module.id)"
                                 (click)="onAddCopy(card)"
                         >

@@ -52,6 +52,12 @@ export interface PatchDetailDataContext {
   patchModuleInstances$: BehaviorSubject<PatchModuleInstance[]>;
   addModuleInstance$: Subject<MinimalModule>;
   removeModuleInstance$: Subject<PatchModuleInstance>;
+  /** Backend-error bridge: data bindings emit the module id here so PatchEditorStateService
+   * can delete it from the single `addingCopy` UI set (which otherwise only clears when
+   * instances change, latching the add button on error). */
+  clearAddingCopyForModule$: Subject<number>;
+  /** Id of the instance currently being removed, or null when idle. */
+  removingInstanceId$: BehaviorSubject<number | null>;
   collectionModules$: BehaviorSubject<DbModule[]>;
   isCurrentPatchPrivate$: BehaviorSubject<boolean>;
   patchDetailUnavailableMessage$: BehaviorSubject<string | null>;
@@ -67,6 +73,8 @@ export interface PatchDetailDataContext {
   editorOperationMode$: BehaviorSubject<PatchEditorOperationMode>;
   linkedRackPersistenceBlocked$: BehaviorSubject<boolean>;
   linkedRackPersistenceHint$: BehaviorSubject<string | null>;
+  /** True while a linked-rack save is in flight — synchronous UI ack, cleared on success AND error. */
+  linkedRackSaving$: BehaviorSubject<boolean>;
   linkedRackSelectionBlocked$: BehaviorSubject<boolean>;
   linkedRackSelectionHint$: BehaviorSubject<string | null>;
   requestLinkedRackChange$: Subject<number | null>;

@@ -126,6 +126,7 @@ export class RackDetailDataService extends SubManager {
   readonly requestMoveRow$ = new Subject<{rowId: number; direction: 'up' | 'down'}>();
   readonly requestDuplicateRow$ = new Subject<number>();
   readonly duplicateRowInProgress$ = new BehaviorSubject<boolean>(false);
+  readonly rowLayoutActionInProgress$ = new BehaviorSubject<boolean>(false);
   readonly requestClearRow$ = new Subject<number>();
   readonly requestDeleteRow$ = new Subject<number>();
   readonly requestLayoutRemix$ = new Subject<void>();
@@ -347,6 +348,7 @@ export class RackDetailDataService extends SubManager {
       requestMoveRow$: this.requestMoveRow$,
       requestDuplicateRow$: this.requestDuplicateRow$,
       duplicateRowInProgress$: this.duplicateRowInProgress$,
+      rowLayoutActionInProgress$: this.rowLayoutActionInProgress$,
       requestClearRow$: this.requestClearRow$,
       requestDeleteRow$: this.requestDeleteRow$,
       requestLayoutRemix$: this.requestLayoutRemix$,

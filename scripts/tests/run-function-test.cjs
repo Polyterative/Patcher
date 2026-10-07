@@ -36,7 +36,9 @@ runCommand(npxCommand, [
     'node',
     '--outDir',
     outDir,
-    '--skipLibCheck'
+    '--skipLibCheck',
+    '--resolveJsonModule',
+    '--esModuleInterop'
 ]);
 
 runCommand('node', ['--test', testFile]);

@@ -106,11 +106,12 @@ export class FileDragHostComponent extends SubManager implements OnInit, OnDestr
   onFilePickerChange(event: Event, fileInput: HTMLInputElement): void {
     event.stopPropagation();
 
-    if (fileInput.files && fileInput.files.length > 0) {
-      this.service.addFiles(fileInput.files, this.acceptedFileType);
-    }
-
+    const picked = fileInput.files ? Array.from(fileInput.files) : [];
     fileInput.value = '';
+
+    if (picked.length > 0) {
+      void this.addSnapshotFiles(picked);
+    }
   }
 
   onDragOver(event: DragEvent): void {
@@ -141,7 +142,7 @@ export class FileDragHostComponent extends SubManager implements OnInit, OnDestr
       return;
     }
 
-    this.service.addFiles(files, this.acceptedFileType);
+    void this.addSnapshotFiles(Array.from(files));
   }
 
   removeFile(file: File, event: Event): void {
@@ -166,6 +167,32 @@ export class FileDragHostComponent extends SubManager implements OnInit, OnDestr
     this.previewUrls.forEach(url => URL.revokeObjectURL(url));
     this.previewUrls.clear();
     super.ngOnDestroy();
+  }
+
+  /**
+   * Image mode copies each file's bytes into memory right away. A File handle
+   * stays tied to the file on disk, so if it is renamed, re-tagged, offloaded
+   * to the cloud or modified after picking, later reads (preview, cropper)
+   * fail silently with a broken image.
+   */
+  private async addSnapshotFiles(files: File[]): Promise<void> {
+    if (!this.isImageOnlyMode) {
+      this.service.addFiles(files, this.acceptedFileType);
+      return;
+    }
+
+    try {
+      const snapshots = await Promise.all(
+        files.map(async file => new File([await file.arrayBuffer()], file.name, {
+          type: file.type,
+          lastModified: file.lastModified
+        }))
+      );
+      this.service.addFiles(snapshots, this.acceptedFileType);
+    } catch (error) {
+      console.error('Could not read the selected file:', error);
+      this.service.reportUnreadableFile();
+    }
   }
 
   private revokeUnusedPreviewUrls(files: File[]): void {

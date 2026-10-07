@@ -202,7 +202,7 @@ export function createAuthNamespace(
       );
     },
     
-    signup$(username: string, email: string, password: string): SupabaseSignupResponse {
+    signup$(username: string, email: string, password: string, captchaToken?: string): SupabaseSignupResponse {
       const trimmedUsername = username?.trim() ?? '';
       if (!trimmedUsername) {
         return throwError(() => new Error('Username cannot be empty or whitespace.'));
@@ -211,6 +211,7 @@ export function createAuthNamespace(
         email,
         password,
         options: {
+          ...(captchaToken ? {captchaToken} : {}),
           data: {
             username: trimmedUsername
           }
@@ -296,7 +297,7 @@ export function createAuthNamespace(
       );
     },
     
-    resetPassword$(emailOrToken: string, newPassword?: string): Observable<void> {
+    resetPassword$(emailOrToken: string, newPassword?: string, captchaToken?: string): Observable<void> {
       if (newPassword) {
         return rxFrom(supabase.auth.updateUser({password: newPassword})).pipe(
           map(response => {
@@ -311,7 +312,7 @@ export function createAuthNamespace(
           return throwError(() => new Error('Invalid email address.'));
         }
         const redirectTo = `${ window.location.origin }/auth/reset-password`;
-        return rxFrom(supabase.auth.resetPasswordForEmail(emailOrToken, {redirectTo})).pipe(
+        return rxFrom(supabase.auth.resetPasswordForEmail(emailOrToken, {redirectTo, ...(captchaToken ? {captchaToken} : {})})).pipe(
           map(response => {
             if (response.error) throw response.error;
           }),

@@ -58,6 +58,10 @@
   upload, and authenticated smoke/lifecycle window completed on 2026-07-24.
   The custom domain is live and smoke cleanup is complete. The owner deferred WAF;
   the production app release and later R2 work remain.
+- Self-host migration: **read-only queries against hosted** (version checks, grants capture,
+  migration-history read, parity reads, read-only dumps) approved by the owner on 2026-10-04.
+  Hosted writes, RLS/policy changes and cutover steps remain separately gated; detail in the
+  private self-host checklist.
 - Public Open API backend: authoring and Docker/local validation of the three
   reviewed migrations (roles, views/RLS, identity/RPCs) is approved. No remote
   apply, LOGIN credential, Vault secret, type generation against remote, or
@@ -92,8 +96,10 @@
 - [ ] **Security hardening — phase approvals** (details in the private, gitignored
   security docs: `internaldocs/security/rls-hardening.md`, Approval queue section;
   answer there or here) (added 2026-08-10).
+- [ ] Self-host evaluation gates — owner go/no-go decisions and staging steps are tracked in the local, gitignored `internaldocs/private/selfhost/` checklist (not published: it describes private infrastructure; public repo) (added 2026-10-01) — updated 2026-10-03.
 - [ ] Cloudflare/R2: authorize traffic switch, cleanup, and any Supabase object deletion after the approved copy/verification stage (added 2026-07-08).
 - [ ] PostHog analytics review: provide credentials/export access (added 2026-07-08).
+- [ ] Turnstile rollout: at the self-host cutover set Vercel `TURNSTILE_SITE_KEY` (prod), then flip the auth gate `MODE` to `enforce` — default: do both at cutover → [plan](./plans/cloudflare-watchdog-and-turnstile.md) (added 2026-10-05).
 - Consolidated owner message for the three stale questions above: [owner batch draft](./plans/owner-batch-pending-questions.md) (added 2026-09-25).
 
 ### Denials / permanent constraints
@@ -161,6 +167,9 @@
 ### INFRA (independent; pick any time a product task is blocked)
 
 - [~] **HIGH: Supabase Cached Egress overquota — cut API + Storage bytes (6.25/5 GB; rack search paging + collection-cover proxy first)** → [GitHub issue #161](https://github.com/Polyterative/Patcher/issues/161) + [`plans/supabase-cached-egress-overquota.md`](./plans/supabase-cached-egress-overquota.md)
+- [ ] **MEDIUM: Self-hosted Supabase — full move evaluation (staging rehearsal in progress; tooling in `scripts/ops/`)** → local, gitignored `internaldocs/private/selfhost/` (master checklist, runbook, plan; not published because the repo is public)
+- [~] **MEDIUM: Cloudflare uptime watchdog (live) + Turnstile on email-sending auth (gate in log mode)** → [`plans/cloudflare-watchdog-and-turnstile.md`](./plans/cloudflare-watchdog-and-turnstile.md)
+- [~] **MEDIUM: Immediate UI feedback — synchronous pending ack without pipe changes** → [`plans/immediate-ui-feedback-pending-ack.md`](./plans/immediate-ui-feedback-pending-ack.md)
 - [!] **HIGH: Security — hardening backlog (private)** → local, gitignored `internaldocs/security/` (sole-contributor setup; not published because the repo is public)
 - [ ] **HIGH: Application performance — Chrome-measured budget, per-flow baselines, and hypothesis-per-commit optimization loop (frontend-only; supersedes the bundle-only plan as sub-scope)** → [GitHub issue #150](https://github.com/Polyterative/Patcher/issues/150)
 - [ ] **ON HOLD: HIGH: Cloudflare Image Proxy and R2 Media Migration (owner deferred 2026-09-30 — long/tedious + risky; upload/compression guardrails stay approved; R2 copy/switch/cleanup stays operator-gated)** → [GitHub issue #151](https://github.com/Polyterative/Patcher/issues/151)

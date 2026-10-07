@@ -1,3 +1,6 @@
+import featureFlags from './src/environments/features.json';
+import { isKnownApplicationRoute } from './src/known-routes';
+
 const DEFAULT_PRIMARY_SITE_URL = 'https://patcher.xyz';
 const SITE_NAME = 'Patcher.xyz';
 const DEFAULT_DESCRIPTION = 'Manager and database for musicians using modular gear, with a focus on saving and visualizing patch-notes.';
@@ -15,6 +18,8 @@ const DETAIL_METADATA_CACHE_TTL_MS = 60 * 1000;
 const NON_DETAIL_METADATA_CACHE_TTL_MS = 5 * 60 * 1000;
 const METADATA_CACHE_MAX_ENTRIES = 2000;
 
+// Production feature flags, shared with generate-env.js via src/environments/features.json.
+const KNOWN_ROUTE_FEATURES = featureFlags.production;
 const BOT_UA_REGEX = /(facebookexternalhit|facebot|twitterbot|slackbot|whatsapp|telegrambot|linkedinbot|discordbot|googlebot|bingbot|applebot|chatgpt-user|gptbot|perplexitybot|duckassistbot|bytespider|yandexbot|embedly)/i;
 const STATIC_ASSET_REGEX = /\.(?:css|js|map|json|txt|xml|png|jpg|jpeg|gif|webp|svg|ico|woff2?|ttf|otf|eot)$/i;
 
@@ -141,18 +146,27 @@ export default async function middleware(request: Request): Promise<Response | v
     writeMetadataCache(canonicalUrl, metadata, isDetailRoute);
   }
 
+  const isUnknownRoute = !isKnownApplicationRoute(pathname, KNOWN_ROUTE_FEATURES) || pathname === '/404';
+  const isMissingEntity = isDetailRoute && metadata.source.endsWith('-not-found');
+  const isNotFound = isUnknownRoute || isMissingEntity;
+  const isLookupError = isDetailRoute && metadata.source.endsWith('-lookup-error');
   const isNoIndexPath = isPrivatePath(pathname);
   const robotsTag = isPreviewDeployment
     ? 'noindex, nofollow, noarchive'
-    : (isDetailFallback || isNoIndexPath
+    : (isNotFound || isDetailFallback || isNoIndexPath
       ? 'noindex, nofollow, noarchive'
       : 'index, follow, max-image-preview:large');
   const html = renderHtml(metadata, robotsTag);
-  const cacheControl = resolveCacheControl(metadata, isDetailRoute);
+  const cacheControl = isLookupError
+    ? 'no-store'
+    : isUnknownRoute
+    ? 'public, s-maxage=300, stale-while-revalidate=3600'
+    : resolveCacheControl(metadata, isDetailRoute);
 
   return new Response(html, {
-    status: 200,
+    status: isNotFound ? 404 : (isLookupError ? 503 : 200),
     headers: {
+      ...(isLookupError ? {'retry-after': '300'} : {}),
       'content-type': 'text/html; charset=utf-8',
       'cache-control': cacheControl,
       'x-content-type-options': 'nosniff',
@@ -274,32 +288,39 @@ async function buildMetadata(routeMatch: RouteMatch | undefined, canonicalUrl: s
     return defaultMetadata(canonicalUrl, siteOrigin, `${ routeMatch.type }-no-key`);
   }
 
-  if (routeMatch.type === 'module') {
-    const moduleMetadata = await getModuleMetadata(routeMatch.id, canonicalUrl, siteOrigin);
-    if (moduleMetadata) {
-      return moduleMetadata;
+  try {
+    if (routeMatch.type === 'module') {
+      const moduleMetadata = await getModuleMetadata(routeMatch.id, canonicalUrl, siteOrigin);
+      if (moduleMetadata) {
+        return moduleMetadata;
+      }
     }
-  }
 
-  if (routeMatch.type === 'patch') {
-    const patchMetadata = await getPatchMetadata(routeMatch.id, canonicalUrl, siteOrigin);
-    if (patchMetadata) {
-      return patchMetadata;
+    if (routeMatch.type === 'patch') {
+      const patchMetadata = await getPatchMetadata(routeMatch.id, canonicalUrl, siteOrigin);
+      if (patchMetadata) {
+        return patchMetadata;
+      }
     }
-  }
 
-  if (routeMatch.type === 'rack') {
-    const rackMetadata = await getRackMetadata(routeMatch.id, canonicalUrl, siteOrigin);
-    if (rackMetadata) {
-      return rackMetadata;
+    if (routeMatch.type === 'rack') {
+      const rackMetadata = await getRackMetadata(routeMatch.id, canonicalUrl, siteOrigin);
+      if (rackMetadata) {
+        return rackMetadata;
+      }
     }
-  }
 
-  if (routeMatch.type === 'manufacturer') {
-    const manufacturerMetadata = await getManufacturerMetadata(routeMatch.id, canonicalUrl, siteOrigin);
-    if (manufacturerMetadata) {
-      return manufacturerMetadata;
+    if (routeMatch.type === 'manufacturer') {
+      const manufacturerMetadata = await getManufacturerMetadata(routeMatch.id, canonicalUrl, siteOrigin);
+      if (manufacturerMetadata) {
+        return manufacturerMetadata;
+      }
     }
+  } catch (error) {
+    if (error instanceof SupabaseLookupError) {
+      return defaultMetadata(canonicalUrl, siteOrigin, `${ routeMatch.type }-lookup-error`);
+    }
+    throw error;
   }
 
   return defaultMetadata(canonicalUrl, siteOrigin, `${ routeMatch.type }-not-found`);
@@ -710,6 +731,9 @@ function normalizeRackStoragePath(imagePath: string): string {
     .join('/');
 }
 
+class SupabaseLookupError extends Error {}
+
+/** Resolves to undefined only when the lookup succeeded and no row exists; throws SupabaseLookupError on failure. */
 async function fetchSupabaseRow<T>(tableName: string, params: URLSearchParams): Promise<T | undefined> {
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
     return undefined;
@@ -727,13 +751,14 @@ async function fetchSupabaseRow<T>(tableName: string, params: URLSearchParams): 
   }).catch(() => undefined);
   clearTimeout(timeoutHandle);
 
+  // Errors, timeouts and non-2xx responses are not "missing": throw so callers can tell them apart.
   if (!response || !response.ok) {
-    return undefined;
+    throw new SupabaseLookupError();
   }
 
   const payload = await response.json().catch(() => undefined);
-  if (!payload) {
-    return undefined;
+  if (payload === undefined || payload === null) {
+    throw new SupabaseLookupError();
   }
 
   if (Array.isArray(payload)) {
@@ -754,6 +779,8 @@ function renderHtml(metadata: ShareMetadata, robotsTag: string): string {
   const redirectScriptTarget = JSON.stringify(redirectTarget);
   const jsonLd = JSON.stringify(metadata.jsonLd).replace(/</g, '\\u003c');
   const ogType = escapeHtml(metadata.ogType || 'website');
+  const heading = escapeHtml(metadata.title.replace(/\s*\|\s*Patcher\.xyz$/, '') || SITE_NAME);
+  const bodyDescription = escapeHtml(clampDescription(metadata.description, undefined, 300));
   
   const authorName = extractAuthorFromJsonLd(metadata.jsonLd);
   const authorTag = authorName ? `\n  <meta name="author" content="${ escapeHtml(authorName) }">` : '';
@@ -792,6 +819,8 @@ function renderHtml(metadata: ShareMetadata, robotsTag: string): string {
   <script>if(!(${ BOT_UA_REGEX }).test(navigator.userAgent)){window.location.replace(${ redirectScriptTarget });}</script>
 </head>
 <body>
+  <h1>${ heading }</h1>
+  <p>${ bodyDescription }</p>
   <p>Continue to <a href="${ canonical }">${ canonical }</a></p>
 </body>
 </html>`;

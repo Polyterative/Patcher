@@ -7,7 +7,8 @@
   linkedRackSelectionBlocked: (dataService.linkedRackSelectionBlocked$|async),
   linkedRackSelectionHint: (dataService.linkedRackSelectionHint$|async),
   linkedRackPersistenceBlocked: (dataService.linkedRackPersistenceBlocked$|async),
-  linkedRackPersistenceHint: (dataService.linkedRackPersistenceHint$|async)
+  linkedRackPersistenceHint: (dataService.linkedRackPersistenceHint$|async),
+  linkedRackSaving: (dataService.linkedRackSaving$|async)
 }; as bag) {
     <div class="col parent"
     >
@@ -91,6 +92,11 @@
                 iconL1="view_stream"
                 label="Choose linked rack"
               ></lib-mat-form-entity>
+              @if (bag.linkedRackSaving) {
+                <p class="patch-linked-rack__hint">
+                  Saving…
+                </p>
+              }
               @if (bag.linkedRackPersistenceHint) {
                 <p class="patch-linked-rack__hint">
                   {{ bag.linkedRackPersistenceHint }}

@@ -1,0 +1,30 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "patcher-uptime-watchdog",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-04",
+  "workers_dev": false,
+  "preview_urls": false,
+  "triggers": {
+    "crons": ["*/5 * * * *"]
+  },
+  "kv_namespaces": [
+    {
+      "binding": "STATE",
+      "id": "bc72029d77f346de8bc8fb5f0ceaab78"
+    }
+  ],
+  // Secrets (wrangler secret put): NTFY_TOPIC, SUPABASE_ANON_KEY.
+  "vars": {
+    "SELFHOST_URL": "https://supabase.patcher.xyz",
+    // Drop to "" after the cutover, when hosted Supabase is retired.
+    "HOSTED_URL": "https://sozmatmywjpstwidzlss.supabase.co",
+    "FAILS_BEFORE_ALERT": "2",
+    "REMIND_HOURS": "4",
+    // 07 UTC = 09:00 Rome in summer, 08:00 in winter.
+    "HEARTBEAT_UTC_HOUR": "7"
+  },
+  "observability": {
+    "enabled": true
+  }
+}

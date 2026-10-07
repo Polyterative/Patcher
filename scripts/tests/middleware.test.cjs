@@ -313,7 +313,7 @@ test('detail fallback is noindex and not cached (private/nonexistent protection)
   const first = await middleware(makeRequest('/racks/details/999999'));
   const second = await middleware(makeRequest('/racks/details/999999'));
 
-  assert.equal(first.status, 200);
+  assert.equal(first.status, 404);
   assert.equal(first.headers.get('x-robots-tag'), 'noindex, nofollow, noarchive');
   assert.equal(first.headers.get('cache-control'), 'private, no-store, max-age=0');
   assert.equal(first.headers.get('x-patcher-seo-cache'), 'miss');
@@ -366,7 +366,135 @@ test('falls back to noindex default when manufacturer is not found', async () =>
 
   const response = await middleware(makeRequest('/manufacturers/details/9999'));
 
-  assert.equal(response.status, 200);
+  assert.equal(response.status, 404);
   assert.equal(response.headers.get('x-robots-tag'), 'noindex, nofollow, noarchive');
   assert.equal(response.headers.get('x-patcher-seo-source'), 'manufacturer-not-found');
+});
+
+test('known app route returns 200 for bots', async () => {
+  const middleware = loadMiddleware('test-key');
+  stubFetchWithPayload(modulePayload);
+
+  for (const route of ['/home', '/modules/browser', '/info/changelog']) {
+    const response = await middleware(makeRequest(route));
+    assert.equal(response.status, 200, route);
+  }
+});
+
+test('unknown route returns 404 with noindex for bots', async () => {
+  const middleware = loadMiddleware('test-key');
+  const getCalls = stubFetchWithPayload(modulePayload);
+
+  const response = await middleware(makeRequest('/definitely/not/a/page'));
+  assert.equal(response.status, 404);
+  assert.equal(response.headers.get('x-robots-tag'), 'noindex, nofollow, noarchive');
+  assert.match(await response.text(), /content="noindex, nofollow, noarchive"/);
+  assert.equal(getCalls(), 0);
+
+  const notFoundPage = await middleware(makeRequest('/404'));
+  assert.equal(notFoundPage.status, 404);
+});
+
+test('feature-flagged routes are 404 for bots while their flags are off', async () => {
+  const middleware = loadMiddleware('test-key');
+  assert.equal((await middleware(makeRequest('/marketplace'))).status, 404);
+  assert.equal((await middleware(makeRequest('/collections/browser'))).status, 404);
+});
+
+test('middleware route flags agree with the production flags generate-env writes', async () => {
+  const fs = require('node:fs');
+  const vm = require('node:vm');
+  const repoRoot = path.resolve(__dirname, '../..');
+  const writes = new Map();
+  vm.runInNewContext(fs.readFileSync(path.join(repoRoot, 'generate-env.js'), 'utf8'), {
+    __dirname: repoRoot,
+    console: {log() {}, warn() {}},
+    process: {env: {SUPABASE_URL: 'https://example.supabase.co', SUPABASE_ANON_KEY: 'k'}},
+    require(name) {
+      if (name === 'fs') {
+        return {existsSync: () => false, writeFileSync: (file, content) => writes.set(file, content)};
+      }
+      return require(name.startsWith('./') ? path.join(repoRoot, name) : name);
+    }
+  });
+  const prodEnv = [...writes.entries()].find(([file]) => file.endsWith('environment.prod.ts'))[1];
+  const flag = (name) => new RegExp(`${ name }: (true|false)`).exec(prodEnv)[1] === 'true';
+
+  const middleware = loadMiddleware('test-key');
+  stubFetchWithPayload(() => []);
+  const status = async (route) => (await middleware(makeRequest(route))).status;
+
+  assert.equal(await status('/collections/browser') === 200, flag('collectionsEnabled'));
+  assert.equal(await status('/marketplace') === 200, flag('marketplaceEnabled'));
+});
+
+test('missing detail entity returns 404, existing entity returns 200', async () => {
+  const middleware = loadMiddleware('test-key');
+  stubFetchWithPayload(() => []);
+  assert.equal((await middleware(makeRequest('/modules/details/5'))).status, 404);
+
+  const ok = loadMiddleware('test-key');
+  stubFetchWithPayload(modulePayload);
+  assert.equal((await ok(makeRequest('/modules/details/72'))).status, 200);
+});
+
+test('bot page body renders h1 and description before the continue link', async () => {
+  const middleware = loadMiddleware('test-key');
+  stubFetchWithPayload(modulePayload);
+
+  const html = await (await middleware(makeRequest('/modules/details/72'))).text();
+  const body = html.slice(html.indexOf('<body>'));
+  assert.match(body, /<h1>Test Module by Acme<\/h1>/);
+  assert.match(body, /<p>Module description from Supabase 8 HP\.<\/p>/);
+  assert.ok(body.indexOf('<h1>') < body.indexOf('Continue to'));
+});
+
+test('bot page body escapes entity text', async () => {
+  const middleware = loadMiddleware('test-key');
+  stubFetchWithPayload(() => [{
+    ...modulePayload()[0],
+    name: '<script>alert(1)</script>',
+    description: 'Fish & "chips" <b>bold</b>'
+  }]);
+
+  const html = await (await middleware(makeRequest('/modules/details/72'))).text();
+  const body = html.slice(html.indexOf('<body>'));
+  assert.match(body, /<h1>&lt;script&gt;alert\(1\)&lt;\/script&gt; by Acme<\/h1>/);
+  assert.match(body, /Fish &amp; &quot;chips&quot; &lt;b&gt;bold&lt;\/b&gt;/);
+  assert.doesNotMatch(body, /<script>alert/);
+  assert.doesNotMatch(body, /<b>bold/);
+});
+
+test('Supabase errors, timeouts and 5xx return 503 with Retry-After and no-store, not 404', async () => {
+  const failures = {
+    'network error': async () => { throw new Error('boom'); },
+    'HTTP 500': async () => ({ok: false, status: 500, async json() { return {}; }}),
+    'HTTP 503': async () => ({ok: false, status: 503, async json() { return {}; }}),
+    'invalid JSON': async () => ({ok: true, async json() { throw new Error('bad json'); }})
+  };
+
+  for (const [label, impl] of Object.entries(failures)) {
+    const middleware = loadMiddleware('test-key');
+    global.fetch = impl;
+
+    const first = await middleware(makeRequest('/modules/details/72'));
+    assert.equal(first.status, 503, label);
+    assert.equal(first.headers.get('retry-after'), '300', label);
+    assert.equal(first.headers.get('cache-control'), 'no-store', label);
+    assert.equal(first.headers.get('x-patcher-seo-source'), 'module-lookup-error', label);
+    assert.match(await first.text(), /Patcher\.xyz/, label);
+
+    // Must not be cached: a recovered backend is picked up on the next request.
+    stubFetchWithPayload(modulePayload);
+    const second = await middleware(makeRequest('/modules/details/72'));
+    assert.equal(second.status, 200, label);
+  }
+});
+
+test('confirmed empty lookup is still a 404 without Retry-After', async () => {
+  const middleware = loadMiddleware('test-key');
+  stubFetchWithPayload(() => []);
+  const response = await middleware(makeRequest('/patches/details/12345'));
+  assert.equal(response.status, 404);
+  assert.equal(response.headers.get('retry-after'), null);
 });

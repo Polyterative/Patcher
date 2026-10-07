@@ -215,17 +215,27 @@ export class SupabaseContributorStatsQueries extends SupabaseQueriesBase {
     maxCacheCount: 50,
   })
   getPublicUserContributorStats(authorId: string): Observable<PublicUserContributorStats> {
-    const publicAuthorGateJoin = QueryJoins.publicAuthorGate(PUBLIC_AUTHOR_GATE_ALIAS);
-
+    // modules.submitter has no FK to profiles, so the authorid-based
+    // QueryJoins.publicAuthorGate embed cannot be used here (PGRST200).
+    // Gate on the profile's visibility with a separate count instead.
     return this.countRows(
-      DbPaths.modules,
+      DbPaths.profiles,
       query => query
-        .select(`id, ${ publicAuthorGateJoin }`, {count: 'exact', head: true})
-        .filter('submitter', 'eq', authorId)
+        .select('id', {count: 'exact', head: true})
+        .filter('id', 'eq', authorId)
         .filter('public', 'eq', true)
-        .filter('isApproved', 'eq', true)
-        .filter(`${ PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
     ).pipe(
+      switchMap(publicProfiles => publicProfiles > 0
+        ? this.countRows(
+          DbPaths.modules,
+          query => query
+            .select('id', {count: 'exact', head: true})
+            .filter('submitter', 'eq', authorId)
+            .filter('public', 'eq', true)
+            .filter('isApproved', 'eq', true)
+        )
+        : of(0)
+      ),
       map((approvedPublicModules) => ({approvedPublicModules}))
     );
   }

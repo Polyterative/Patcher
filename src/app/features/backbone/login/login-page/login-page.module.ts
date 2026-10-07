@@ -18,6 +18,7 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
 import { SSOButtonsComponent } from '../sso-buttons/sso-buttons.component';
+import { TurnstileWidgetComponent } from 'src/app/shared-interproject/components/@smart/turnstile-widget/turnstile-widget.component';
 
 
 @NgModule({
@@ -42,7 +43,8 @@ import { SSOButtonsComponent } from '../sso-buttons/sso-buttons.component';
     MatDialogModule,
     MatIconModule,
     FormsModule,
-    SSOButtonsComponent
+    SSOButtonsComponent,
+    TurnstileWidgetComponent
   ],
   exports:      [
     LoginPageComponent,

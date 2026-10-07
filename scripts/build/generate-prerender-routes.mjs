@@ -46,9 +46,11 @@ const PUBLIC_ROUTE_SOURCES = [
   },
   {
     tableName: 'profiles',
-    select: 'username,updated,created',
+    // profiles uses updated_at/created_at, unlike the content tables' updated/created.
+    select: 'username,updated_at,created_at',
     makePath: row => nonEmptyString(row.username) ? `/u/${ encodeURIComponent(row.username.trim()) }` : undefined,
-    publicOnly: true
+    publicOnly: true,
+    updatedColumn: 'updated_at'
   },
   {
     tableName: 'manufacturers',
@@ -124,7 +126,7 @@ async function fetchPublicRows({
   for (const [name, value] of source.filters ?? []) {
     params.set(name, value);
   }
-  params.set('order', source.orderByUpdated === false ? 'id.asc' : 'updated.desc.nullslast,id.asc');
+  params.set('order', source.orderByUpdated === false ? 'id.asc' : `${ source.updatedColumn ?? 'updated' }.desc.nullslast,id.asc`);
   params.set('limit', String(publicRouteLimit));
 
   const abortController = new AbortController();
