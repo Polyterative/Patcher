@@ -66,10 +66,10 @@ Status: Active on `develop`, frontend-only. No schema/migration/RLS/RPC change. 
 
 ## Layer 3 — Polish
 
-- [ ] Responsive pass: 360, 768 portrait, 1024 landscape, 1280, 1920 — light and dark, screenshot every iteration
-- [ ] A11y: tablist keyboard (arrow/Home/End), focus-visible rings, reduced-motion, heading order, alt text
-- [ ] Copy pass for AI-sounding phrasing; every claim cross-checked against code/flags
-- [ ] Final before/after screenshot set reviewed
+- [x] Responsive pass: 360, 768 portrait, 1024 landscape, 1280, 1920 — light and dark, screenshot every iteration
+- [x] A11y: tablist keyboard (arrow/Home/End), focus-visible rings, reduced-motion, heading order, alt text
+- [x] Copy pass for AI-sounding phrasing; every claim cross-checked against code/flags
+- [x] Final before/after screenshot set reviewed
 
 ## Decision log
 
