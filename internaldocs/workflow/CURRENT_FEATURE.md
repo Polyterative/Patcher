@@ -30,7 +30,7 @@
 
 #### Layer 3 — Polish
 
-- [ ] Responsive + both themes + a11y + copy pass, screenshot-verified
+- [x] Responsive + both themes + a11y + copy pass, screenshot-verified (awaiting owner sign-off before archive)
 
 > Immediate UI feedback plan (`plans/immediate-ui-feedback-pending-ack.md`) is paused with only its Layer 3
 > `:active`/focus-ring item open (waiting on a designer brief).
