@@ -398,7 +398,8 @@
           theme="negative"
           icon="remove"
           (click$)="rackDetailDataService.requestRemoveRow$.next()"
-                [disabled]="!isLastRowEmpty(rowedRackedModules)"
+                [disabled]="!isLastRowEmpty(rowedRackedModules) || ((rackDetailDataService.rowLayoutActionInProgress$ | async) ?? false)"
+                [attr.aria-busy]="rackDetailDataService.rowLayoutActionInProgress$ | async"
         >
           Remove last row
         </app-brand-primary-button>
@@ -416,7 +417,8 @@
           theme="primary"
           icon="add"
           (click$)="rackDetailDataService.requestAddNewRow$.next()"
-          [disabled]="isMaxRackRowsReached()"
+          [disabled]="isMaxRackRowsReached() || ((rackDetailDataService.rowLayoutActionInProgress$ | async) ?? false)"
+          [attr.aria-busy]="rackDetailDataService.rowLayoutActionInProgress$ | async"
         >
           Add new row
         </app-brand-primary-button>

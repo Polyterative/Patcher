@@ -46,7 +46,7 @@ import {
 } from 'src/app/shared-interproject/json-ld-dom';
 import { normalizeSupabaseUtcTimestamp } from 'src/app/shared-interproject/pipes/supabase-utc-timestamp.pipe';
 import { UrlCreatorService } from 'src/app/features/backend/url-creator.service';
-import { AppStateService } from 'src/app/shared-interproject/app-state.service';
+import { environment } from 'src/environments/environment';
 
 
 const JSONLD_SCRIPT_ID = 'manufacturer-jsonld';
@@ -88,6 +88,9 @@ export class ManufacturerDetailComponent extends SubManager {
   /** Copyable display-only embed snippet derived from the preview contract (null when none, no endpoint). */
   widgetEmbedSnippet$: Observable<string | null>;
 
+  /** Gates the unreleased Featured / Activity / Widget embed preview sections (off in production). */
+  manufacturerInsightsEnabled = environment.features.manufacturerInsightsEnabled;
+
   readonly analyticsPrivacyThreshold = DEFAULT_MANUFACTURER_ANALYTICS_PRIVACY_THRESHOLD;
   readonly analyticsEmptyCopy = MANUFACTURER_ANALYTICS_HIDDEN_COPY;
   readonly featuredModuleLimit = MANUFACTURER_FEATURED_MODULE_LIMIT;
@@ -97,8 +100,7 @@ export class ManufacturerDetailComponent extends SubManager {
     private readonly route: ActivatedRoute,
     private readonly seoAndUtilsService: SeoAndUtilsService,
     private readonly timeago: TimeagoPipe,
-    private readonly urlCreatorService: UrlCreatorService,
-    public readonly appState: AppStateService
+    private readonly urlCreatorService: UrlCreatorService
   ) {
     super();
     

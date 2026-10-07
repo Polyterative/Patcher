@@ -1,5 +1,5 @@
 import { BehaviorSubject, combineLatest, EMPTY, Observable, of } from 'rxjs';
-import { catchError, distinctUntilChanged, filter, map, switchMap, takeUntil, tap, withLatestFrom } from 'rxjs/operators';
+import { catchError, distinctUntilChanged, filter, finalize, map, switchMap, takeUntil, tap, withLatestFrom } from 'rxjs/operators';
 import { findAndApplyOptionForId, getCleanedValueId } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { Patch } from '../../models/patch';
@@ -107,6 +107,10 @@ export function bindLinkedRackPersistence(ctx: PatchDetailDataContext, deps: Pat
       filter(([_, patch]) => !!patch),
       filter(() => !ctx.linkedRackSelectionBlocked$.value && !ctx.linkedRackPersistenceBlocked$.value),
       filter(([linkedRackId, patch]) => (patch?.linked_rack_id ?? null) !== linkedRackId),
+      tap(() => {
+        ctx.linkedRackSaving$.next(true);
+        refreshLinkedRackControlAvailability(ctx);
+      }),
       switchMap(([linkedRackId, patch]) => {
         const nextPatch: Patch = {
           ...patch!,
@@ -137,6 +141,10 @@ export function bindLinkedRackPersistence(ctx: PatchDetailDataContext, deps: Pat
             }
             console.error('Failed to save linked rack:', err);
             return EMPTY;
+          }),
+          finalize(() => {
+            ctx.linkedRackSaving$.next(false);
+            refreshLinkedRackControlAvailability(ctx);
           })
         );
       }),
@@ -256,7 +264,7 @@ function getSelectedLinkedRackId(ctx: PatchDetailDataContext): number | null {
 }
 
 function refreshLinkedRackControlAvailability(ctx: PatchDetailDataContext): void {
-  const shouldDisable = ctx.linkedRackPersistenceBlocked$.value || ctx.linkedRackSelectionBlocked$.value;
+  const shouldDisable = ctx.linkedRackPersistenceBlocked$.value || ctx.linkedRackSelectionBlocked$.value || ctx.linkedRackSaving$.value;
   if (shouldDisable) {
     ctx.formData.linkedRack.control.disable({emitEvent: false});
     return;

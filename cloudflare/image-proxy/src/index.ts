@@ -5,7 +5,7 @@ export interface ImageProxyEnv {
   EDGE_CACHE_TTL_SECONDS?: string;
 }
 
-export const DEFAULT_SUPABASE_STORAGE_ORIGIN = 'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public';
+export const DEFAULT_SUPABASE_STORAGE_ORIGIN = 'https://supabase.patcher.xyz/storage/v1/object/public';
 export const DEFAULT_ALLOWED_BUCKETS = [
   'module-panels',
   'racks',

@@ -29,7 +29,11 @@ export function normalizeInternalReturnUrl(
       return fallback;
     }
 
-    return `${ parsed.pathname }${ parsed.search }${ parsed.hash }` || fallback;
+    // Dot-segment resolution can yield a leading "//" (e.g. "/..//evil.example"), which a
+    // browser would treat as a protocol-relative, off-site URL.
+    const pathname = parsed.pathname.replace(/^\/{2,}/, '/');
+
+    return `${ pathname }${ parsed.search }${ parsed.hash }` || fallback;
   } catch {
     return fallback;
   }

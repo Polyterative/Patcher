@@ -1,0 +1,23 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "patcher-auth-gate",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-04",
+  "workers_dev": false,
+  "preview_urls": false,
+  // Only the email-sending auth endpoints; login/token/user/admin bypass the Worker.
+  "routes": [
+    { "pattern": "supabase.patcher.xyz/auth/v1/signup*", "zone_name": "patcher.xyz" },
+    { "pattern": "supabase.patcher.xyz/auth/v1/recover*", "zone_name": "patcher.xyz" },
+    { "pattern": "supabase.patcher.xyz/auth/v1/otp*", "zone_name": "patcher.xyz" },
+    { "pattern": "supabase.patcher.xyz/auth/v1/resend*", "zone_name": "patcher.xyz" }
+  ],
+  // Secret (wrangler secret put): TURNSTILE_SECRET.
+  "vars": {
+    // off | log (verify, never block) | enforce. Move to enforce once the client sends tokens.
+    "MODE": "log"
+  },
+  "observability": {
+    "enabled": true
+  }
+}
