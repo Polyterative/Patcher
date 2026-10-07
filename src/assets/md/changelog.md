@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.8.0](https://github.com/Polyterative/Patcher/compare/v6.7.28...v6.8.0) (2026-10-07)
+
+
+### Features
+
+* **home:** add art-directed tour shots, drop stale dark overrides and cover new sections in e2e ([2b0541b](https://github.com/Polyterative/Patcher/commit/2b0541b2bc5331dc844171a918b326f25c531353))
+* **home:** rebuild homepage around a clear story, modulargrid switch and api section ([d2ea27e](https://github.com/Polyterative/Patcher/commit/d2ea27ef5d9d0e45aa6527a8a7faa22a5a83c4a4))
+* **visual:** add large size to brand button and use it for homepage ctas ([56ef627](https://github.com/Polyterative/Patcher/commit/56ef62756e03dcc21eedc2de76fe5ac8392ed1ae))
+* **visual:** add solid theme and href links to brand button, add shared segmented control ([659f7f6](https://github.com/Polyterative/Patcher/commit/659f7f6c07afb4b7f37011d2a6b67602c90946ef))
+
+
+### Bug Fixes
+
+* **home:** keep two-column layouts on tablet landscape ([1e98e56](https://github.com/Polyterative/Patcher/commit/1e98e56b34697c12cfc986757fb7aea5164221e0))
+* **home:** reframe the racks tour shot around the case itself ([62537a8](https://github.com/Polyterative/Patcher/commit/62537a83e9525ff01212dac2534026ef9ce819c4))
+
 ### [6.7.28](https://github.com/Polyterative/Patcher/compare/v6.7.27...v6.7.28) (2026-10-07)
 
 
