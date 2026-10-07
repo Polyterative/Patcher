@@ -4,7 +4,9 @@
 @use "src/app/style/brand-resources.scss" as *;
 
 $home-max-inline: 76rem;
-$home-bp-wide: 68rem;
+// Media-query rem resolves against the browser default (16px), not the app's 12.8px root:
+// 60rem = 960px keeps tablet landscape (1024px) on two-column layouts; 40rem = 640px.
+$home-bp-wide: 60rem;
 $home-bp-narrow: 40rem;
 
 // Primary-action colour pair. Light uses the brand blue; dark flips to the
