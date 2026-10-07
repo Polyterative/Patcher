@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.8.1](https://github.com/Polyterative/Patcher/compare/v6.8.0...v6.8.1) (2026-10-07)
+
+
+### Bug Fixes
+
+* **changelog:** use theme tokens for dark mode and drop width-constraining wrapper ([0c5d747](https://github.com/Polyterative/Patcher/commit/0c5d74713e5fca8073a8ae389d55e212cb4585f4))
+
 ## [6.8.0](https://github.com/Polyterative/Patcher/compare/v6.7.28...v6.8.0) (2026-10-07)
 
 
