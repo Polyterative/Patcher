@@ -10,6 +10,7 @@ import {
   finalize,
   switchMap
 } from 'rxjs/operators';
+import { suspendDarkTheme } from 'src/app/shared-interproject/app-theme.service';
 import { RACK_ANALYSIS_MODES } from './rack-analysis-mode';
 import { RackDetailDataContext } from './rack-detail-data.service.types';
 
@@ -26,11 +27,14 @@ export class RackDetailImageOperationsService {
       const previousAnalysisMode = context.analysisMode$.value ?? RACK_ANALYSIS_MODES.off;
       context.analysisMode$.next(RACK_ANALYSIS_MODES.off);
       context.isRackImageCaptureInProgress$.next(true);
+      // The saved image is shared and shown to everyone, so capture in the light theme.
+      const restoreTheme = suspendDarkTheme();
 
       return of(undefined).pipe(
         delay(RackDetailImageOperationsService.imageCaptureOverlayResetDelayMs),
         switchMap(() => generateRackJpeg(el)),
         finalize(() => {
+          restoreTheme();
           context.isRackImageCaptureInProgress$.next(false);
           if (context.analysisMode$.value === RACK_ANALYSIS_MODES.off) {
             context.analysisMode$.next(previousAnalysisMode);

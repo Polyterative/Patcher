@@ -25,6 +25,24 @@ function normalizePreference(raw: string | null): AppThemePreference {
   return raw === 'light' || raw === 'dark' || raw === 'system' ? raw : 'system';
 }
 
+/**
+ * Renders the page in the light theme until the returned restore function runs,
+ * without touching the stored preference. Used by DOM captures (rack JPEG) so
+ * saved images look the same whatever theme the author browses in.
+ */
+export function suspendDarkTheme(root: HTMLElement = document.documentElement): () => void {
+  if (!root.classList.contains(DARK_CLASS)) {
+    return () => undefined;
+  }
+  const previousColorScheme = root.style.colorScheme;
+  root.classList.remove(DARK_CLASS);
+  root.style.colorScheme = 'light';
+  return () => {
+    root.classList.add(DARK_CLASS);
+    root.style.colorScheme = previousColorScheme;
+  };
+}
+
 function readStoredPreference(): AppThemePreference {
   try {
     return normalizePreference(localStorage.getItem(STORAGE_KEY));
