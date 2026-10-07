@@ -1,0 +1,629 @@
+{
+  "uid": "patcher-pulse",
+  "title": "Patcher \u2014 Community pulse",
+  "tags": [
+    "patcher",
+    "product"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": false,
+  "graphTooltip": 1,
+  "time": {
+    "from": "now-12M",
+    "to": "now"
+  },
+  "refresh": "5m",
+  "panels": [
+    {
+      "id": 1,
+      "title": "People signed up",
+      "type": "stat",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select count(*) as people from auth.users where deleted_at is null"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 2,
+      "title": "New this week",
+      "type": "stat",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 4,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select count(*) as signups from auth.users where created_at > now() - interval '7 days'"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto"
+      },
+      "description": "Signups in the last 7 days."
+    },
+    {
+      "id": 3,
+      "title": "Active creators, 30 days",
+      "type": "stat",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "with activity as (\n  select authorid uid, created::timestamptz ts, 'rack' k from public.racks where authorid is not null\n  union all select authorid, created::timestamptz, 'patch' from public.patches where authorid is not null\n  union all select authorid, created::timestamptz, 'collection' from public.module_collections where authorid is not null\n  union all select \"authorId\", created, 'comment' from public.comments where \"authorId\" is not null\n  union all select user_id, created_at, 'reaction' from public.reactions\n  union all select profileid, updated::timestamptz, 'module list' from public.user_modules\n  union all select profileid, created_at, 'acquisition' from public.user_module_acquisitions) select count(distinct uid) as people from activity where ts > now() - interval '30 days'"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto"
+      },
+      "description": "People who created or changed something in the last 30 days: a rack, patch, collection, comment, reaction, module list entry or acquisition."
+    },
+    {
+      "id": 4,
+      "title": "Logged in, 30 days",
+      "type": "stat",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select count(*) as people from auth.users where last_sign_in_at > now() - interval '30 days'"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 5,
+      "title": "Racks + patches built, 30 days",
+      "type": "stat",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select (select count(*) from public.racks where created > now() - interval '30 days')\n + (select count(*) from public.patches where created > now() - interval '30 days') as built"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 6,
+      "title": "Things done today",
+      "type": "stat",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 20,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "with activity as (\n  select authorid uid, created::timestamptz ts, 'rack' k from public.racks where authorid is not null\n  union all select authorid, created::timestamptz, 'patch' from public.patches where authorid is not null\n  union all select authorid, created::timestamptz, 'collection' from public.module_collections where authorid is not null\n  union all select \"authorId\", created, 'comment' from public.comments where \"authorId\" is not null\n  union all select user_id, created_at, 'reaction' from public.reactions\n  union all select profileid, updated::timestamptz, 'module list' from public.user_modules\n  union all select profileid, created_at, 'acquisition' from public.user_module_acquisitions) select count(*) as actions from activity where ts > date_trunc('day', now())"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 7,
+      "title": "Who is here? (all signed-up people)",
+      "type": "piechart",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 8,
+        "h": 9
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "with activity as (\n  select authorid uid, created::timestamptz ts, 'rack' k from public.racks where authorid is not null\n  union all select authorid, created::timestamptz, 'patch' from public.patches where authorid is not null\n  union all select authorid, created::timestamptz, 'collection' from public.module_collections where authorid is not null\n  union all select \"authorId\", created, 'comment' from public.comments where \"authorId\" is not null\n  union all select user_id, created_at, 'reaction' from public.reactions\n  union all select profileid, updated::timestamptz, 'module list' from public.user_modules\n  union all select profileid, created_at, 'acquisition' from public.user_module_acquisitions),\np as (select u.id, exists(select 1 from activity a where a.uid=u.id and a.k in ('rack','patch')) b,\n  exists(select 1 from activity a where a.uid=u.id and a.k in ('module list','collection','acquisition')) c,\n  exists(select 1 from activity a where a.uid=u.id and a.k in ('comment','reaction')) s\n  from auth.users u where u.deleted_at is null)\nselect seg as segment, n as people from (\n select 'Builders (made a rack or patch)' seg, count(*) n, 1 o from p where b\n union all select 'Collectors (track modules, no builds)', count(*), 2 from p where not b and c\n union all select 'Social only (comment / react)', count(*), 3 from p where not b and not c and s\n union all select 'Signed up, nothing yet', count(*), 4 from p where not b and not c and not s) t order by o"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "values": true,
+          "calcs": [],
+          "fields": ""
+        },
+        "pieType": "donut",
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
+        "tooltip": {
+          "mode": "single"
+        },
+        "displayLabels": []
+      },
+      "description": "Each person counted once, in the first matching group."
+    },
+    {
+      "id": 8,
+      "title": "From signup to building (funnel)",
+      "type": "bargauge",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 4,
+        "w": 8,
+        "h": 9
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "with activity as (\n  select authorid uid, created::timestamptz ts, 'rack' k from public.racks where authorid is not null\n  union all select authorid, created::timestamptz, 'patch' from public.patches where authorid is not null\n  union all select authorid, created::timestamptz, 'collection' from public.module_collections where authorid is not null\n  union all select \"authorId\", created, 'comment' from public.comments where \"authorId\" is not null\n  union all select user_id, created_at, 'reaction' from public.reactions\n  union all select profileid, updated::timestamptz, 'module list' from public.user_modules\n  union all select profileid, created_at, 'acquisition' from public.user_module_acquisitions)\nselect step, n as people from (\n select '1 Signed up' step, count(*) n from auth.users where deleted_at is null\n union all select '2 Logged in again after day one', count(*) from auth.users where last_sign_in_at > created_at + interval '1 day'\n union all select '3 Tracks modules / collections', count(distinct uid) from activity where k in ('module list','collection','acquisition')\n union all select '4 Built a rack or patch', count(distinct uid) from activity where k in ('rack','patch')\n union all select '5 Shared something publicly', count(distinct a) from (\n   select authorid a from public.racks where public union all select authorid from public.patches where public\n   union all select authorid from public.module_collections where public) s\n union all select '6 Commented or reacted', count(distinct uid) from activity where k in ('comment','reaction')) t order by step"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-BlPu"
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "values": true,
+          "calcs": [],
+          "fields": ""
+        },
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "showUnfilled": true,
+        "valueMode": "color",
+        "minVizHeight": 14,
+        "namePlacement": "left"
+      }
+    },
+    {
+      "id": 9,
+      "title": "Retention by signup month",
+      "type": "table",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 4,
+        "w": 8,
+        "h": 9
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "with built as (select distinct authorid a from public.racks union select authorid from public.patches)\nselect to_char(date_trunc('month', u.created_at), 'YYYY-MM') as month, count(*) as signed_up,\n  count(*) filter (where b.a is not null)::float / count(*) as builders,\n  count(*) filter (where u.last_sign_in_at > now() - interval '30 days')::float / count(*) as active_30d\nfrom auth.users u left join built b on b.a = u.id where u.deleted_at is null and u.created_at > now() - interval '12 months'\ngroup by 1 order by 1 desc"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^(builders|active_30d|pct.*)$"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "gradient"
+                }
+              },
+              {
+                "id": "max",
+                "value": 1
+              },
+              {
+                "id": "min",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      "options": {},
+      "description": "builders = share who made a rack or patch ever; active_30d = share who logged in during the last 30 days."
+    },
+    {
+      "id": 10,
+      "title": "Weekly active creators vs new signups",
+      "type": "timeseries",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 13,
+        "w": 12,
+        "h": 9
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "time_series",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "with activity as (\n  select authorid uid, created::timestamptz ts, 'rack' k from public.racks where authorid is not null\n  union all select authorid, created::timestamptz, 'patch' from public.patches where authorid is not null\n  union all select authorid, created::timestamptz, 'collection' from public.module_collections where authorid is not null\n  union all select \"authorId\", created, 'comment' from public.comments where \"authorId\" is not null\n  union all select user_id, created_at, 'reaction' from public.reactions\n  union all select profileid, updated::timestamptz, 'module list' from public.user_modules\n  union all select profileid, created_at, 'acquisition' from public.user_module_acquisitions)\nselect time, metric, n from (\n select $__timeGroup(ts, '1w') as time, 'active creators' as metric, count(distinct uid) n from activity where $__timeFilter(ts) group by 1\n union all select $__timeGroup(created_at, '1w'), 'new signups', count(*) from auth.users where $__timeFilter(created_at) group by 1) t order by time"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "barAlignment": 0,
+            "stacking": {
+              "mode": "none"
+            }
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "description": "Distinct people who created something per week, next to how many joined that week."
+    },
+    {
+      "id": 11,
+      "title": "What people did, per week",
+      "type": "timeseries",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 13,
+        "w": 12,
+        "h": 9
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "time_series",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "with activity as (\n  select authorid uid, created::timestamptz ts, 'rack' k from public.racks where authorid is not null\n  union all select authorid, created::timestamptz, 'patch' from public.patches where authorid is not null\n  union all select authorid, created::timestamptz, 'collection' from public.module_collections where authorid is not null\n  union all select \"authorId\", created, 'comment' from public.comments where \"authorId\" is not null\n  union all select user_id, created_at, 'reaction' from public.reactions\n  union all select profileid, updated::timestamptz, 'module list' from public.user_modules\n  union all select profileid, created_at, 'acquisition' from public.user_module_acquisitions)\nselect $__timeGroup(ts, '1w') as time, k as metric, count(*) as actions from activity where $__timeFilter(ts) and k <> 'module list' group by 1, 2 order by 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 60,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "barAlignment": 0,
+            "stacking": {
+              "mode": "normal"
+            }
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "description": "Racks, patches, collections, comments, reactions, acquisitions. 'module list' (owned/wanted/selling changes) is left out because it is bulk-edited."
+    }
+  ],
+  "templating": {
+    "list": []
+  },
+  "annotations": {
+    "list": []
+  },
+  "links": [
+    {
+      "title": "Pulse",
+      "type": "link",
+      "url": "/d/patcher-pulse"
+    },
+    {
+      "title": "What people build",
+      "type": "link",
+      "url": "/d/patcher-build"
+    },
+    {
+      "title": "Ecosystem",
+      "type": "link",
+      "url": "/d/patcher-eco"
+    },
+    {
+      "title": "Usage (tech)",
+      "type": "link",
+      "url": "/d/patcher-usage"
+    },
+    {
+      "title": "Content",
+      "type": "link",
+      "url": "/d/patcher-content"
+    },
+    {
+      "title": "Database",
+      "type": "link",
+      "url": "/d/patcher-db"
+    }
+  ]
+}

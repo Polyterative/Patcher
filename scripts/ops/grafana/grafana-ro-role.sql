@@ -36,10 +36,24 @@ GRANT SELECT (id, user_id, created_at, updated_at, refreshed_at, not_after) ON a
 GRANT SELECT (id, created_at, payload) ON auth.audit_log_entries TO grafana_ro;
 
 -- Content growth
-GRANT SELECT (id, created, public) ON public.modules TO grafana_ro;
+GRANT SELECT (id, name, created, public) ON public.modules TO grafana_ro;
 GRANT SELECT (id, created, public, authorid) ON public.racks TO grafana_ro;
 GRANT SELECT (id, created, public, authorid) ON public.patches TO grafana_ro;
 GRANT SELECT (id, created_at) ON public.profiles TO grafana_ro;
+
+-- What users do (no text content, prices or key hashes)
+GRANT SELECT (moduleid, profileid, updated, kind) ON public.user_modules TO grafana_ro;
+GRANT SELECT (rackid, moduleid, created) ON public.rack_modules TO grafana_ro;
+GRANT SELECT (patch_id, module_id) ON public.patch_module_instances TO grafana_ro;
+GRANT SELECT (id, authorid, created, public) ON public.module_collections TO grafana_ro;
+GRANT SELECT (collection_id, module_id, created) ON public.module_collection_entries TO grafana_ro;
+GRANT SELECT (id, created, "authorId", "entityType") ON public.comments TO grafana_ro;
+GRANT SELECT (user_id, entity_type, entity_id, kind, created_at) ON public.reactions TO grafana_ro;
+GRANT SELECT (id, status, created_at, expires_at) ON public.marketplace_listings TO grafana_ro;
+GRANT SELECT (profileid, moduleid, acquired_at, created_at) ON public.user_module_acquisitions TO grafana_ro;
+GRANT SELECT (id, created_at, revoked_at, last_used_at) ON public.api_keys TO grafana_ro;
+GRANT SELECT (key_id, month, used) ON public.api_key_usage_monthly TO grafana_ro;
+GRANT SELECT (id, created_at, resolved) ON public.module_flags TO grafana_ro;
 
 -- pg_cron status (no command text)
 GRANT SELECT (jobid, jobname, schedule, active) ON cron.job TO grafana_ro;

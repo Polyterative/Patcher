@@ -21,7 +21,7 @@ services:
       GF_ANALYTICS_CHECK_FOR_PLUGIN_UPDATES: "false"
       GF_NEWS_NEWS_FEED_ENABLED: "false"
       GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:?set by selfhost-grafana.sh deploy}
-      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana-dashboards/patcher-usage.json
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana-dashboards/patcher-pulse.json
     volumes:
       - ./data:/var/lib/grafana
       - ./provisioning:/etc/grafana/provisioning:ro

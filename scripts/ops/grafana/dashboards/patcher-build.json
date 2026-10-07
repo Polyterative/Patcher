@@ -1,9 +1,9 @@
 {
-  "uid": "patcher-usage",
-  "title": "Patcher \u2014 Usage",
+  "uid": "patcher-build",
+  "title": "Patcher \u2014 What people build",
   "tags": [
     "patcher",
-    "usage"
+    "product"
   ],
   "timezone": "browser",
   "schemaVersion": 39,
@@ -11,14 +11,14 @@
   "editable": false,
   "graphTooltip": 1,
   "time": {
-    "from": "now-90d",
+    "from": "now-12M",
     "to": "now"
   },
   "refresh": "5m",
   "panels": [
     {
       "id": 1,
-      "title": "Users total",
+      "title": "Racks",
       "type": "stat",
       "datasource": {
         "type": "postgres",
@@ -40,7 +40,7 @@
           "format": "table",
           "rawQuery": true,
           "editorMode": "code",
-          "rawSql": "select count(*) as users from auth.users where deleted_at is null and not coalesce(is_anonymous,false)"
+          "rawSql": "select count(*) as racks from public.racks"
         }
       ],
       "fieldConfig": {
@@ -67,7 +67,7 @@
     },
     {
       "id": 2,
-      "title": "Signups, last 7 days",
+      "title": "Patches",
       "type": "stat",
       "datasource": {
         "type": "postgres",
@@ -89,7 +89,7 @@
           "format": "table",
           "rawQuery": true,
           "editorMode": "code",
-          "rawSql": "select count(*) as signups from auth.users where created_at > now() - interval '7 days'"
+          "rawSql": "select count(*) as patches from public.patches"
         }
       ],
       "fieldConfig": {
@@ -116,7 +116,7 @@
     },
     {
       "id": 3,
-      "title": "Signups, last 30 days",
+      "title": "Builders",
       "type": "stat",
       "datasource": {
         "type": "postgres",
@@ -138,7 +138,7 @@
           "format": "table",
           "rawQuery": true,
           "editorMode": "code",
-          "rawSql": "select count(*) as signups from auth.users where created_at > now() - interval '30 days'"
+          "rawSql": "select count(distinct a) as people from (select authorid a from public.racks union select authorid from public.patches) x where a is not null"
         }
       ],
       "fieldConfig": {
@@ -165,7 +165,7 @@
     },
     {
       "id": 4,
-      "title": "Active users, last 7 days",
+      "title": "Avg modules per rack",
       "type": "stat",
       "datasource": {
         "type": "postgres",
@@ -187,57 +187,7 @@
           "format": "table",
           "rawQuery": true,
           "editorMode": "code",
-          "rawSql": "select count(distinct u) as users from (\n  select user_id u from auth.sessions where coalesce(refreshed_at, created_at) > now() - interval '7 days'\n  union select (payload->>'actor_id')::uuid from auth.audit_log_entries\n   where created_at > now() - interval '7 days' and payload->>'action' in ('login','token_refreshed')) x where u is not null"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "fixed",
-            "fixedColor": "blue"
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "value",
-        "graphMode": "none",
-        "textMode": "auto"
-      },
-      "description": "Users with a session created/refreshed or a logged login in the window."
-    },
-    {
-      "id": 5,
-      "title": "Active users, last 30 days",
-      "type": "stat",
-      "datasource": {
-        "type": "postgres",
-        "uid": "patcher-pg"
-      },
-      "gridPos": {
-        "x": 16,
-        "y": 0,
-        "w": 4,
-        "h": 4
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "postgres",
-            "uid": "patcher-pg"
-          },
-          "refId": "A",
-          "format": "table",
-          "rawQuery": true,
-          "editorMode": "code",
-          "rawSql": "select count(distinct u) as users from (\n  select user_id u from auth.sessions where coalesce(refreshed_at, created_at) > now() - interval '30 days'\n  union select (payload->>'actor_id')::uuid from auth.audit_log_entries\n   where created_at > now() - interval '30 days' and payload->>'action' in ('login','token_refreshed')) x where u is not null"
+          "rawSql": "select round(avg(n), 1) as modules from (select count(*) n from public.rack_modules group by rackid) x"
         }
       ],
       "fieldConfig": {
@@ -263,8 +213,58 @@
       }
     },
     {
+      "id": 5,
+      "title": "Racks shared publicly",
+      "type": "stat",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select count(*) filter (where public)::float / nullif(count(*), 0) as share from public.racks"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto"
+      }
+    },
+    {
       "id": 6,
-      "title": "Logins, last 24 h",
+      "title": "Module list entries",
       "type": "stat",
       "datasource": {
         "type": "postgres",
@@ -286,7 +286,7 @@
           "format": "table",
           "rawQuery": true,
           "editorMode": "code",
-          "rawSql": "select count(*) as logins from auth.audit_log_entries where created_at > now() - interval '24 hours' and payload->>'action' = 'login'"
+          "rawSql": "select count(*) as entries from public.user_modules"
         }
       ],
       "fieldConfig": {
@@ -313,7 +313,7 @@
     },
     {
       "id": 7,
-      "title": "Signups per day",
+      "title": "Racks + patches built per week",
       "type": "timeseries",
       "datasource": {
         "type": "postgres",
@@ -335,227 +335,7 @@
           "format": "time_series",
           "rawQuery": true,
           "editorMode": "code",
-          "rawSql": "select $__timeGroup(created_at, '1d') as time, count(*) as signups\nfrom auth.users where $__timeFilter(created_at) group by 1 order by 1"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "drawStyle": "bars",
-            "fillOpacity": 60,
-            "lineWidth": 1,
-            "showPoints": "never",
-            "barAlignment": 0,
-            "stacking": {
-              "mode": "none"
-            }
-          },
-          "min": 0
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "description": "auth.users.created_at: full history (imported from hosted)."
-    },
-    {
-      "id": 8,
-      "title": "Logins per day",
-      "type": "timeseries",
-      "datasource": {
-        "type": "postgres",
-        "uid": "patcher-pg"
-      },
-      "gridPos": {
-        "x": 12,
-        "y": 4,
-        "w": 12,
-        "h": 8
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "postgres",
-            "uid": "patcher-pg"
-          },
-          "refId": "A",
-          "format": "time_series",
-          "rawQuery": true,
-          "editorMode": "code",
-          "rawSql": "select $__timeGroup(created_at, '1d') as time, count(*) as logins\nfrom auth.audit_log_entries where $__timeFilter(created_at) and payload->>'action' = 'login' group by 1 order by 1"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "drawStyle": "bars",
-            "fillOpacity": 60,
-            "lineWidth": 1,
-            "showPoints": "never",
-            "barAlignment": 0,
-            "stacking": {
-              "mode": "none"
-            }
-          },
-          "min": 0
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "description": "Counted from auth.audit_log_entries, which only exists since the self-host went live (hosted history was not imported). Older days show 0 / no data."
-    },
-    {
-      "id": 9,
-      "title": "Daily active users",
-      "type": "timeseries",
-      "datasource": {
-        "type": "postgres",
-        "uid": "patcher-pg"
-      },
-      "gridPos": {
-        "x": 0,
-        "y": 12,
-        "w": 12,
-        "h": 8
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "postgres",
-            "uid": "patcher-pg"
-          },
-          "refId": "A",
-          "format": "time_series",
-          "rawQuery": true,
-          "editorMode": "code",
-          "rawSql": "select $__timeGroup(d, '1d') as time, count(distinct u) as dau from (\n  select created_at d, user_id u from auth.sessions where $__timeFilter(created_at)\n  union all select refreshed_at, user_id from auth.sessions where refreshed_at is not null and $__timeFilter(refreshed_at)\n  union all select created_at, (payload->>'actor_id')::uuid from auth.audit_log_entries\n   where $__timeFilter(created_at) and payload->>'action' in ('login','token_refreshed')) x\nwhere u is not null group by 1 order by 1"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "drawStyle": "bars",
-            "fillOpacity": 60,
-            "lineWidth": 1,
-            "showPoints": "never",
-            "barAlignment": 0,
-            "stacking": {
-              "mode": "none"
-            }
-          },
-          "min": 0
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "description": "Distinct users per day with a session created, a session refresh, or a logged login. A session only keeps its LATEST refresh, so older days slightly undercount."
-    },
-    {
-      "id": 10,
-      "title": "Signups per week (cumulative users)",
-      "type": "timeseries",
-      "datasource": {
-        "type": "postgres",
-        "uid": "patcher-pg"
-      },
-      "gridPos": {
-        "x": 12,
-        "y": 12,
-        "w": 12,
-        "h": 8
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "postgres",
-            "uid": "patcher-pg"
-          },
-          "refId": "A",
-          "format": "time_series",
-          "rawQuery": true,
-          "editorMode": "code",
-          "rawSql": "select time, sum(n) over (order by time) as users from (\n  select $__timeGroup(created_at, '1w') as time, count(*) n from auth.users\n  where deleted_at is null group by 1) t order by 1"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "drawStyle": "line",
-            "fillOpacity": 15,
-            "lineWidth": 1,
-            "showPoints": "never",
-            "barAlignment": 0,
-            "stacking": {
-              "mode": "none"
-            }
-          },
-          "min": 0
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "description": "Running total of users, built from the full signup history (not limited to the time range start)."
-    },
-    {
-      "id": 11,
-      "title": "Auth events per day (self-host log)",
-      "type": "timeseries",
-      "datasource": {
-        "type": "postgres",
-        "uid": "patcher-pg"
-      },
-      "gridPos": {
-        "x": 0,
-        "y": 20,
-        "w": 24,
-        "h": 8
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "postgres",
-            "uid": "patcher-pg"
-          },
-          "refId": "A",
-          "format": "time_series",
-          "rawQuery": true,
-          "editorMode": "code",
-          "rawSql": "select $__timeGroup(created_at, '1d') as time, payload->>'action' as metric, count(*) as events\nfrom auth.audit_log_entries where $__timeFilter(created_at) group by 1, 2 order by 1"
+          "rawSql": "select time, metric, n from (\n select $__timeGroup(created, '1w') as time, 'racks' as metric, count(*) n from public.racks where $__timeFilter(created) group by 1\n union all select $__timeGroup(created, '1w'), 'patches', count(*) from public.patches where $__timeFilter(created) group by 1) t order by time"
         }
       ],
       "fieldConfig": {
@@ -583,8 +363,394 @@
           "mode": "multi",
           "sort": "desc"
         }
+      }
+    },
+    {
+      "id": 8,
+      "title": "Rack size: how big do people build?",
+      "type": "barchart",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
       },
-      "description": "login, logout, user_signedup, user_deleted, user_recovery_requested, token events."
+      "gridPos": {
+        "x": 12,
+        "y": 4,
+        "w": 6,
+        "h": 8
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select bucket as \"modules in rack\", racks from (\n select case when n = 1 then '1' when n <= 5 then '2-5' when n <= 10 then '6-10' when n <= 20 then '11-20' else '21+' end bucket,\n   case when n = 1 then 1 when n <= 5 then 2 when n <= 10 then 3 when n <= 20 then 4 else 5 end o, count(*) racks\n from (select rackid, count(*) n from public.rack_modules group by 1) x group by 1, 2) t order by o"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "xField": "modules in rack",
+        "legend": {
+          "showLegend": false
+        },
+        "showValue": "always"
+      }
+    },
+    {
+      "id": 9,
+      "title": "Racks per builder",
+      "type": "barchart",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 18,
+        "y": 4,
+        "w": 6,
+        "h": 8
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select bucket as \"racks built\", people from (\n select case when n = 1 then '1' when n = 2 then '2' when n <= 5 then '3-5' when n <= 10 then '6-10' else '11+' end bucket,\n   case when n = 1 then 1 when n = 2 then 2 when n <= 5 then 3 when n <= 10 then 4 else 5 end o, count(*) people\n from (select authorid, count(*) n from public.racks where authorid is not null group by 1) x group by 1, 2) t order by o"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "xField": "racks built",
+        "legend": {
+          "showLegend": false
+        },
+        "showValue": "always"
+      }
+    },
+    {
+      "id": 10,
+      "title": "Most used modules in racks",
+      "type": "bargauge",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 12,
+        "w": 8,
+        "h": 10
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select m.name as module, count(distinct rm.rackid) as racks\nfrom public.rack_modules rm join public.modules m on m.id = rm.moduleid group by m.id, m.name order by 2 desc limit 15"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-BlPu"
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "values": true,
+          "calcs": [],
+          "fields": ""
+        },
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "showUnfilled": true,
+        "valueMode": "color",
+        "minVizHeight": 14,
+        "namePlacement": "left"
+      },
+      "description": "Number of different racks each module appears in."
+    },
+    {
+      "id": 11,
+      "title": "Most owned modules",
+      "type": "bargauge",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 12,
+        "w": 8,
+        "h": 10
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select m.name as module, count(*) as owners\nfrom public.user_modules um join public.modules m on m.id = um.moduleid where um.kind = 'HAS' group by m.id, m.name order by 2 desc limit 15"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-BlPu"
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "values": true,
+          "calcs": [],
+          "fields": ""
+        },
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "showUnfilled": true,
+        "valueMode": "color",
+        "minVizHeight": 14,
+        "namePlacement": "left"
+      }
+    },
+    {
+      "id": 12,
+      "title": "Most wanted modules",
+      "type": "bargauge",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 12,
+        "w": 8,
+        "h": 10
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select m.name as module, count(*) as wanters\nfrom public.user_modules um join public.modules m on m.id = um.moduleid where um.kind = 'WANTS' group by m.id, m.name order by 2 desc limit 15"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-BlPu"
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "values": true,
+          "calcs": [],
+          "fields": ""
+        },
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "showUnfilled": true,
+        "valueMode": "color",
+        "minVizHeight": 14,
+        "namePlacement": "left"
+      }
+    },
+    {
+      "id": 13,
+      "title": "Module lists: own / want / sell",
+      "type": "piechart",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 22,
+        "w": 8,
+        "h": 8
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select kind::text as list, count(*) as entries from public.user_modules group by 1 order by 2 desc"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "values": true,
+          "calcs": [],
+          "fields": ""
+        },
+        "pieType": "donut",
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
+        "tooltip": {
+          "mode": "single"
+        },
+        "displayLabels": []
+      }
+    },
+    {
+      "id": 14,
+      "title": "Racks and patches: public vs private",
+      "type": "piechart",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 22,
+        "w": 8,
+        "h": 8
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select what as kind, n as items from (\n select 'racks public' what, count(*) filter (where public) n from public.racks\n union all select 'racks private', count(*) filter (where not public) from public.racks\n union all select 'patches public', count(*) filter (where public) from public.patches\n union all select 'patches private', count(*) filter (where not public) from public.patches) t"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "values": true,
+          "calcs": [],
+          "fields": ""
+        },
+        "pieType": "donut",
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
+        "tooltip": {
+          "mode": "single"
+        },
+        "displayLabels": []
+      }
+    },
+    {
+      "id": 15,
+      "title": "Collections created per week",
+      "type": "timeseries",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 22,
+        "w": 8,
+        "h": 8
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "time_series",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select $__timeGroup(created, '1w') as time, count(*) as collections\nfrom public.module_collections where $__timeFilter(created) group by 1 order by 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 60,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "barAlignment": 0,
+            "stacking": {
+              "mode": "none"
+            }
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
     }
   ],
   "templating": {

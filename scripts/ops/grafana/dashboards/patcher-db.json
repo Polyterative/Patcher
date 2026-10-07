@@ -740,7 +740,22 @@
   },
   "links": [
     {
-      "title": "Usage",
+      "title": "Pulse",
+      "type": "link",
+      "url": "/d/patcher-pulse"
+    },
+    {
+      "title": "What people build",
+      "type": "link",
+      "url": "/d/patcher-build"
+    },
+    {
+      "title": "Ecosystem",
+      "type": "link",
+      "url": "/d/patcher-eco"
+    },
+    {
+      "title": "Usage (tech)",
       "type": "link",
       "url": "/d/patcher-usage"
     },
