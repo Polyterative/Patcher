@@ -48,6 +48,8 @@ test('csp allows the analytics and self-host api hosts the app calls', () => {
   assert.match(directive('connect-src'), /wss:\/\/supabase\.patcher\.xyz/);
   assert.match(directive('img-src'), /https:\/\/images\.patcher\.xyz/);
   assert.match(directive('img-src'), /https:\/\/c5\.patreon\.com/);
+  // Local previews (panel cropper, selected-file thumbnails) render from object URLs.
+  assert.match(directive('img-src'), /(^| )blob:( |$)/);
 });
 
 test('cache rules keep the shell uncached and fonts immutable', () => {
