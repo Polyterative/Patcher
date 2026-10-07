@@ -1,0 +1,613 @@
+{
+  "uid": "patcher-usage",
+  "title": "Patcher \u2014 Usage",
+  "tags": [
+    "patcher",
+    "usage"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": false,
+  "graphTooltip": 1,
+  "time": {
+    "from": "now-90d",
+    "to": "now"
+  },
+  "refresh": "5m",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Users total",
+      "type": "stat",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select count(*) as users from auth.users where deleted_at is null and not coalesce(is_anonymous,false)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 2,
+      "title": "Signups, last 7 days",
+      "type": "stat",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 4,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select count(*) as signups from auth.users where created_at > now() - interval '7 days'"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 3,
+      "title": "Signups, last 30 days",
+      "type": "stat",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select count(*) as signups from auth.users where created_at > now() - interval '30 days'"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 4,
+      "title": "Active users, last 7 days",
+      "type": "stat",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select count(distinct u) as users from (\n  select user_id u from auth.sessions where coalesce(refreshed_at, created_at) > now() - interval '7 days'\n  union select (payload->>'actor_id')::uuid from auth.audit_log_entries\n   where created_at > now() - interval '7 days' and payload->>'action' in ('login','token_refreshed')) x where u is not null"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto"
+      },
+      "description": "Users with a session created/refreshed or a logged login in the window."
+    },
+    {
+      "id": 5,
+      "title": "Active users, last 30 days",
+      "type": "stat",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select count(distinct u) as users from (\n  select user_id u from auth.sessions where coalesce(refreshed_at, created_at) > now() - interval '30 days'\n  union select (payload->>'actor_id')::uuid from auth.audit_log_entries\n   where created_at > now() - interval '30 days' and payload->>'action' in ('login','token_refreshed')) x where u is not null"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 6,
+      "title": "Logins, last 24 h",
+      "type": "stat",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 20,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select count(*) as logins from auth.audit_log_entries where created_at > now() - interval '24 hours' and payload->>'action' = 'login'"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 7,
+      "title": "Signups per day",
+      "type": "timeseries",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "time_series",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select $__timeGroup(created_at, '1d') as time, count(*) as signups\nfrom auth.users where $__timeFilter(created_at) group by 1 order by 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 60,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "barAlignment": 0,
+            "stacking": {
+              "mode": "none"
+            }
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "description": "auth.users.created_at: full history (imported from hosted)."
+    },
+    {
+      "id": 8,
+      "title": "Logins per day",
+      "type": "timeseries",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 4,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "time_series",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select $__timeGroup(created_at, '1d') as time, count(*) as logins\nfrom auth.audit_log_entries where $__timeFilter(created_at) and payload->>'action' = 'login' group by 1 order by 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 60,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "barAlignment": 0,
+            "stacking": {
+              "mode": "none"
+            }
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "description": "Counted from auth.audit_log_entries, which only exists since the self-host went live (hosted history was not imported). Older days show 0 / no data."
+    },
+    {
+      "id": 9,
+      "title": "Daily active users",
+      "type": "timeseries",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 12,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "time_series",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select $__timeGroup(d, '1d') as time, count(distinct u) as dau from (\n  select created_at d, user_id u from auth.sessions where $__timeFilter(created_at)\n  union all select refreshed_at, user_id from auth.sessions where refreshed_at is not null and $__timeFilter(refreshed_at)\n  union all select created_at, (payload->>'actor_id')::uuid from auth.audit_log_entries\n   where $__timeFilter(created_at) and payload->>'action' in ('login','token_refreshed')) x\nwhere u is not null group by 1 order by 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 60,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "barAlignment": 0,
+            "stacking": {
+              "mode": "none"
+            }
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "description": "Distinct users per day with a session created, a session refresh, or a logged login. A session only keeps its LATEST refresh, so older days slightly undercount."
+    },
+    {
+      "id": 10,
+      "title": "Signups per week (cumulative users)",
+      "type": "timeseries",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 12,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "time_series",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select time, sum(n) over (order by time) as users from (\n  select $__timeGroup(created_at, '1w') as time, count(*) n from auth.users\n  where deleted_at is null group by 1) t order by 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "barAlignment": 0,
+            "stacking": {
+              "mode": "none"
+            }
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "description": "Running total of users, built from the full signup history (not limited to the time range start)."
+    },
+    {
+      "id": 11,
+      "title": "Auth events per day (self-host log)",
+      "type": "timeseries",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 20,
+        "w": 24,
+        "h": 8
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "time_series",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select $__timeGroup(created_at, '1d') as time, payload->>'action' as metric, count(*) as events\nfrom auth.audit_log_entries where $__timeFilter(created_at) group by 1, 2 order by 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 60,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "barAlignment": 0,
+            "stacking": {
+              "mode": "normal"
+            }
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "description": "login, logout, user_signedup, user_deleted, user_recovery_requested, token events."
+    }
+  ],
+  "templating": {
+    "list": []
+  },
+  "annotations": {
+    "list": []
+  },
+  "links": [
+    {
+      "title": "Usage",
+      "type": "link",
+      "url": "/d/patcher-usage"
+    },
+    {
+      "title": "Content",
+      "type": "link",
+      "url": "/d/patcher-content"
+    },
+    {
+      "title": "Database",
+      "type": "link",
+      "url": "/d/patcher-db"
+    }
+  ]
+}

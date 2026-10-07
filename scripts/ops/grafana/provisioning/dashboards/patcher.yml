@@ -1,0 +1,10 @@
+apiVersion: 1
+providers:
+  - name: patcher
+    folder: Patcher
+    type: file
+    disableDeletion: true
+    allowUiUpdates: false
+    updateIntervalSeconds: 60
+    options:
+      path: /var/lib/grafana-dashboards
