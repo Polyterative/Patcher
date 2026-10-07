@@ -12,12 +12,12 @@
   &::after {
     content: '';
     flex: 1;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+    border-bottom: 1px solid var(--app-border-strong);
   }
 
   span {
     padding: 0 1rem;
-    color: rgba(0, 0, 0, 0.6);
+    color: var(--app-ink-3);
     font-size: 0.875rem;
     font-weight: 500;
     text-transform: uppercase;
@@ -41,7 +41,7 @@
   font-weight: 500;
   border-radius: 0.5rem;
   border: 0.0938rem solid;
-  background: #fff;
+  background: var(--app-surface);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   cursor: pointer;
 

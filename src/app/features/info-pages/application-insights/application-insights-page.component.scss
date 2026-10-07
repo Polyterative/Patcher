@@ -8,11 +8,21 @@
   --insights-blue-600: #3552e6;
   --insights-blue-700: #2841b8;
   --insights-blue-800: #20358f;
+  --insights-chart-bg: var(--app-surface-2);
+  --insights-bar-track: rgba(120, 137, 158, 0.12);
+  --insights-axis-ink: var(--app-ink-3);
   display: block;
   padding: 1rem 0 2rem;
-  background:
-    radial-gradient(circle at top left, rgba(64, 124, 255, 0.12), transparent 28rem),
-    linear-gradient(180deg, rgba(246, 249, 253, 0.96), rgba(255, 255, 255, 0.99));
+}
+
+:host-context(html.dark) {
+  --insights-blue-200: #6f93d6;
+  --insights-blue-300: #5f84d0;
+  --insights-blue-400: #7a9cff;
+  --insights-blue-500: #8fb0ff;
+  --insights-blue-600: #a5c0ff;
+  --insights-blue-700: #bfd2ff;
+  --insights-bar-track: rgba(148, 184, 220, 0.1);
 }
 
 .insights-page {
@@ -624,9 +634,8 @@
   min-height: 14rem;
   padding: 1rem 0.75rem 0.25rem;
   border-radius: 1rem;
-  background:
-    linear-gradient(180deg, rgba(245, 248, 252, 0.98), rgba(250, 252, 255, 0.9)),
-    linear-gradient(180deg, rgba(120, 137, 158, 0.08), rgba(120, 137, 158, 0));
+  background: var(--insights-chart-bg);
+  border: 1px solid var(--app-border);
 }
 
 .trend-day {
@@ -643,7 +652,7 @@
   min-height: 0;
   border-radius: 999px;
   overflow: hidden;
-  background: rgba(120, 137, 158, 0.08);
+  background: var(--insights-bar-track);
 }
 
 .trend-day__segment {
@@ -668,7 +677,7 @@
   font-size: 0.72rem;
   line-height: 1.2;
   text-align: center;
-  color: rgba(24, 37, 53, 0.64);
+  color: var(--insights-axis-ink);
 }
 
 .trend-day__label--hidden {
