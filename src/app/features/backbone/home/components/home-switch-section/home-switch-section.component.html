@@ -1,0 +1,47 @@
+<div class="switch">
+  <div class="switch__import">
+    <h3 class="switch__subhead">Three steps to move a rack</h3>
+    <ol class="switch__chain">
+      @for (step of steps; track step.label; let index = $index) {
+        <li class="switch__step">
+          <span class="switch__step-index" aria-hidden="true">0{{ index + 1 }}</span>
+          <div class="switch__step-body">
+            <span class="switch__step-label">{{ step.label }}</span>
+            <p class="switch__step-description">{{ step.description }}</p>
+          </div>
+        </li>
+      }
+    </ol>
+    <div class="switch__actions">
+      @if (isSignedIn) {
+        <a class="switch__cta"
+           routerLink="/user/area"
+           (click)="ctaClicked.emit({cta: 'import_rack', location: 'switch'})">
+          Import a rack
+          <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+        </a>
+      } @else {
+        <a class="switch__cta"
+           routerLink="/auth/signup"
+           (click)="ctaClicked.emit({cta: 'import_signup', location: 'switch'})">
+          Create a free account
+          <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+        </a>
+      }
+      <span class="switch__note">If a module doesn't match, you can place it by hand.</span>
+    </div>
+  </div>
+
+  <div class="switch__gains">
+    <h3 class="switch__subhead">What you get on this side</h3>
+    <ul class="switch__benefits">
+      @for (benefit of benefits; track benefit.title) {
+        <li class="switch__benefit">
+          <mat-icon class="switch__benefit-icon" aria-hidden="true">{{ benefit.icon }}</mat-icon>
+          <span class="switch__benefit-title">{{ benefit.title }}</span>
+          <p class="switch__benefit-description">{{ benefit.description }}</p>
+        </li>
+      }
+    </ul>
+  </div>
+</div>

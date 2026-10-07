@@ -21,8 +21,8 @@
 
 #### Layer 1 — MVP
 
-- [ ] New IA + copy: hero, proof strip, system tour, ModularGrid switch, community, open, final CTA
-- [ ] Live detail previews removed; specs + lint green
+- [x] New IA + copy: hero, proof strip, system tour, ModularGrid switch, community, API, open, final CTA
+- [x] Live detail previews removed; specs + lint green
 
 #### Layer 2 — Structural
 

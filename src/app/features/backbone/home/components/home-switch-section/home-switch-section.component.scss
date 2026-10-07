@@ -1,0 +1,177 @@
+@use "src/app/style/brand-resources.scss" as *;
+@use "../../home-ui" as ui;
+
+:host {
+  display: block;
+}
+
+.switch {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  border: 1px solid var(--app-border-strong);
+  border-radius: 0.5rem;
+  background: var(--app-surface);
+  overflow: hidden;
+}
+
+.switch__import,
+.switch__gains {
+  display: grid;
+  align-content: start;
+  gap: 1.5rem;
+  padding: clamp(1.5rem, 3.5vw, 2.5rem);
+}
+
+.switch__gains {
+  border-inline-start: 1px solid var(--app-border);
+  background: var(--app-surface-2);
+}
+
+.switch__subhead {
+  @include ui.home-index-label;
+}
+
+// ── Import chain: three steps joined by a "cable" running through the jacks ──
+
+.switch__chain {
+  position: relative;
+  display: grid;
+  gap: 1.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset-block: 1rem;
+    inset-inline-start: 1.25rem;
+    inline-size: 2px;
+    background: var(--home-accent);
+    opacity: 0.35;
+  }
+}
+
+.switch__step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.switch__step-index {
+  @include ui.home-mono;
+  position: relative;
+  display: grid;
+  place-items: center;
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+  border: 2px solid var(--home-accent);
+  border-radius: 50%;
+  background: var(--app-surface);
+  color: var(--home-accent);
+  font-size: 0.82rem;
+}
+
+.switch__step-body {
+  display: grid;
+  gap: 0.2rem;
+  padding-block-start: 0.2rem;
+}
+
+.switch__step-label {
+  @include heading-font;
+  color: var(--app-ink);
+  font-size: 1.1rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.switch__step-description {
+  @include content-font;
+  margin: 0;
+  color: var(--app-ink-2);
+  font-size: 1.15rem;
+  line-height: 1.5;
+}
+
+.switch__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  padding-block-start: 0.5rem;
+}
+
+.switch__cta {
+  @include ui.home-cta-primary;
+}
+
+.switch__note {
+  @include content-font;
+  color: var(--app-ink-3);
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+// ── Benefits ─────────────────────────────────────────────────────────────────
+
+.switch__benefits {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.75rem 1.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.switch__benefit {
+  display: grid;
+  gap: 0.45rem;
+  align-content: start;
+}
+
+.switch__benefit-icon {
+  inline-size: 1.7rem;
+  block-size: 1.7rem;
+  font-size: 1.7rem;
+  color: var(--home-accent);
+}
+
+.switch__benefit-title {
+  @include content-font;
+  color: var(--app-ink);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.switch__benefit-description {
+  @include content-font;
+  margin: 0;
+  color: var(--app-ink-2);
+  font-size: 1.12rem;
+  line-height: 1.5;
+}
+
+@media (max-width: ui.$home-bp-wide) {
+  .switch {
+    grid-template-columns: 1fr;
+  }
+
+  .switch__gains {
+    border-inline-start: 0;
+    border-block-start: 1px solid var(--app-border);
+  }
+}
+
+@media (max-width: ui.$home-bp-narrow) {
+  .switch__benefits {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .switch__cta {
+    inline-size: 100%;
+  }
+}

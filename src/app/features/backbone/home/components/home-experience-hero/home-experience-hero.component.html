@@ -1,36 +1,50 @@
-<section class="hero-shell" aria-labelledby="home-hero-title">
-  <div class="hero-body">
-    <div class="hero-copy">
-      <p class="eyebrow">{{ content.eyebrow }}</p>
-      <h1 id="home-hero-title">{{ content.title }}</h1>
-      <ul class="subtitle">
-        @for (line of subtitleLines; track line) {
-          <li>
-            @for (segment of getSubtitleSegments(line); track $index) {
-              @if (segment.highlighted) {
-                <strong>{{ segment.text }}</strong>
-              } @else {
-                {{ segment.text }}
-              }
-            }
-          </li>
-        }
-      </ul>
+<section class="hero" aria-labelledby="home-hero-title">
+  <div class="hero__copy">
+    <p class="hero__eyebrow">{{ content.eyebrow }}</p>
+    <h1 id="home-hero-title" class="hero__title">{{ content.title }}</h1>
+    <p class="hero__lede">{{ content.lede }}</p>
 
-      <div class="hero-actions">
-        <ng-content select="[hero-actions]"></ng-content>
-        @if (content.sourceLinkHref && content.sourceLinkLabel) {
-          <a class="source-link" [href]="content.sourceLinkHref" target="_blank" rel="noopener noreferrer">
-            {{ content.sourceLinkLabel }}
-          </a>
-        }
-      </div>
+    <div class="hero__actions">
+      @if (isSignedIn) {
+        <a class="hero__cta hero__cta--primary"
+           routerLink="/user/area"
+           (click)="ctaClicked.emit({cta: 'workspace', location: 'hero'})">
+          Open your workspace
+          <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+        </a>
+      } @else {
+        <a class="hero__cta hero__cta--primary"
+           routerLink="/auth/signup"
+           (click)="ctaClicked.emit({cta: 'signup', location: 'hero'})">
+          Get started free
+          <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+        </a>
+      }
+      <a class="hero__cta hero__cta--secondary"
+         routerLink="/modules/browser"
+         (click)="ctaClicked.emit({cta: 'browse_modules', location: 'hero'})">
+        Browse modules
+      </a>
     </div>
 
-    <div class="hero-visuals">
-      <div class="patch-graph-shell">
-        <app-patch-graph [progressiveRender]="true"></app-patch-graph>
-      </div>
-    </div>
+    <a class="hero__switch-link" href="#switch" (click)="onSwitchLinkClick($event)">
+      <span class="hero__switch-tag">New here from ModularGrid?</span>
+      <span class="hero__switch-action">Bring your racks <mat-icon aria-hidden="true">south</mat-icon></span>
+    </a>
   </div>
+
+  <figure class="hero__panel">
+    <div class="hero__panel-bar">
+      @if (patchMeta$ | async; as meta) {
+        <span class="hero__panel-label">Patch · {{ meta.name }}</span>
+        <span class="hero__panel-stats">{{ meta.modules }} modules · {{ meta.cables }} cables</span>
+      } @else {
+        <span class="hero__panel-label">Patch · loading</span>
+      }
+    </div>
+    <div class="hero__graph">
+      <app-patch-graph [progressiveRender]="true"></app-patch-graph>
+    </div>
+    <figcaption class="hero__caption">{{ content.graphCaption }}</figcaption>
+  </figure>
 </section>

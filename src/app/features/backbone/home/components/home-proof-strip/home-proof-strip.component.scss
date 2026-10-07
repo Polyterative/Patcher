@@ -1,0 +1,82 @@
+@use "src/app/style/brand-resources.scss" as *;
+@use "../../home-ui" as ui;
+
+:host {
+  display: block;
+}
+
+.proof {
+  @include ui.home-container;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem 2rem;
+  padding-block: 1.5rem;
+  border-block: 1px solid var(--app-border);
+}
+
+.proof__figures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem 0;
+  margin: 0;
+}
+
+.proof__figure {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 0.3rem;
+  padding-inline: 0 2rem;
+  margin-inline-end: 2rem;
+  border-inline-end: 1px solid var(--app-border);
+
+  &:last-child {
+    margin-inline-end: 0;
+    padding-inline-end: 0;
+    border-inline-end: 0;
+  }
+}
+
+.proof__value {
+  @include title-font;
+  margin: 0;
+  color: var(--app-ink);
+  font-size: clamp(2.1rem, 3.8vw, 2.9rem);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.proof__label {
+  @include ui.home-mono;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--app-ink-3);
+}
+
+.proof__link {
+  @include ui.home-text-link;
+  font-size: 1.15rem;
+
+  mat-icon {
+    inline-size: 1.2rem;
+    block-size: 1.2rem;
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: ui.$home-bp-narrow) {
+  .proof__figures {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    inline-size: 100%;
+    gap: 1.25rem 1rem;
+  }
+
+  .proof__figure {
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+}

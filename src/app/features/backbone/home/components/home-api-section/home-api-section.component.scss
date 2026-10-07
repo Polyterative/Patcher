@@ -1,0 +1,179 @@
+@use "src/app/style/brand-resources.scss" as *;
+@use "../../home-ui" as ui;
+
+:host {
+  display: block;
+}
+
+.api {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  align-items: center;
+  gap: clamp(1.75rem, 4vw, 3.5rem);
+}
+
+.api__copy {
+  display: grid;
+  gap: 2rem;
+}
+
+.api__facts {
+  display: grid;
+  gap: 1.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.api__fact {
+  display: grid;
+  grid-template-columns: 1.7rem minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.api__fact-icon {
+  inline-size: 1.7rem;
+  block-size: 1.7rem;
+  font-size: 1.7rem;
+  color: var(--home-accent);
+}
+
+.api__fact-title {
+  @include content-font;
+  display: block;
+  margin-block-end: 0.25rem;
+  color: var(--app-ink);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.api__fact-description {
+  @include content-font;
+  margin: 0;
+  color: var(--app-ink-2);
+  font-size: 1.12rem;
+  line-height: 1.5;
+}
+
+.api__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.api__cta--primary {
+  @include ui.home-cta-primary;
+}
+
+.api__cta--secondary {
+  @include ui.home-cta-secondary;
+}
+
+// ── Console: always dark, like a terminal, in both themes ────────────────────
+
+.api__console {
+  --console-bg: #0d131b;
+  --console-border: rgba(148, 184, 220, 0.18);
+  --console-ink: rgba(222, 232, 244, 0.92);
+  --console-dim: rgba(158, 178, 199, 0.62);
+  --console-key: #8fb8e8;
+  --console-str: #f2c879;
+  --console-num: #7fd4b4;
+
+  margin: 0;
+  min-inline-size: 0;
+  border: 1px solid var(--console-border);
+  border-radius: 0.5rem;
+  background: var(--console-bg);
+  color: var(--console-ink);
+  overflow: hidden;
+}
+
+.api__console-bar {
+  @include ui.home-mono;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1.25rem;
+  border-block-end: 1px solid var(--console-border);
+  font-size: 0.9rem;
+}
+
+.api__method {
+  padding: 0.15rem 0.45rem;
+  border-radius: 0.25rem;
+  background: rgba(127, 212, 180, 0.14);
+  color: var(--console-num);
+  letter-spacing: 0.06em;
+}
+
+.api__path {
+  color: var(--console-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.api__status {
+  margin-inline-start: auto;
+  color: var(--console-num);
+}
+
+.api__code {
+  @include ui.home-mono;
+  margin: 0;
+  padding: 1.1rem 1.25rem;
+  font-size: 1rem;
+  line-height: 1.65;
+  overflow-x: auto;
+  white-space: pre;
+
+  code {
+    font: inherit;
+  }
+}
+
+.api__code--response {
+  border-block-start: 1px dashed var(--console-border);
+}
+
+.t-key {
+  color: var(--console-key);
+}
+
+.t-str {
+  color: var(--console-str);
+}
+
+.t-num {
+  color: var(--console-num);
+}
+
+.t-dim {
+  color: var(--console-dim);
+}
+
+.api__caption {
+  @include content-font;
+  padding: 0.8rem 1.25rem;
+  border-block-start: 1px solid var(--console-border);
+  color: var(--console-dim);
+  font-size: 1rem;
+}
+
+@media (max-width: ui.$home-bp-wide) {
+  .api {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: ui.$home-bp-narrow) {
+  .api__code {
+    font-size: 0.9rem;
+  }
+
+  .api__actions a {
+    flex: 1 1 100%;
+  }
+}

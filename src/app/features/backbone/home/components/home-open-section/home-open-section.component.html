@@ -1,0 +1,17 @@
+<ul class="open">
+  @for (pillar of pillars; track pillar.title) {
+    <li class="open__pillar">
+      <mat-icon class="open__icon" aria-hidden="true">{{ pillar.icon }}</mat-icon>
+      <h3 class="open__title">{{ pillar.title }}</h3>
+      <p class="open__description">{{ pillar.description }}</p>
+      <a class="open__link"
+         [href]="pillar.link.href"
+         target="_blank"
+         rel="noopener noreferrer"
+         (click)="ctaClicked.emit({cta: ctaKey(pillar), location: 'open'})">
+        {{ pillar.link.label }}
+        <mat-icon aria-hidden="true">north_east</mat-icon>
+      </a>
+    </li>
+  }
+</ul>

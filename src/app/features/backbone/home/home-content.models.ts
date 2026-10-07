@@ -1,63 +1,60 @@
-export interface HomeHeroVisual {
-  src: string;
-  alt: string;
-  caption?: string;
-  captionKeywords?: string[];
-}
-
 export interface HomeHeroContent {
   eyebrow: string;
   title: string;
-  subtitle: string;
-  subtitleKeywords?: string[];
-  mainVisual: HomeHeroVisual;
-  floatingVisualA?: HomeHeroVisual;
-  floatingVisualB?: HomeHeroVisual;
-  sourceLinkLabel?: string;
-  sourceLinkHref?: string;
+  lede: string;
+  graphCaption: string;
 }
 
-export interface HomePrincipleCard {
-  icon: string;
-  title: string;
-  description: string;
-  keywords?: string[];
+export interface HomeTourShot {
+  light: string;
+  dark: string;
+  alt: string;
 }
 
-export interface HomeWorkflowStep {
-  kicker: string;
-  title: string;
-  description: string;
-  keywords?: string[];
-}
-
-export type HomeProofTone =
-  'patch'
-  | 'module'
-  | 'rack';
-
-export type HomeProofKind =
-  'patch'
-  | 'module'
-  | 'rack';
-
-export interface HomeProofSection {
-  kind: HomeProofKind;
-  kicker: string;
-  title: string;
-  description: string;
-  keywords?: string[];
-  tone: HomeProofTone;
-}
-
-export interface HomeLinkPill {
-  icon: string;
+export interface HomeTourTab {
+  id: 'library' | 'racks' | 'patches';
   label: string;
-  href: string;
+  icon: string;
+  title: string;
+  description: string;
+  points: string[];
+  link: {label: string; href: string};
+  shot: HomeTourShot;
 }
 
-export interface HomeFounderNote {
-  quote: string;
-  author: string;
-  role: string;
+export interface HomeSwitchStep {
+  label: string;
+  description: string;
+}
+
+export interface HomeBenefit {
+  icon: string;
+  title: string;
+  description: string;
+}
+
+export interface HomeOpenPillar {
+  icon: string;
+  title: string;
+  description: string;
+  link: {label: string; href: string};
+}
+
+export interface HomeApiFact {
+  icon: string;
+  title: string;
+  description: string;
+}
+
+export interface HomeProofFigure {
+  value: string;
+  label: string;
+}
+
+/** Where on the homepage a CTA lives; sent with `home.cta_clicked`. */
+export type HomeCtaLocation = 'hero' | 'proof' | 'tour' | 'switch' | 'api' | 'open' | 'closing';
+
+export interface HomeCtaClick {
+  cta: string;
+  location: HomeCtaLocation;
 }

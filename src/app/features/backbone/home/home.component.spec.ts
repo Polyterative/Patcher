@@ -1,161 +1,61 @@
-import { ReplaySubject } from 'rxjs';
-import { DETAIL_ANALYTICS_SURFACES } from 'src/app/components/detail-analytics-surface';
-import type { ModuleDetailDataService } from 'src/app/components/module-parts/module-detail-data.service';
-import type { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
-import type { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
 import type { SeoSocialShareData } from 'src/app/models/seo.model';
-import type { AppStateService } from 'src/app/shared-interproject/app-state.service';
 import type { SeoAndUtilsService } from '../seo-and-utils.service';
+import type { HomeDataService } from './home-data.service';
+import { HOME_HERO, HOME_TOUR_TABS } from './home-copy';
 import { HomeComponent } from './home.component';
 
 describe('HomeComponent', () => {
   let comp: HomeComponent;
-  let mockAppState: jasmine.SpyObj<AppStateService>;
   let mockSeoSvc: jasmine.SpyObj<SeoAndUtilsService>;
-  let mockPatchSvc: jasmine.SpyObj<PatchDetailDataService>;
-  let mockRackSvc: jasmine.SpyObj<RackDetailDataService>;
-  let mockModuleSvc: jasmine.SpyObj<ModuleDetailDataService>;
-  const platformId: object = { __browser: false };
+  let scrollIntoView: jasmine.Spy;
+  let fakeDocument: Document;
 
-  function makeAppStateMock(isDev: boolean): jasmine.SpyObj<AppStateService> {
-    return jasmine.createSpyObj<AppStateService>('AppStateService', ['ngOnDestroy'], { isDev });
-  }
-
-  function makeServiceMocks() {
-    mockPatchSvc = jasmine.createSpyObj<PatchDetailDataService>(
-      'PatchDetailDataService',
-      ['setDetailAnalyticsSurface'],
-      { updateSinglePatchData$: new ReplaySubject<number>(1) }
-    );
-    mockRackSvc = jasmine.createSpyObj<RackDetailDataService>(
-      'RackDetailDataService',
-      ['setDetailAnalyticsSurface'],
-      { updateSingleRackData$: new ReplaySubject<number>(1) }
-    );
-    mockModuleSvc = jasmine.createSpyObj<ModuleDetailDataService>(
-      'ModuleDetailDataService',
-      ['setDetailAnalyticsSurface'],
-      { updateSingleModuleData$: new ReplaySubject<number>(1) }
-    );
-  }
-
-  function makeComponent() {
+  function makeComponent(platformId: 'browser' | 'server') {
     return new HomeComponent(
-      mockAppState,
+      {} as HomeDataService,
       mockSeoSvc,
-      mockPatchSvc,
-      mockRackSvc,
-      mockModuleSvc,
-      platformId,
+      fakeDocument,
+      platformId as unknown as object,
     );
   }
 
   beforeEach(() => {
-    mockAppState = makeAppStateMock(false);
     mockSeoSvc = jasmine.createSpyObj<SeoAndUtilsService>('SeoAndUtilsService', ['updateSeo']);
-    makeServiceMocks();
+    scrollIntoView = jasmine.createSpy('scrollIntoView');
+    fakeDocument = {
+      defaultView: {matchMedia: () => ({matches: false})},
+      getElementById: (id: string) => (id === 'switch' ? {scrollIntoView} : null)
+    } as unknown as Document;
 
-    comp = makeComponent();
+    comp = makeComponent('browser');
   });
 
-  it('creates without error', () => {
-    expect(comp).toBeTruthy();
+  it('registers homepage SEO that names the ModularGrid import', () => {
+    expect(mockSeoSvc.updateSeo).toHaveBeenCalledTimes(1);
+    const [seo, page] = mockSeoSvc.updateSeo.calls.mostRecent().args as [SeoSocialShareData, string];
+    expect(page).toBe('Home');
+    expect(seo.url).toBe('https://patcher.xyz/');
+    expect(seo.description).toContain('ModularGrid');
   });
 
-  it('calls seoAndUtilsService.updateSeo in constructor', () => {
-    expect(mockSeoSvc.updateSeo).toHaveBeenCalledOnceWith(
-      jasmine.objectContaining({ title: 'Patcher home' }),
-      'Home'
-    );
+  it('keeps the owner-approved headline', () => {
+    expect(comp.hero.title).toBe(HOME_HERO.title);
+    expect(comp.hero.title).toMatch(/operating system.*modular/i);
   });
 
-  it('principleCards has 3 items', () => {
-    expect(comp.principleCards.length).toBe(3);
+  it('tours the three core surfaces in order', () => {
+    expect(comp.tourTabs.map(tab => tab.id)).toEqual(['library', 'racks', 'patches']);
+    expect(comp.tourTabs).toBe(HOME_TOUR_TABS);
   });
 
-  it('workflowSteps has 4 items', () => {
-    expect(comp.workflowSteps.length).toBe(4);
+  it('scrolls to the switch section in the browser', () => {
+    comp.scrollToSwitch();
+    expect(scrollIntoView).toHaveBeenCalledWith({behavior: 'smooth', block: 'start'});
   });
 
-  it('userStories has 4 items', () => {
-    expect(comp.userStories.length).toBe(4);
-  });
-
-  it('communityLinks always includes insights publicly', () => {
-    expect(comp.communityLinks.length).toBe(4);
-    expect(comp.communityLinks.some(l => l.href === '/info/insights')).toBeTrue();
-  });
-
-  it('enables community trends discovery', () => {
-    expect(comp.showCommunityTrends).toBeTrue();
-  });
-
-  it('shows homepage insights publicly', () => {
-    expect(comp.showHomepageInsights).toBeTrue();
-  });
-
-  it('showInsightsPageEntry is true publicly without isDev gate', () => {
-    expect(comp.showInsightsPageEntry).toBeTrue();
-  });
-
-  it('communityLinks includes insights when isDev=true', () => {
-    mockAppState = makeAppStateMock(true);
-    makeServiceMocks();
-    const comp2 = makeComponent();
-    expect(comp2.communityLinks.some(l => l.href === '/info/insights')).toBeTrue();
-    expect(comp2.showInsightsPageEntry).toBeTrue();
-  });
-
-  it('communityLinks includes insights when isDev=false (production)', () => {
-    mockAppState = makeAppStateMock(false);
-    makeServiceMocks();
-    const comp3 = makeComponent();
-    expect(comp3.communityLinks.some(l => l.href === '/info/insights')).toBeTrue();
-    expect(comp3.showInsightsPageEntry).toBeTrue();
-  });
-
-  it('proofSections has at least one item', () => {
-    expect(comp.proofSections.length).toBeGreaterThan(0);
-  });
-
-  it('heroContent title is non-empty', () => {
-    expect(comp.heroContent.title.length).toBeGreaterThan(0);
-  });
-
-  it('SEO data includes correct url, type and keywords', () => {
-    const call: SeoSocialShareData = mockSeoSvc.updateSeo.calls.mostRecent().args[0];
-    expect(call.url).toBe('https://patcher.xyz/');
-    expect(call.type).toBe('website');
-    expect(call.keywords).toContain('eurorack');
-  });
-
-  it('exposes view configs for the proof showcase live components', () => {
-    expect(comp.patchViewConfig).toBeDefined();
-    expect(comp.rackViewConfig).toBeDefined();
-    expect(comp.moduleViewConfig).toBeDefined();
-  });
-
-  it('marks proof showcase services as home preview analytics surfaces', () => {
-    expect(mockPatchSvc.setDetailAnalyticsSurface).toHaveBeenCalledWith(DETAIL_ANALYTICS_SURFACES.homePreview);
-    expect(mockRackSvc.setDetailAnalyticsSurface).toHaveBeenCalledWith(DETAIL_ANALYTICS_SURFACES.homePreview);
-    expect(mockModuleSvc.setDetailAnalyticsSurface).toHaveBeenCalledWith(DETAIL_ANALYTICS_SURFACES.homePreview);
-  });
-
-  it('restores detail-route analytics surfaces when destroyed', () => {
-    comp.ngOnDestroy();
-
-    expect(mockPatchSvc.setDetailAnalyticsSurface).toHaveBeenCalledWith(DETAIL_ANALYTICS_SURFACES.detailRoute);
-    expect(mockRackSvc.setDetailAnalyticsSurface).toHaveBeenCalledWith(DETAIL_ANALYTICS_SURFACES.detailRoute);
-    expect(mockModuleSvc.setDetailAnalyticsSurface).toHaveBeenCalledWith(DETAIL_ANALYTICS_SURFACES.detailRoute);
-  });
-
-  it('does not seed proof preview data on the server', () => {
-    spyOn(mockPatchSvc.updateSinglePatchData$, 'next');
-    spyOn(mockRackSvc.updateSingleRackData$, 'next');
-    spyOn(mockModuleSvc.updateSingleModuleData$, 'next');
-    comp.ngOnInit();
-    expect(mockPatchSvc.updateSinglePatchData$.next).not.toHaveBeenCalled();
-    expect(mockRackSvc.updateSingleRackData$.next).not.toHaveBeenCalled();
-    expect(mockModuleSvc.updateSingleModuleData$.next).not.toHaveBeenCalled();
+  it('does not touch the DOM during SSR', () => {
+    const serverComp = makeComponent('server');
+    serverComp.scrollToSwitch();
+    expect(scrollIntoView).not.toHaveBeenCalled();
   });
 });

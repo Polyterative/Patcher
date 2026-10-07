@@ -1,3 +1,4 @@
+import { environment } from 'src/environments/environment';
 import { BehaviorSubject, of } from 'rxjs';
 import { ModuleDetailDataService } from 'src/app/components/module-parts/module-detail-data.service';
 import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
@@ -105,9 +106,18 @@ describe('HomeDiscoverySectionComponent', () => {
   });
 
   it('renders the ranked discovery list', () => {
-    expect(component.discoveryBuckets.length).toBe(3);
+    expect(component.discoveryBuckets.length).toBe(environment.features.marketplaceEnabled ? 3 : 2);
     expect(fixture.nativeElement.textContent).toContain('Maths');
     expect(fixture.nativeElement.textContent).toContain('21');
+  });
+
+  it('shows the "Most sold" bucket only where the marketplace is enabled', () => {
+    const hasSold = component.discoveryBuckets.some(bucket => bucket.key === 'mostSold');
+    expect(hasSold).toBe(environment.features.marketplaceEnabled);
+  });
+
+  it('labels counts with the bucket unit', () => {
+    expect(fixture.nativeElement.textContent).toContain('21 owners');
   });
 
   it('switches buckets and tracks the interaction', () => {
