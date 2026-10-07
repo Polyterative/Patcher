@@ -1,5 +1,6 @@
 import {
-  AppThemeService
+  AppThemeService,
+  suspendDarkTheme
 } from './app-theme.service';
 
 describe('AppThemeService', () => {
@@ -42,5 +43,26 @@ describe('AppThemeService', () => {
   it('ignores invalid stored values and falls back to system', () => {
     localStorage.setItem('patcher.theme-preference', 'neon');
     expect(makeService().preference()).toBe('system');
+  });
+
+  it('suspendDarkTheme renders light until restored, then brings dark back', () => {
+    const service = makeService();
+    service.setPreference('dark');
+    const root = document.documentElement;
+
+    const restore = suspendDarkTheme();
+    expect(root.classList.contains('dark')).toBeFalse();
+    expect(root.style.colorScheme).toBe('light');
+    expect(service.preference()).toBe('dark');
+
+    restore();
+    expect(root.classList.contains('dark')).toBeTrue();
+    expect(root.style.colorScheme).toBe('dark');
+  });
+
+  it('suspendDarkTheme is a no-op in the light theme', () => {
+    const restore = suspendDarkTheme();
+    restore();
+    expect(document.documentElement.classList.contains('dark')).toBeFalse();
   });
 });
