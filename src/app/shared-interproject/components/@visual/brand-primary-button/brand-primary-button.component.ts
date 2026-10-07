@@ -24,6 +24,10 @@ export type BrandPrimaryButtonTheme =
   | 'light'
   | 'solid';
 
+export type BrandPrimaryButtonSize =
+  'default'
+  | 'large';
+
 /**
  *  UI ONLY COMPONENT
  */
@@ -48,6 +52,8 @@ export class BrandPrimaryButtonComponent {
   @Input() disabled = false;
   @Input() error = false;
   @Input() theme: BrandPrimaryButtonTheme = 'primary';
+  /** `large` is for page-level calls to action (marketing surfaces); it also meets the minimum touch-target height. */
+  @Input() size: BrandPrimaryButtonSize = 'default';
   @Output() readonly click$ = new EventEmitter<void>();
   @Input() innerFlex: string = undefined;
   @Input() routerLink: string | readonly unknown[] = undefined;

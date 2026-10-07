@@ -7,16 +7,19 @@
     <div class="hero__actions">
       @if (isSignedIn) {
         <app-brand-primary-button theme="solid"
+                                  size="large"
                                   routerLink="/user/area"
                                   (click$)="ctaClicked.emit({cta: 'workspace', location: 'hero'})"
         >Open your workspace</app-brand-primary-button>
       } @else {
         <app-brand-primary-button theme="solid"
+                                  size="large"
                                   routerLink="/auth/signup"
                                   (click$)="ctaClicked.emit({cta: 'signup', location: 'hero'})"
         >Get started free</app-brand-primary-button>
       }
       <app-brand-primary-button theme="light"
+                                  size="large"
                                 routerLink="/modules/browser"
                                 (click$)="ctaClicked.emit({cta: 'browse_modules', location: 'hero'})"
       >Browse modules</app-brand-primary-button>
