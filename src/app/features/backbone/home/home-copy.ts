@@ -55,7 +55,7 @@ export const HOME_TOUR_TABS: HomeTourTab[] = [
     shot: {
       light: `${SHOT_ROOT}/tour-racks-light.webp`,
       dark: `${SHOT_ROOT}/tour-racks-dark.webp`,
-      alt: 'Rack page in Patcher with power, depth and balance analysis above the module layout'
+      alt: 'A two-row Eurorack case planned in Patcher, with Rings, Batumi, Mimeophon and other module panels in place'
     }
   },
   {
