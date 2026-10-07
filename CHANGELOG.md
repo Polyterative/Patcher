@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.7.28](https://github.com/Polyterative/Patcher/compare/v6.7.27...v6.7.28) (2026-10-07)
+
+
+### Features
+
+* **ops:** add Grafana for the self-host stack with provisioned dashboards and read-only role ([4931ad6](https://github.com/Polyterative/Patcher/commit/4931ad61d0932f0c87bfa008dbc010c7debb7999))
+* **ops:** add product-level Grafana dashboards for community, builds and ecosystem ([ff120a5](https://github.com/Polyterative/Patcher/commit/ff120a54a27e81ac0ac5430e442b35384159c0c3))
+* **ops:** cover Grafana container and :3001 in selfhost health checks ([ff9fee8](https://github.com/Polyterative/Patcher/commit/ff9fee8000c845dab2c89f43f97b4f57f61e1553))
+
+
+### Bug Fixes
+
+* **vercel:** allow blob: images in csp so local panel previews load ([ba52dec](https://github.com/Polyterative/Patcher/commit/ba52dec498db5a847e3f24ea874e1b2049507c68))
+
 ### [6.7.27](https://github.com/Polyterative/Patcher/compare/v6.7.26...v6.7.27) (2026-10-07)
 
 
