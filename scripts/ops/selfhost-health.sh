@@ -5,7 +5,8 @@
 #
 # Checks: container health + restart counts, ZFS pool health + free space, SMART,
 # newest hourly snapshot, newest replica snapshot, newest nightly pg_dump,
-# pg_cron failures in the last 24 h, gateway reachability on the LAN, public URL.
+# pg_cron failures in the last 24 h, gateway reachability on the LAN, public URL,
+# Grafana container + :3001 (only once the `grafana` container exists).
 # The checks live in lib/selfhost-health-remote.sh (also run by the NAS alert cron).
 #
 # Exit code: 0 all OK, 1 any FAIL (WARN does not fail) — usable from a cron or
@@ -23,7 +24,7 @@ GATEWAY="${GATEWAY:-http://127.0.0.1:8000}"
 PUBLIC_URL="${PUBLIC_URL-https://supabase.patcher.xyz}"
 
 case "${1:-}" in
-  -h|--help) sed -n '2,17p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+  -h|--help) sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
   "") ;;
   *) echo "unknown argument: $1" >&2; exit 1 ;;
 esac
