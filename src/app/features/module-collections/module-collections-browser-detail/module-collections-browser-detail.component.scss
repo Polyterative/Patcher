@@ -164,3 +164,8 @@
     grid-template-columns: 1fr;
   }
 }
+
+:host-context(html.dark) .collection-summary__placeholder {
+  background: var(--app-surface-2);
+  color: var(--app-ink-3);
+}

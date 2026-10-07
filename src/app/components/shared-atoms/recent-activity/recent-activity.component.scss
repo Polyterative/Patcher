@@ -92,3 +92,25 @@
 .recent-activity__actor {
   font-weight: 500;
 }
+
+:host-context(html.dark) {
+  .recent-activity {
+    background: var(--app-surface-translucent-strong);
+    border-color: var(--app-border);
+  }
+
+  .recent-activity__title,
+  .recent-activity__state,
+  .recent-activity__context,
+  .recent-activity__meta {
+    color: var(--app-ink-2);
+  }
+
+  .recent-activity__icon {
+    color: var(--app-ink-3);
+  }
+
+  .recent-activity__headline {
+    color: var(--app-link);
+  }
+}

@@ -23,6 +23,7 @@
   --insights-blue-600: #a5c0ff;
   --insights-blue-700: #bfd2ff;
   --insights-bar-track: rgba(148, 184, 220, 0.1);
+  --insights-on-blue: #0c1117;
 }
 
 .insights-page {
@@ -130,7 +131,7 @@
   margin: 0.75rem 0 0;
   font-size: 0.9rem;
   line-height: 1.5;
-  color: rgba(24, 37, 53, 0.85);
+  color: var(--app-ink);
   font-variant-numeric: tabular-nums;
 }
 
@@ -138,14 +139,14 @@
   margin: 1rem 0 0;
   font-size: 0.88rem;
   line-height: 1.5;
-  color: rgba(24, 37, 53, 0.78);
+  color: var(--app-ink-2);
 }
 
 .size-median {
   margin: 0.75rem 0 0;
   font-size: 0.88rem;
   line-height: 1.5;
-  color: rgba(24, 37, 53, 0.78);
+  color: var(--app-ink-2);
   font-variant-numeric: tabular-nums;
 }
 
@@ -153,7 +154,7 @@
   padding: 0.85rem 1rem;
   border: 1px solid rgba(86, 108, 132, 0.2);
   border-radius: 1rem;
-  background: rgba(248, 251, 255, 0.9);
+  background: var(--app-surface-translucent-strong);
 }
 
 .method-details summary {
@@ -172,7 +173,7 @@
   margin: 0.75rem 0 0;
   font-size: 0.8rem;
   line-height: 1.5;
-  color: rgba(24, 37, 53, 0.72);
+  color: var(--app-ink-2);
 }
 
 .updated-badge {
@@ -191,7 +192,7 @@
   margin: 0 0 1rem;
   font-size: 0.92rem;
   line-height: 1.5;
-  color: rgba(24, 37, 53, 0.78);
+  color: var(--app-ink-2);
 }
 
 .error-block {
@@ -208,14 +209,14 @@
 .error-block p {
   margin: 0;
   font-size: 0.92rem;
-  color: rgba(24, 37, 53, 0.85);
+  color: var(--app-ink);
 }
 
 .retry-button {
   padding: 0.5rem 1.1rem;
   font-size: 0.88rem;
   font-weight: 600;
-  color: #fff;
+  color: var(--insights-on-blue, #fff);
   background: var(--insights-blue-500);
   border: none;
   border-radius: 999px;
@@ -241,8 +242,8 @@
   padding: 0.5rem 1rem;
   font-size: 0.88rem;
   font-weight: 600;
-  color: rgba(24, 37, 53, 0.72);
-  background: rgba(248, 251, 255, 0.9);
+  color: var(--app-ink-2);
+  background: var(--app-surface-translucent-strong);
   border: 1px solid rgba(86, 108, 132, 0.2);
   border-radius: 999px;
   cursor: pointer;
@@ -254,7 +255,7 @@
 }
 
 .bucket-toggle__button--active {
-  color: #fff;
+  color: var(--insights-on-blue, #fff);
   background: var(--insights-blue-500);
   border-color: var(--insights-blue-500);
 }
@@ -316,7 +317,7 @@
 .hero-card__name {
   font-size: 0.95rem;
   font-weight: 600;
-  color: rgba(24, 37, 53, 0.9);
+  color: var(--app-ink);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -324,7 +325,7 @@
 
 .hero-card__maker {
   font-size: 0.8rem;
-  color: rgba(24, 37, 53, 0.62);
+  color: var(--app-ink-3);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -334,7 +335,7 @@
   font-size: 0.88rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-  color: rgba(24, 37, 53, 0.78);
+  color: var(--app-ink-2);
   text-align: right;
   white-space: nowrap;
 }
@@ -407,7 +408,7 @@
   font-size: 0.88rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-  color: rgba(24, 37, 53, 0.78);
+  color: var(--app-ink-2);
   text-align: left;
   white-space: nowrap;
 }
@@ -416,7 +417,7 @@
   margin: 0.6rem 0 0;
   font-size: 0.8rem;
   line-height: 1.5;
-  color: rgba(24, 37, 53, 0.62);
+  color: var(--app-ink-3);
   font-variant-numeric: tabular-nums;
 }
 
@@ -444,7 +445,7 @@
   padding: 1rem;
   border: 1px solid rgba(86, 108, 132, 0.14);
   border-radius: 1rem;
-  background: rgba(248, 251, 255, 0.86);
+  background: var(--app-surface-translucent-strong);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
@@ -452,7 +453,7 @@
   margin: 0;
   font-size: 0.88rem;
   line-height: 1.45;
-  color: rgba(24, 37, 53, 0.72);
+  color: var(--app-ink-2);
 }
 
 .snapshot-card__header {
@@ -472,7 +473,7 @@
 
 .snapshot-card__label {
   font-size: 0.88rem;
-  color: rgba(24, 37, 53, 0.76);
+  color: var(--app-ink-2);
 }
 
 .snapshot-card__value {
@@ -519,7 +520,7 @@
   margin: 0;
   font-size: 0.9rem;
   font-weight: 700;
-  color: rgba(24, 37, 53, 0.85);
+  color: var(--app-ink);
 }
 
 .footprint-item .footprint-body {
@@ -534,7 +535,7 @@
   margin: 1rem 0 0;
   font-size: 0.88rem;
   line-height: 1.5;
-  color: rgba(24, 37, 53, 0.72);
+  color: var(--app-ink-2);
 }
 
 .footprint-modules-note strong {
@@ -580,7 +581,7 @@
 
 .footprint-donut__caption {
   font-size: 0.22rem;
-  fill: rgba(24, 37, 53, 0.62);
+  fill: var(--app-ink-3);
 }
 
 .footprint-legend {
@@ -597,7 +598,7 @@
   align-items: center;
   flex-wrap: wrap;
   font-size: 0.9rem;
-  color: rgba(24, 37, 53, 0.85);
+  color: var(--app-ink);
 }
 
 .footprint-legend__row strong {
@@ -623,7 +624,7 @@
   margin: 0 0 1rem;
   font-size: 0.85rem;
   line-height: 1.5;
-  color: rgba(24, 37, 53, 0.62);
+  color: var(--app-ink-3);
 }
 
 .trend-chart {

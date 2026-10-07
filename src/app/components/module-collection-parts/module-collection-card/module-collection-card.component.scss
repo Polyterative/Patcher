@@ -86,3 +86,8 @@
   -webkit-mask-image: linear-gradient(180deg, #000 0 calc(100% - 0.65lh), transparent 100%);
   mask-image: linear-gradient(180deg, #000 0 calc(100% - 0.65lh), transparent 100%);
 }
+
+:host-context(html.dark) .collection-minimal__placeholder {
+  background: var(--app-surface-2);
+  color: var(--app-ink-3);
+}

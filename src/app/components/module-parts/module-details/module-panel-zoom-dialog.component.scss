@@ -4,7 +4,8 @@
   width: min(96vw, 90rem);
   max-width: 100%;
   height: min(92vh, 64rem);
-  background: var(--mat-sys-surface, #fff);
+  background: var(--app-surface, #fff);
+  color: var(--app-ink);
 }
 
 .panel-zoom-dialog__header {
@@ -26,7 +27,7 @@
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.12em;
-  color: var(--mat-sys-primary, #6200ee);
+  color: var(--app-link, #6200ee);
 }
 
 .panel-zoom-dialog__image-shell {

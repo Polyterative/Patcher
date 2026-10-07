@@ -10,7 +10,7 @@
   padding: 0.85rem 1rem;
   border: 1px solid rgba(86, 108, 132, 0.14);
   border-radius: 1rem;
-  background: rgba(248, 251, 255, 0.82);
+  background: var(--app-surface-translucent-strong);
 }
 
 .insight-chip--compact {
@@ -33,7 +33,7 @@
   display: block;
   margin-bottom: 0.15rem;
   font-size: 0.82rem;
-  color: rgba(24, 37, 53, 0.7);
+  color: var(--app-ink-2);
 }
 
 .insight-chip--featured strong {
@@ -44,7 +44,7 @@
 
 .insight-chip--featured .insight-chip__label {
   font-size: 0.85rem;
-  color: rgba(24, 37, 53, 0.8);
+  color: var(--app-ink-2);
 }
 
 @media (max-width: 36rem) {
