@@ -293,3 +293,16 @@
     animation: none;
   }
 }
+:host-context(html.dark) {
+  .manufacturer-row-count-badge {
+    border-color: rgba(148, 184, 220, 0.4);
+    color: var(--app-ink-2);
+    background: rgba(148, 184, 220, 0.14);
+  }
+
+  .manufacturer-row-fresh-pill {
+    border-color: rgba(111, 212, 154, 0.5);
+    color: #8fe3b2;
+    background: rgba(111, 212, 154, 0.14);
+  }
+}

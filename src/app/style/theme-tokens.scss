@@ -55,6 +55,40 @@ html.dark {
   --app-data-viz-grid-fill: rgba(143, 184, 232, 0.025);
   --app-data-viz-grid: rgba(143, 184, 232, 0.2);
   --app-data-viz-axis: rgba(143, 184, 232, 0.16);
+
+  // Aliases for Material system / legacy --color-* tokens. The app does not emit --mat-sys-*,
+  // so components that write var(--mat-sys-x, <light fallback>) always got the light fallback.
+  // Defined for dark only: light keeps each component's own fallback (unchanged look).
+  --mat-sys-surface: var(--app-surface);
+  --mat-sys-surface-variant: var(--app-surface-2);
+  --mat-sys-surface-container-low: var(--app-surface);
+  --mat-sys-surface-container: var(--app-surface-2);
+  --mat-sys-surface-container-high: #1f2937;
+  --mat-sys-surface-container-highest: #273243;
+  --mat-sys-on-surface: var(--app-ink);
+  --mat-sys-on-surface-variant: var(--app-ink-2);
+  --mat-sys-outline: var(--app-border-strong);
+  --mat-sys-outline-variant: var(--app-border-strong);
+  --mat-sys-primary: var(--app-link);
+  --mat-sys-on-primary: #0c1117;
+  --mat-sys-primary-container: #24446b;
+  --mat-sys-on-primary-container: #d6e6fb;
+  --mat-sys-secondary-container: #2a3b52;
+  --mat-sys-on-secondary-container: #d6e2f0;
+  --mat-sys-tertiary: #e0a3b8;
+  --mat-sys-on-tertiary: #3a1624;
+  --mat-sys-tertiary-container: #5a2f40;
+  --mat-sys-on-tertiary-container: #ffd9e4;
+  --mat-sys-error: #f2a08a;
+  --mat-sys-error-container: #8a3a22;
+  --mat-sys-on-error-container: #ffe3da;
+  --mat-sys-scrim: #000;
+  --color-text-primary: var(--app-ink);
+  --color-text-secondary: var(--app-ink-2);
+  --color-surface-container-low: var(--app-surface);
+  --color-success: #6fd49a;
+  --color-danger: #f2a08a;
+  --color-warning: #e8c46a;
 }
 
 // Base page paint — transitions are short per DESIGN_LANGUAGE motion rules.
