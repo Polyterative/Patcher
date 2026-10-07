@@ -101,6 +101,9 @@ Status: Active on `develop`, frontend-only. No schema/migration/RLS/RPC change. 
 - 2026-10-07: Tour shots are captured by Playwright at 1440x900 @2x (shell chrome hidden, 2rem side padding) and
   saved as 1600x1000 WebP, so the 16:10 frame uses `object-fit: contain` and never crops (owner saw the interim 16:9
   images cut off left/right). Only the active tab's image loads (`[hidden]` panels + `loading="lazy"`).
+- 2026-10-07: Owner found the racks shot's framing weak (mid-page scroll cut stat cards in half). Racks shot is now a
+  16:10 clip centred on `app-rack-visual-model` with 90px side padding and everything below the rack hidden, so the
+  case itself is the subject; the tour bullets carry the analysis claims.
 - 2026-10-07: Removed orphaned homepage rules from `theme-dark.scss` Pass 3b (old gradients, cards, discovery toggle
   overrides that fought the new token styling); kept selectors still used elsewhere (`.section-intro`, `.eyebrow`,
   module-browser toggles).
