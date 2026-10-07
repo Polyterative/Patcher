@@ -25,6 +25,15 @@ for c in $expected; do
     fail "$c status=$status health=$health restarts=$restarts"
   fi
 done
+if docker inspect grafana >/dev/null 2>&1; then
+  st=$(docker inspect -f '{{.State.Status}}|{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}|{{.RestartCount}}' grafana)
+  IFS='|' read -r status health restarts <<<"$st"
+  if [ "$status" = running ] && [ "$health" = healthy ]; then
+    [ "$restarts" -gt 0 ] && warn "grafana healthy but restarted $restarts×" || ok "grafana healthy"
+  else
+    fail "grafana status=$status health=$health restarts=$restarts"
+  fi
+fi
 tunnel=$(docker ps --filter name=cloudflared --format '{{.Names}} {{.Status}}' | head -1)
 case "$tunnel" in
   *" Up "*) ok "tunnel ${tunnel%% *} up" ;;
@@ -94,6 +103,11 @@ esac
 pub="${GATEWAY%:*}:8001"
 code=$(curl -s -o /dev/null -m 10 -w '%{http_code}' "$pub/" || true)
 [ "$code" = 404 ] && ok "public listener :8001 / -> 404 (no Studio)" || fail "public listener :8001 / -> ${code:-no answer} (want 404; re-run selfhost-public-listener.sh)"
+
+if docker inspect grafana >/dev/null 2>&1; then
+  code=$(curl -s -o /dev/null -m 10 -w '%{http_code}' "http://127.0.0.1:3001/api/health" || true)
+  [ "$code" = 200 ] && ok "grafana :3001 /api/health -> 200" || fail "grafana :3001 /api/health -> ${code:-no answer}"
+fi
 
 if [ -n "${PUBLIC_URL:-}" ]; then
   echo "== public URL (through Cloudflare + tunnel, no key: 401 = routed to auth)"
