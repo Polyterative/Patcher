@@ -1,0 +1,43 @@
+# Grafana for the self-host Supabase stack (Phase 1). LAN-only: :3001 on the NAS, not routed
+# through Envoy or the tunnel. Installed as the NAS custom app `grafana` via `include:` of
+# this file (see scripts/ops/selfhost-grafana.sh); lives in $OPS_DIR/grafana so the hourly
+# snapshots + daily replica cover it. GRAFANA_ROOT_URL and SUPABASE_NETWORK come from the
+# `.env` next to this file, written on the NAS by `selfhost-grafana.sh deploy`.
+services:
+  grafana:
+    image: grafana/grafana-oss:12.4.3
+    container_name: grafana
+    restart: unless-stopped
+    user: "472:472"
+    ports:
+      - "3001:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD__FILE: /run/secrets/grafana_admin_password
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+      GF_ANALYTICS_CHECK_FOR_PLUGIN_UPDATES: "false"
+      GF_NEWS_NEWS_FEED_ENABLED: "false"
+      GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:?set by selfhost-grafana.sh deploy}
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana-dashboards/patcher-usage.json
+    volumes:
+      - ./data:/var/lib/grafana
+      - ./provisioning:/etc/grafana/provisioning:ro
+      - ./dashboards:/var/lib/grafana-dashboards:ro
+      - ./secrets/grafana_admin_password:/run/secrets/grafana_admin_password:ro
+      - ./secrets/grafana_ro_password:/run/secrets/grafana_ro_password:ro
+    networks:
+      - supabase
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/api/health | grep -q '\"database\": \"ok\"'"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+networks:
+  supabase:
+    external: true
+    name: ${SUPABASE_NETWORK:?set by selfhost-grafana.sh deploy}
