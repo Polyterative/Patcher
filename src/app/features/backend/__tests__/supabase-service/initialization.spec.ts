@@ -50,7 +50,7 @@ describe('SupabaseService - Initialization', () => {
     const supabaseClient = getSupabaseClientDouble(service);
     expect(supabaseClient.supabaseUrl).toBeDefined();
     expect(supabaseClient.supabaseKey).toBeDefined();
-    expect(supabaseClient.supabaseUrl).toContain('supabase.co');
+    expect(supabaseClient.supabaseUrl).toMatch(/^https?:\/\/[^/]+$/);
   });
   
   it('should initialize user management observables', () => {

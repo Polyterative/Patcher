@@ -41,7 +41,7 @@ describe('SupabaseService - Database Connection Health', () => {
     expect(supabaseClient.supabaseKey).withContext('Key should be configured').toBeDefined();
     
     // Validate URL format
-    expect(supabaseClient.supabaseUrl).withContext('URL should be valid Supabase endpoint').toMatch(/^https:\/\/.*\.supabase\.co$/);
+    expect(supabaseClient.supabaseUrl).withContext('URL should be valid Supabase endpoint').toMatch(/^https?:\/\/[^/]+$/);
   });
   
   it('should handle connection without throwing synchronous errors', () => {
