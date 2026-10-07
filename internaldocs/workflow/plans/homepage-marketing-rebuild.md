@@ -120,6 +120,10 @@ Status: Active on `develop`, frontend-only. No schema/migration/RLS/RPC change. 
   controls in both themes. Removed `home-cta-*`/`home-text-link` mixins and the unused accent variants from `_home-ui.scss`.
   Trade-off: brand buttons are the app's compact size (about 34px tall), smaller than the old 56px CTAs.
 
+- 2026-10-07: Owner chose an optional `size="large"` on the shared `app-brand-primary-button` (45px, meets the 44px
+  touch target) for page-level CTAs only: hero pair, switch primary, closing actions. Secondary links stay default
+  size. Material pins button height via its container-height token, so `.large` sets `height`, not only line-height.
+
 ## Documentation impact
 
 - Classification: public-visual

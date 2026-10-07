@@ -6,7 +6,7 @@
      [attr.rel]="linkRel"
      [class]="'brand-button'+' '+theme"
      [disabled]="disabled||error"
-     [ngClass]='{"disabled": disabled, "error": error }'
+     [ngClass]='{"disabled": disabled, "error": error, "large": size === "large" }'
      [matTooltip]="tooltip"
      [matTooltipDisabled]="!tooltip"
      [matTooltipPosition]="tooltipPosition"
@@ -25,7 +25,7 @@
      [fragment]="fragment"
      [class]="'brand-button'+' '+theme"
      [disabled]="disabled||error"
-     [ngClass]='{"disabled": disabled, "error": error }'
+     [ngClass]='{"disabled": disabled, "error": error, "large": size === "large" }'
      [matTooltip]="tooltip"
      [matTooltipDisabled]="!tooltip"
      [matTooltipPosition]="tooltipPosition"

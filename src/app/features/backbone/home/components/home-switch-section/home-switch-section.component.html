@@ -15,11 +15,13 @@
     <div class="switch__actions">
       @if (isSignedIn) {
         <app-brand-primary-button theme="solid"
+                                  size="large"
                                   routerLink="/user/area"
                                   (click$)="ctaClicked.emit({cta: 'import_rack', location: 'switch'})"
         >Import a rack</app-brand-primary-button>
       } @else {
         <app-brand-primary-button theme="solid"
+                                  size="large"
                                   routerLink="/auth/signup"
                                   (click$)="ctaClicked.emit({cta: 'import_signup', location: 'switch'})"
         >Create a free account</app-brand-primary-button>

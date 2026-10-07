@@ -90,6 +90,12 @@ describe('BrandPrimaryButtonComponent', () => {
     });
   });
 
+  describe('size', () => {
+    it('defaults to "default"', () => {
+      expect(makeComp().size).toBe('default');
+    });
+  });
+
   describe('plain links (href)', () => {
     it('href and target default to undefined', () => {
       const comp = makeComp();
@@ -116,6 +122,8 @@ describe('BrandPrimaryButtonComponent', () => {
         <app-brand-primary-button id="external" href="https://example.com/docs" target="_blank" icon="north_east">Docs</app-brand-primary-button>
         <app-brand-primary-button id="anchor" href="#switch">Jump</app-brand-primary-button>
         <app-brand-primary-button id="off" href="https://example.com" [disabled]="true">Off</app-brand-primary-button>
+        <app-brand-primary-button id="big" routerLink="/start" size="large">Start</app-brand-primary-button>
+        <app-brand-primary-button id="bigLink" href="#switch" size="large">Jump</app-brand-primary-button>
       `
     })
     class HostComponent {
@@ -162,6 +170,15 @@ describe('BrandPrimaryButtonComponent', () => {
       expect(anchor?.getAttribute('href')).toBe('#switch');
       expect(anchor?.hasAttribute('target')).toBeFalse();
       expect(anchor?.hasAttribute('rel')).toBeFalse();
+    });
+
+    it('applies the large class on both router and plain anchors only when asked', () => {
+      const fixture = TestBed.createComponent(HostComponent);
+      fixture.detectChanges();
+
+      expect(anchorIn(fixture.nativeElement, 'big')?.classList).toContain('large');
+      expect(anchorIn(fixture.nativeElement, 'bigLink')?.classList).toContain('large');
+      expect(anchorIn(fixture.nativeElement, 'router')?.classList).not.toContain('large');
     });
 
     it('drops the href when disabled', () => {
