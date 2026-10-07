@@ -1,28 +1,44 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  EventEmitter,
   Inject,
   Input,
   OnInit,
+  Output,
   PLATFORM_ID,
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
+import { RouterLink } from '@angular/router';
+import { Observable, combineLatest, map, take, timer } from 'rxjs';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
 import { PatchModule } from 'src/app/components/patch-parts/patch.module';
 import { DETAIL_ANALYTICS_SURFACES } from 'src/app/components/detail-analytics-surface';
-import {
-  timer
-} from 'rxjs';
-import {
-  take,
-} from 'rxjs/operators';
+import { PatchConnection } from 'src/app/models/connection';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
-import { HomeHeroContent, HomeHeroVisual } from '../../home-content.models';
-import { buildHomeTextSegments } from '../../home-text-segments.util';
-
+import { HomeCtaClick, HomeHeroContent } from '../../home-content.models';
 
 const HERO_DEFAULT_PATCH_ID = 5;
-const HERO_PATCH_LOAD_DELAY_MS = 1000;
+const HERO_PATCH_LOAD_DELAY_MS = 600;
+
+export interface HomeHeroPatchMeta {
+  name: string;
+  modules: number;
+  cables: number;
+}
+
+export function buildHeroPatchMeta(name: string | undefined, connections: PatchConnection[] | null): HomeHeroPatchMeta | null {
+  if (!name || !connections?.length) {
+    return null;
+  }
+  const moduleKeys = new Set<string>();
+  for (const connection of connections) {
+    moduleKeys.add(`${connection.a.module.id}:${connection.instance_id_a ?? ''}`);
+    moduleKeys.add(`${connection.b.module.id}:${connection.instance_id_b ?? ''}`);
+  }
+  return {name, modules: moduleKeys.size, cables: connections.length};
+}
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -30,45 +46,15 @@ const HERO_PATCH_LOAD_DELAY_MS = 1000;
   templateUrl: './home-experience-hero.component.html',
   styleUrls: ['./home-experience-hero.component.scss'],
   standalone: true,
-  imports: [CommonModule, PatchModule]
+  imports: [CommonModule, MatIconModule, PatchModule, RouterLink]
 })
 export class HomeExperienceHeroComponent extends SubManager implements OnInit {
-  private _content: HomeHeroContent = {
-    eyebrow: '',
-    title: '',
-    subtitle: '',
-    mainVisual: {
-      src: '',
-      alt: ''
-    }
-  };
-  private subtitleSegmentsByLine = new Map<string, ReturnType<typeof buildHomeTextSegments>>();
+  @Input({required: true}) content!: HomeHeroContent;
+  @Input() isSignedIn = false;
+  @Output() readonly ctaClicked = new EventEmitter<HomeCtaClick>();
+  @Output() readonly switchRequested = new EventEmitter<void>();
 
-  @Input()
-  set content(value: HomeHeroContent) {
-    this._content = value ?? {
-      eyebrow: '',
-      title: '',
-      subtitle: '',
-      mainVisual: {
-        src: '',
-        alt: ''
-      }
-    };
-    this.subtitleLines = this._content.subtitle
-      .split('\n')
-      .map(line => line.trim())
-      .filter(line => line.length > 0);
-    this.subtitleSegmentsByLine = new Map(
-      this.subtitleLines.map((line) => [line, buildHomeTextSegments(line, this._content.subtitleKeywords ?? [])])
-    );
-  }
-
-  get content(): HomeHeroContent {
-    return this._content;
-  }
-
-  public subtitleLines: string[] = [];
+  readonly patchMeta$: Observable<HomeHeroPatchMeta | null>;
 
   constructor(
     public readonly patchDetailDataService: PatchDetailDataService,
@@ -76,7 +62,10 @@ export class HomeExperienceHeroComponent extends SubManager implements OnInit {
   ) {
     super();
     this.patchDetailDataService.setDetailAnalyticsSurface(DETAIL_ANALYTICS_SURFACES.homePreview);
-    this.content = this._content;
+    this.patchMeta$ = combineLatest([
+      this.patchDetailDataService.singlePatchData$,
+      this.patchDetailDataService.patchConnections$
+    ]).pipe(map(([patch, connections]) => buildHeroPatchMeta(patch?.name, connections)));
   }
 
   ngOnInit(): void {
@@ -96,12 +85,9 @@ export class HomeExperienceHeroComponent extends SubManager implements OnInit {
     super.ngOnDestroy();
   }
 
-  getSubtitleSegments(line: string) {
-    return this.subtitleSegmentsByLine.get(line) ?? [];
+  onSwitchLinkClick(event: Event): void {
+    event.preventDefault();
+    this.ctaClicked.emit({cta: 'switch_anchor', location: 'hero'});
+    this.switchRequested.emit();
   }
-
-  getVisualCaptionSegments(visual: HomeHeroVisual) {
-    return buildHomeTextSegments(visual.caption ?? '', visual.captionKeywords ?? []);
-  }
-
 }

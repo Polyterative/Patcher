@@ -1,0 +1,63 @@
+@let active = (activeIndex$ | async) ?? 0;
+
+<div class="tour">
+  <div class="tour__tabs" role="tablist" aria-label="What Patcher keeps track of">
+    @for (tab of tabs; track tab.id; let index = $index) {
+      <button #tabButton
+              type="button"
+              role="tab"
+              class="tour__tab"
+              [id]="'home-tour-tab-' + tab.id"
+              [class.tour__tab--active]="index === active"
+              [attr.aria-selected]="index === active"
+              [attr.aria-controls]="'home-tour-panel-' + tab.id"
+              [attr.tabindex]="index === active ? 0 : -1"
+              (click)="select(index)"
+              (keydown)="onTabKeydown($event, index)">
+        <span class="tour__tab-index" aria-hidden="true">0{{ index + 1 }}</span>
+        <mat-icon class="tour__tab-icon" aria-hidden="true">{{ tab.icon }}</mat-icon>
+        <span class="tour__tab-label">{{ tab.label }}</span>
+      </button>
+    }
+  </div>
+
+  @for (tab of tabs; track tab.id; let index = $index) {
+    <div class="tour__panel"
+         role="tabpanel"
+         [id]="'home-tour-panel-' + tab.id"
+         [attr.aria-labelledby]="'home-tour-tab-' + tab.id"
+         [hidden]="index !== active">
+      <div class="tour__copy">
+        <h3 class="tour__title">{{ tab.title }}</h3>
+        <p class="tour__description">{{ tab.description }}</p>
+        <ul class="tour__points">
+          @for (point of tab.points; track point) {
+            <li>{{ point }}</li>
+          }
+        </ul>
+        <a class="tour__link"
+           [routerLink]="tab.link.href"
+           (click)="ctaClicked.emit({cta: 'tour_' + tab.id, location: 'tour'})">
+          {{ tab.link.label }}
+          <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+        </a>
+      </div>
+      <div class="tour__shot">
+        <img class="tour__img tour__img--light"
+             [src]="tab.shot.light"
+             [alt]="tab.shot.alt"
+             width="1600"
+             height="1000"
+             loading="lazy"
+             decoding="async">
+        <img class="tour__img tour__img--dark"
+             [src]="tab.shot.dark"
+             [alt]="tab.shot.alt"
+             width="1600"
+             height="1000"
+             loading="lazy"
+             decoding="async">
+      </div>
+    </div>
+  }
+</div>

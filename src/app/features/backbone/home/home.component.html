@@ -1,129 +1,98 @@
+@let signedIn = (homeData.isSignedIn$ | async) ?? false;
+
 <div class="home-page">
-  <div class="home-page__inner">
-    <section>
-        <app-home-experience-hero [content]="heroContent">
-          <div hero-actions class="hero-action-stack">
-          <app-brand-primary-button routerLink="/modules/browser" icon="travel_explore">Browse modules
-          </app-brand-primary-button>
-          <app-brand-primary-button routerLink="/auth/signup" icon="person_add">Sign up
-          </app-brand-primary-button>
-          <app-brand-primary-button routerLink="/auth/login" icon="login">Log in</app-brand-primary-button>
-          </div>
-        </app-home-experience-hero>
-    </section>
+  <div class="home-page__hero">
+    <app-home-experience-hero
+      [content]="hero"
+      [isSignedIn]="signedIn"
+      (ctaClicked)="homeData.ctaClicked$.next($event)"
+      (switchRequested)="scrollToSwitch()"
+    ></app-home-experience-hero>
+  </div>
 
+  <div class="home-page__band">
+    <app-home-proof-strip
+      [figures]="(homeData.proofFigures$ | async) ?? []"
+      (ctaClicked)="homeData.ctaClicked$.next($event)"
+    ></app-home-proof-strip>
+  </div>
+
+  <section class="home-section" aria-labelledby="home-tour-title">
+    <header class="home-section__head">
+      <p class="home-section__index">The system</p>
+      <h2 id="home-tour-title" class="home-section__title">One place for the gear, the case and the cables.</h2>
+      <p class="home-section__intro">
+        Your collection feeds your racks and patches, so each module is entered once and shows up wherever you need it.
+      </p>
+    </header>
+    <app-home-system-tour
+      [tabs]="tourTabs"
+      (ctaClicked)="homeData.ctaClicked$.next($event)"
+    ></app-home-system-tour>
+  </section>
+
+  <section id="switch" class="home-section home-section--switch" aria-labelledby="home-switch-title">
+    <header class="home-section__head">
+      <p class="home-section__index">Switching</p>
+      <h2 id="home-switch-title" class="home-section__title">Coming from ModularGrid? Bring your racks with you.</h2>
+      <p class="home-section__intro">
+        Import a rack file, check the matches and carry on where you left off.
+      </p>
+    </header>
+    <app-home-switch-section
+      [steps]="switchSteps"
+      [benefits]="switchBenefits"
+      [isSignedIn]="signedIn"
+      (ctaClicked)="homeData.ctaClicked$.next($event)"
+    ></app-home-switch-section>
+  </section>
+
+  <section class="home-section" aria-labelledby="home-community-title">
+    <header class="home-section__head">
+      <p class="home-section__index">Community</p>
+      <h2 id="home-community-title" class="home-section__title">What the community owns.</h2>
+      <p class="home-section__intro">Live rankings from the collections people keep on Patcher.</p>
+    </header>
     @defer (on viewport) {
-      <section class="proof-list" aria-label="product walkthrough">
-        @for (section of proofSections; track section.title; let index = $index) {
-          <app-home-proof-showcase
-            [kicker]="section.kicker"
-            [title]="section.title"
-            [description]="section.description"
-            [keywords]="section.keywords ?? []"
-            [tone]="section.tone"
-            [reverse]="index % 2 === 1"
-          >
-            <div class="frame-host">
-              <lib-device-frame-wrapper>
-                @defer (on viewport) {
-                  @switch (section.kind) {
-                    @case ('patch') {
-                      <app-patch-browser-patch-detail
-                        [ignoreSeo]="true"
-                        [viewConfig]="patchViewConfig"
-                      />
-                    }
-                    @case ('rack') {
-                      <app-rack-browser-rack-detail
-                        [ignoreSeo]="true"
-                        [viewConfig]="rackViewConfig"
-                      />
-                    }
-                    @case ('module') {
-                      <app-module-browser-detail
-                        [ignoreSeo]="true"
-                        [viewConfig]="moduleViewConfig"
-                      />
-                    }
-                  }
-                } @placeholder {
-                  <div class="frame-placeholder"></div>
-                }
-              </lib-device-frame-wrapper>
-            </div>
-          </app-home-proof-showcase>
-        }
-      </section>
+      <app-home-discovery-section></app-home-discovery-section>
     } @placeholder {
-      <div></div>
+      <div class="home-section__placeholder"></div>
     }
+  </section>
 
-    @if (showHomepageInsights) {
-      <section>
-        @defer (on viewport) {
-          <app-home-insights-section
-            [showInsightsPageEntry]="showInsightsPageEntry"
-            [communityLinks]="communityLinks"
-            [insightsTitle]="insightsTitle"
-            [insightsDescription]="insightsDescription"
-          ></app-home-insights-section>
-        } @placeholder {
-          <div></div>
-        }
-      </section>
-    }
+  <section class="home-section" aria-labelledby="home-api-title">
+    <header class="home-section__head">
+      <p class="home-section__index">Developers</p>
+      <h2 id="home-api-title" class="home-section__title">Build on Patcher's data.</h2>
+      <p class="home-section__intro">
+        The public API serves the same module catalogue the app runs on. Build rack tools or store integrations on data
+        the community already maintains.
+      </p>
+    </header>
+    <app-home-api-section
+      [facts]="apiFacts"
+      [docsUrl]="apiDocsUrl"
+      [isSignedIn]="signedIn"
+      (ctaClicked)="homeData.ctaClicked$.next($event)"
+    ></app-home-api-section>
+  </section>
 
-    @if (showCommunityTrends) {
-      <section>
-        @defer (on viewport) {
-          <app-home-discovery-section></app-home-discovery-section>
-        } @placeholder {
-          <div></div>
-        }
-      </section>
-    }
+  <section class="home-section" aria-labelledby="home-open-title">
+    <header class="home-section__head">
+      <p class="home-section__index">Open</p>
+      <h2 id="home-open-title" class="home-section__title">Built in the open.</h2>
+      <p class="home-section__intro">The code, the catalogue and the roadmap are all public.</p>
+    </header>
+    <app-home-open-section
+      [pillars]="openPillars"
+      (ctaClicked)="homeData.ctaClicked$.next($event)"
+    ></app-home-open-section>
+  </section>
 
-    <section>
-      @defer (on viewport) {
-        <app-home-open-principles
-          sectionTitle="Why it feels easy to use"
-          sectionIntro="Everything is designed to help you stay creative, organized, and get back to great sounds faster."
-          [cards]="principleCards"
-        ></app-home-open-principles>
-      } @placeholder {
-        <div></div>
-      }
-    </section>
-
-    <section>
-      @defer (on viewport) {
-        <app-home-workflow-rail
-          sectionTitle="How to actually use it"
-          sectionIntro="Explore, build, organize, and return."
-          [steps]="workflowSteps"
-        ></app-home-workflow-rail>
-      } @placeholder {
-        <div></div>
-      }
-    </section>
-
-    <section>
-      @defer (on viewport) {
-        <app-home-invitation-cta
-          title="Start building your library"
-          description="Look around first, then sign up when you want to save modules, racks, and patches."
-          imageSrc="/assets/png/LOGO_1.png"
-          imageAlt="Patcher logo"
-        >
-          <app-brand-primary-button routerLink="/modules/browser" icon="travel_explore">Browse modules
-          </app-brand-primary-button>
-          <app-brand-primary-button routerLink="/auth/signup" icon="person_add">Sign up
-          </app-brand-primary-button>
-          <app-brand-primary-button routerLink="/auth/login" icon="login">Log in</app-brand-primary-button>
-        </app-home-invitation-cta>
-      } @placeholder {
-        <div></div>
-      }
-    </section>
+  <div class="home-section home-section--closing">
+    <app-home-closing-cta
+      [isSignedIn]="signedIn"
+      (ctaClicked)="homeData.ctaClicked$.next($event)"
+    ></app-home-closing-cta>
   </div>
 </div>

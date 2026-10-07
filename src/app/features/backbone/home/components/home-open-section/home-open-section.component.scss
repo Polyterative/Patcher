@@ -1,0 +1,79 @@
+@use "src/app/style/brand-resources.scss" as *;
+@use "../../home-ui" as ui;
+
+:host {
+  display: block;
+}
+
+.open {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-block-start: 1px solid var(--app-border);
+}
+
+.open__pillar {
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  gap: 0.6rem;
+  padding: 1.75rem 1.5rem 0 0;
+  margin-inline-end: 1.5rem;
+  border-inline-end: 1px solid var(--app-border);
+
+  &:last-child {
+    margin-inline-end: 0;
+    border-inline-end: 0;
+  }
+}
+
+.open__icon {
+  inline-size: 1.7rem;
+  block-size: 1.7rem;
+  font-size: 1.7rem;
+  color: var(--home-accent);
+}
+
+.open__title {
+  @include content-font;
+  margin: 0;
+  color: var(--app-ink);
+  font-size: 1.28rem;
+  font-weight: 700;
+}
+
+.open__description {
+  @include content-font;
+  margin: 0;
+  color: var(--app-ink-2);
+  font-size: 1.12rem;
+  line-height: 1.5;
+}
+
+.open__link {
+  @include ui.home-text-link;
+  justify-self: start;
+  font-size: 1.08rem;
+
+  mat-icon {
+    inline-size: 1.15rem;
+    block-size: 1.15rem;
+    font-size: 1.15rem;
+  }
+}
+
+@media (max-width: ui.$home-bp-narrow) {
+  .open {
+    grid-template-columns: 1fr;
+    row-gap: 0;
+    border-block-start: 0;
+  }
+
+  .open__pillar {
+    margin: 0;
+    padding: 1.4rem 0;
+    border-inline-end: 0;
+    border-block-start: 1px solid var(--app-border);
+  }
+}

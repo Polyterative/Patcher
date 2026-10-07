@@ -1,52 +1,25 @@
-import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
-import { DETAIL_ANALYTICS_SURFACES } from 'src/app/components/detail-analytics-surface';
-import { RouterLink } from '@angular/router';
-import { take, timer } from 'rxjs';
-import { ModuleDetailDataService } from 'src/app/components/module-parts/module-detail-data.service';
-import {
-  defaultModuleMinimalViewConfig,
-  ModuleMinimalViewConfig
-} from 'src/app/components/module-parts/module-minimal/module-minimal.component';
-import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
-import {
-  defaultPatchMinimalViewConfig,
-  PatchMinimalViewConfig
-} from 'src/app/components/patch-parts/patch-minimal/patch-minimal.component';
-import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
-import {
-  defaultRackMinimalViewConfig,
-  RackMinimalViewConfig
-} from 'src/app/components/rack-parts/rack-minimal/rack-minimal.component';
-import { ModuleBrowserSharedModule } from 'src/app/features/module-browser/module-browser-shared.module';
-import { PatchBrowserSharedModule } from 'src/app/features/patch-browser/patch-browser-shared.module';
-import { RackBrowserSharedModule } from 'src/app/features/routes/rack/rack-browser-shared.module';
-import { AppStateService } from 'src/app/shared-interproject/app-state.service';
-import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
-import { DeviceFrameWrapperModule } from 'src/app/shared-interproject/components/@visual/device-frame-wrapper/device-frame-wrapper.module';
-import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
+import { AsyncPipe, DOCUMENT, isPlatformBrowser } from '@angular/common';
+import { ChangeDetectionStrategy, Component, Inject, PLATFORM_ID } from '@angular/core';
 import { SeoSocialShareData } from 'src/app/models/seo.model';
 import { SeoAndUtilsService } from '../seo-and-utils.service';
-import { HomeExperienceHeroComponent } from './components/home-experience-hero/home-experience-hero.component';
+import { HomeApiSectionComponent } from './components/home-api-section/home-api-section.component';
+import { HomeClosingCtaComponent } from './components/home-closing-cta/home-closing-cta.component';
 import { HomeDiscoverySectionComponent } from './components/home-discovery-section/home-discovery-section.component';
-import { HomeInvitationCtaComponent } from './components/home-invitation-cta/home-invitation-cta.component';
-import { HomeOpenPrinciplesComponent } from './components/home-open-principles/home-open-principles.component';
-import { HomeProofShowcaseComponent } from './components/home-proof-showcase/home-proof-showcase.component';
-import { HomeWorkflowRailComponent } from './components/home-workflow-rail/home-workflow-rail.component';
-import { HomeInsightsSectionComponent } from './components/home-insights-section/home-insights-section.component';
+import { HomeExperienceHeroComponent } from './components/home-experience-hero/home-experience-hero.component';
+import { HomeOpenSectionComponent } from './components/home-open-section/home-open-section.component';
+import { HomeProofStripComponent } from './components/home-proof-strip/home-proof-strip.component';
+import { HomeSwitchSectionComponent } from './components/home-switch-section/home-switch-section.component';
+import { HomeSystemTourComponent } from './components/home-system-tour/home-system-tour.component';
+import { HomeDataService } from './home-data.service';
 import {
-  HomeFounderNote,
-  HomeHeroContent,
-  HomeLinkPill,
-  HomePrincipleCard,
-  HomeProofSection,
-  HomeWorkflowStep
-} from './home-content.models';
-
-const HOME_PROOF_PATCH_ID = 5;
-const HOME_PROOF_MODULE_ID = 1025;
-const HOME_PROOF_RACK_ID = 265;
-const HOME_PROOF_DELAY_STEP_MS = 500;
+  HOME_API_DOCS_URL,
+  HOME_API_FACTS,
+  HOME_HERO,
+  HOME_OPEN_PILLARS,
+  HOME_SWITCH_BENEFITS,
+  HOME_SWITCH_STEPS,
+  HOME_TOUR_TABS
+} from './home-copy';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -55,234 +28,49 @@ const HOME_PROOF_DELAY_STEP_MS = 500;
   templateUrl: './home.component.html',
   standalone: true,
   imports: [
-    CommonModule,
-    RouterLink,
-    BrandPrimaryButtonComponent,
-    DeviceFrameWrapperModule,
-    HomeExperienceHeroComponent,
+    AsyncPipe,
+    HomeApiSectionComponent,
+    HomeClosingCtaComponent,
     HomeDiscoverySectionComponent,
-    HomeInvitationCtaComponent,
-    HomeInsightsSectionComponent,
-    HomeOpenPrinciplesComponent,
-    HomeProofShowcaseComponent,
-    HomeWorkflowRailComponent,
-    PatchBrowserSharedModule,
-    RackBrowserSharedModule,
-    ModuleBrowserSharedModule,
+    HomeExperienceHeroComponent,
+    HomeOpenSectionComponent,
+    HomeProofStripComponent,
+    HomeSwitchSectionComponent,
+    HomeSystemTourComponent,
   ],
+  providers: [HomeDataService]
 })
-export class HomeComponent extends SubManager implements OnInit, OnDestroy {
-  readonly showHomepageInsights = true;
-  readonly showCommunityTrends = true;
-
-  readonly patchViewConfig: PatchMinimalViewConfig = {
-    ...defaultPatchMinimalViewConfig,
-    hideButtons: true,
-  };
-  readonly rackViewConfig: RackMinimalViewConfig = {
-    ...defaultRackMinimalViewConfig,
-  };
-  readonly moduleViewConfig: ModuleMinimalViewConfig = {
-    ...defaultModuleMinimalViewConfig,
-    hidePanelsOptions: true,
-    bigPanelImage: false,
-    ellipseDescription: true,
-    hideBySameManufacturer: true,
-    hidePatchedIn: false,
-    hideRackedIn: false
-  };
-
-  readonly heroContent: HomeHeroContent = {
-    eyebrow: '',
-    title: 'Your operating system for everything modular.',
-    subtitle: 'Track every setup in clear detail\nSave modules to your library and plan racks before moving hardware\nReturn to past patches ready to recreate, refine, and share your sound',
-    mainVisual: {
-      src: '/assets/screenshots/major-area-screenshots/04-patches.jpg',
-      alt: 'Patcher patch detail interface with patch notes and controls',
-      caption: 'Capture the full patch while it is fresh, then reopen it later and recreate it perfectly for the next gig.'
-    },
-    floatingVisualA: {
-      src: '/assets/screenshots/major-area-screenshots/03-module-details.jpg',
-      alt: 'Module detail card with specs and module image'
-    },
-    floatingVisualB: {
-      src: '/assets/screenshots/major-area-screenshots/07-rack-details.jpg',
-      alt: 'Rack detail view showing arrangement and module placements'
-    }
-  };
-
-  readonly principleCards: HomePrincipleCard[] = [
-    {
-      icon: 'tips_and_updates',
-      title: 'Stay in flow',
-      description: 'Your work is saved as you go, so you can focus on sound instead of managing steps.'
-    },
-    {
-      icon: 'auto_awesome',
-      title: 'Make big systems feel clear',
-      description: 'Complex patches stay understandable, so decisions feel easier and faster.'
-    },
-    {
-      icon: 'group',
-      title: 'Share only what you choose',
-      description: 'Keep drafts private and publish finished work when you are ready.'
-    }
-  ];
-
-  readonly workflowSteps: HomeWorkflowStep[] = [
-    {
-      kicker: 'step 01',
-      title: 'Save your modules to your library',
-      description: 'Browse modules and add them to your collection.'
-    },
-    {
-      kicker: 'step 02',
-      title: 'Shape your rack layout with the drag-and-drop planner',
-      description: 'Test layout ideas on screen before moving real hardware.'
-    },
-    {
-      kicker: 'step 03',
-      title: 'Capture that cool patch idea before it slips away',
-      description: 'Save your patch with all the details while it is fresh, so you can come back to it later and get back to the sound fast.'
-    },
-    {
-      kicker: 'step 04',
-      title: 'Come back and recreate fast',
-      description: 'Open a past session and rebuild with perfect accuracy for your next rehearsal gig, or share your work with the community when you are ready.'
-    }
-  ];
-
-  readonly proofSections: HomeProofSection[] = [
-    {
-      kind: 'patch',
-      kicker: 'auto-save patch details',
-      title: 'Turn sessions into repeatable results',
-      description: 'Save settings, cable routes, and notes while you patch, then reopen your ideas and rebuild them fast.',
-      keywords: ['exact setup'],
-      tone: 'patch'
-    },
-    {
-      kind: 'rack',
-      kicker: 'drag-and-drop rack planner',
-      title: 'Quickly plan and iterate changes before touching modules.',
-      description: 'Try layout changes visually, compare tradeoffs early, and keep your case organized as it grows.',
-      keywords: ['layout changes visually'],
-      tone: 'rack'
-    },
-    {
-      kind: 'module',
-      kicker: 'free public module library',
-      title: 'Find modules with less guesswork',
-      description: 'Explore a deeply detailed module library with hard-to-find technical specs, so you can compare with confidence before you buy or patch.',
-      keywords: ['hard-to-find technical specs'],
-      tone: 'module'
-    }
-  ];
-
-  readonly communityLinks: HomeLinkPill[];
-  readonly showInsightsPageEntry: boolean;
-  private readonly browseLinks: HomeLinkPill[] = [
-    {
-      icon: 'view_module',
-      label: 'Module browser',
-      href: '/modules/browser'
-    },
-    {
-      icon: 'dashboard_customize',
-      label: 'Rack browser',
-      href: '/racks/browser'
-    },
-    {
-      icon: 'cable',
-      label: 'Patch browser',
-      href: '/patches/browser'
-    },
-  ];
-  readonly insightsTitle = 'Open the full insights page';
-  readonly insightsDescription =
-    'Start with the homepage snapshot, then jump into the dedicated insights page for the fuller read on catalogue growth, activity, and sharing patterns.';
-
-  readonly userStories: HomeFounderNote[] = [
-    {
-      quote: 'opened a patch from 6 weeks ago before a set, followed my saved steps, and got back to the sound fast.',
-      author: 'Lena R.',
-      role: 'live performer'
-    },
-    {
-      quote: 'rack planner saved me hours of moving modules around, then finding out the layout was not worth it.',
-      author: 'Marco T.',
-      role: 'studio producer'
-    },
-    {
-      quote: 'module pages show the exact specs i need, so i am not digging through forums or asking around to find them.',
-      author: 'Ari N.',
-      role: 'modular collector'
-    },
-    {
-      quote: 'when i forget why i patched something a certain way, the notes inside the patch bring it back instantly.',
-      author: 'Noah K.',
-      role: 'sound designer'
-    }
-  ];
+export class HomeComponent {
+  readonly hero = HOME_HERO;
+  readonly tourTabs = HOME_TOUR_TABS;
+  readonly switchSteps = HOME_SWITCH_STEPS;
+  readonly switchBenefits = HOME_SWITCH_BENEFITS;
+  readonly openPillars = HOME_OPEN_PILLARS;
+  readonly apiFacts = HOME_API_FACTS;
+  readonly apiDocsUrl = HOME_API_DOCS_URL;
 
   constructor(
-    public readonly appState: AppStateService,
-    readonly seoAndUtilsService: SeoAndUtilsService,
-    readonly patchDetailDataService: PatchDetailDataService,
-    readonly rackDetailDataService: RackDetailDataService,
-    readonly moduleDetailDataService: ModuleDetailDataService,
+    readonly homeData: HomeDataService,
+    seoAndUtilsService: SeoAndUtilsService,
+    @Inject(DOCUMENT) private readonly document: Document,
     @Inject(PLATFORM_ID) private readonly platformId: object,
   ) {
-    super();
-    this.patchDetailDataService.setDetailAnalyticsSurface(DETAIL_ANALYTICS_SURFACES.homePreview);
-    this.rackDetailDataService.setDetailAnalyticsSurface(DETAIL_ANALYTICS_SURFACES.homePreview);
-    this.moduleDetailDataService.setDetailAnalyticsSurface(DETAIL_ANALYTICS_SURFACES.homePreview);
-    this.showInsightsPageEntry = true;
-    this.communityLinks = [
-        {
-          icon: 'insights',
-          label: 'Open insights',
-          href: '/info/insights'
-        },
-        ...this.browseLinks
-      ];
- 
     const seoData: SeoSocialShareData = {
-      title: 'Patcher home',
-      description: 'Free open-source workspace for Eurorack musicians to capture ideas, plan racks, and return to patches quickly.',
-      keywords: 'eurorack, modular, digital twin, patch editor, rack planning, module database, auto-save, instance-aware patching',
+      title: 'Patcher: your operating system for everything modular',
+      description: 'Free, open-source workspace for Eurorack. Browse 10,000+ modules, plan racks with power analysis, document patches, import racks from ModularGrid and build on the public API.',
+      keywords: 'eurorack, modular synth, rack planner, patch documentation, module database, modulargrid alternative, modulargrid import, open source',
       type: 'website',
       url: 'https://patcher.xyz/',
     };
 
-    this.seoAndUtilsService.updateSeo(seoData, 'Home');
+    seoAndUtilsService.updateSeo(seoData, 'Home');
   }
 
-  ngOnInit(): void {
+  scrollToSwitch(): void {
     if (!isPlatformBrowser(this.platformId)) {
       return;
     }
-    timer(HOME_PROOF_DELAY_STEP_MS * 2)
-      .pipe(take(1), this.takeUntilDestroyed())
-      .subscribe(() => {
-        this.patchDetailDataService.updateSinglePatchData$.next(HOME_PROOF_PATCH_ID);
-      });
-    timer(HOME_PROOF_DELAY_STEP_MS * 4)
-      .pipe(take(1), this.takeUntilDestroyed())
-      .subscribe(() => {
-        this.moduleDetailDataService.updateSingleModuleData$.next(HOME_PROOF_MODULE_ID);
-      });
-    timer(HOME_PROOF_DELAY_STEP_MS * 6)
-      .pipe(take(1), this.takeUntilDestroyed())
-      .subscribe(() => {
-        this.rackDetailDataService.updateSingleRackData$.next(HOME_PROOF_RACK_ID);
-      });
-  }
-
-  override ngOnDestroy(): void {
-    this.patchDetailDataService.setDetailAnalyticsSurface(DETAIL_ANALYTICS_SURFACES.detailRoute);
-    this.rackDetailDataService.setDetailAnalyticsSurface(DETAIL_ANALYTICS_SURFACES.detailRoute);
-    this.moduleDetailDataService.setDetailAnalyticsSurface(DETAIL_ANALYTICS_SURFACES.detailRoute);
-    super.ngOnDestroy();
+    const reduceMotion = this.document.defaultView?.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    this.document.getElementById('switch')?.scrollIntoView({behavior: reduceMotion ? 'auto' : 'smooth', block: 'start'});
   }
 }

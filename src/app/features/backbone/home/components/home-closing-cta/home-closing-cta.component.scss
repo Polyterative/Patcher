@@ -1,0 +1,57 @@
+@use "src/app/style/brand-resources.scss" as *;
+@use "../../home-ui" as ui;
+
+:host {
+  display: block;
+}
+
+.closing {
+  display: grid;
+  justify-items: center;
+  gap: 1.1rem;
+  padding: clamp(2.5rem, 6vw, 4.5rem) 1.5rem;
+  border: 1px solid var(--app-border-strong);
+  border-radius: 0.5rem;
+  background: var(--app-surface);
+  text-align: center;
+}
+
+.closing__logo {
+  inline-size: 4.5rem;
+  block-size: 4.5rem;
+}
+
+.closing__title {
+  @include ui.home-section-title;
+  max-inline-size: 18ch;
+}
+
+.closing__text {
+  @include ui.home-section-intro;
+}
+
+.closing__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-block-start: 0.5rem;
+}
+
+.closing__cta--primary {
+  @include ui.home-cta-primary;
+}
+
+.closing__cta--secondary {
+  @include ui.home-cta-secondary;
+}
+
+@media (max-width: ui.$home-bp-narrow) {
+  .closing__actions {
+    inline-size: 100%;
+
+    a {
+      flex: 1 1 100%;
+    }
+  }
+}

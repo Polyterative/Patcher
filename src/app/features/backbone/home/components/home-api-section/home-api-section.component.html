@@ -1,0 +1,54 @@
+<div class="api">
+  <div class="api__copy">
+    <ul class="api__facts">
+      @for (fact of facts; track fact.title) {
+        <li class="api__fact">
+          <mat-icon class="api__fact-icon" aria-hidden="true">{{ fact.icon }}</mat-icon>
+          <div>
+            <span class="api__fact-title">{{ fact.title }}</span>
+            <p class="api__fact-description">{{ fact.description }}</p>
+          </div>
+        </li>
+      }
+    </ul>
+
+    <div class="api__actions">
+      <a class="api__cta api__cta--primary"
+         [href]="docsUrl"
+         target="_blank"
+         rel="noopener noreferrer"
+         (click)="ctaClicked.emit({cta: 'api_docs', location: 'api'})">
+        API reference
+        <mat-icon aria-hidden="true">north_east</mat-icon>
+      </a>
+      <a class="api__cta api__cta--secondary"
+         [routerLink]="isSignedIn ? '/user/account' : '/auth/signup'"
+         (click)="ctaClicked.emit({cta: isSignedIn ? 'api_key' : 'api_signup', location: 'api'})">
+        Get a free key
+      </a>
+    </div>
+  </div>
+
+  <figure class="api__console" aria-label="Example request and response for the Maths module">
+    <div class="api__console-bar">
+      <span class="api__method">GET</span>
+      <span class="api__path">/v1/modules/1025</span>
+      <span class="api__status">200 OK</span>
+    </div>
+    <pre class="api__code"><code><span class="t-dim">curl</span> https://api.patcher.xyz/v1/modules/1025 \
+  -H <span class="t-str">"Authorization: Bearer $PATCHER_KEY"</span></code></pre>
+    <pre class="api__code api__code--response"><code>&#123;
+  <span class="t-key">"data"</span>: &#123;
+    <span class="t-key">"id"</span>: <span class="t-num">1025</span>,
+    <span class="t-key">"name"</span>: <span class="t-str">"Maths"</span>,
+    <span class="t-key">"hp"</span>: <span class="t-num">20</span>,
+    <span class="t-key">"depth"</span>: <span class="t-num">24</span>,
+    <span class="t-key">"power_pos_12"</span>: <span class="t-num">60</span>,
+    <span class="t-key">"power_neg_12"</span>: <span class="t-num">50</span>,
+    <span class="t-key">"power_pos_5"</span>: <span class="t-num">0</span>,
+    <span class="t-dim">…</span>
+  &#125;
+&#125;</code></pre>
+    <figcaption class="api__caption">Make Noise Maths, straight from the catalogue. Response trimmed.</figcaption>
+  </figure>
+</div>

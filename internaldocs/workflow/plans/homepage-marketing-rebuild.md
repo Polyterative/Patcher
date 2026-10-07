@@ -46,20 +46,21 @@ Status: Active on `develop`, frontend-only. No schema/migration/RLS/RPC change. 
 
 ## Layer 1 — MVP (new IA + copy, live previews removed)
 
-- [ ] New `HomeComponent` template/SCSS with the seven sections above on theme tokens (no decorative gradients)
-- [ ] Hero rewrite: kept headline, new lede/CTAs, patch graph in framed panel with caption
-- [ ] Proof strip component bound to live statistics (graceful when stats fail/empty)
-- [ ] System tour component (accessible tablist) using existing major-area screenshots as interim images
-- [ ] ModularGrid switch section, open section, final CTA components
-- [ ] Remove the three live detail previews and their delayed data loads from `HomeComponent`
-- [ ] Unit specs updated/added; `pnpm lint` + targeted tests green
+- [x] New `HomeComponent` template/SCSS with the seven sections above on theme tokens (no decorative gradients)
+- [x] Hero rewrite: kept headline, new lede/CTAs, patch graph in framed panel with caption
+- [x] Proof strip component bound to live statistics (graceful when stats fail/empty)
+- [x] System tour component (accessible tablist) using existing major-area screenshots as interim images
+- [x] ModularGrid switch section, open section, final CTA components
+- [x] Remove the three live detail previews and their delayed data loads from `HomeComponent`
+- [x] Unit specs updated/added; `pnpm lint` + targeted tests green
 
 ## Layer 2 — Structural (assets, auth awareness, cleanup)
 
 - [ ] Fresh art-directed screenshots (module / rack / patch detail) in light and dark, WebP, theme-switched
 - [ ] Auth-aware CTAs (signed-in users get workspace links instead of sign-up)
 - [ ] Analytics: `home.cta_clicked` with `{cta, location}` per `patterns/ANALYTICS.md`
-- [ ] Delete dead home components (proof-showcase, workflow-rail, curiosity-bridge, founder-note, insights-section,
+- [x] Developer API section (owner request mid-build): facts, real Maths request/response sample, docs + key CTAs
+- [x] Delete dead home components (proof-showcase, workflow-rail, curiosity-bridge, founder-note, insights-section,
       open-principles/invitation-cta if superseded) + their specs + dead `theme-dark.scss` overrides
 - [ ] SEO title/description refreshed; e2e `home.spec.ts` updated to the new sections
 
@@ -85,6 +86,17 @@ Status: Active on `develop`, frontend-only. No schema/migration/RLS/RPC change. 
   advertise them. The discovery rail's "Most sold" tab follows the existing marketplace flag.
 - 2026-10-07: Proof strip shows exact grouped figures (lab-grade honesty) rather than rounded "10k+" marketing
   numbers; patch count is not featured (small relative number, would undersell).
+
+- 2026-10-07: Owner rejected "no card" in the closing line ("free" already says it); all new copy passed a humanizer
+  review: removed three not-X-but-Y contrasts, two "actually"s, the redundant trust row and "for the long run".
+- 2026-10-07: Owner asked for an API section. Placed after Community, before Open; the "Open data" pillar moved into
+  it. Sample uses Maths (id 1025) values read from the live module page; quotas from `cloudflare/public-api/README.md`.
+- 2026-10-07: `B612Mono-Bold` has no `@font-face`, so the global `monospaced-font` mixin renders sans-serif. Homepage
+  uses a local `home-mono` stack; global fix spun off as a separate task.
+- 2026-10-07: Sections other than the community rail render eagerly (no `@defer`): they are static, SSR then ships the
+  marketing copy to crawlers, and the hero's "Bring your racks" anchor can scroll to a stable position.
+- 2026-10-07: `ng lint` OOMs under local Node 26 (environment, unrelated); validated with scoped eslint on the home
+  folder plus every custom check in the `lint` script.
 
 ## Documentation impact
 

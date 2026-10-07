@@ -11,9 +11,9 @@ import {
   defaultModuleMinimalViewConfig,
   ModuleMinimalViewConfig
 } from 'src/app/components/module-parts/module-minimal/module-minimal.component';
-import { HeroContentCardComponent } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.component';
 import { CleanCardComponent } from 'src/app/shared-interproject/components/@visual/clean-card/clean-card.component';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
+import { environment } from 'src/environments/environment';
 import { ApplicationDiscoveryBucket, ApplicationDiscoverySnapshot } from '../../application-statistics.models';
 import { ApplicationStatisticsService } from '../../application-statistics.service';
 
@@ -23,7 +23,6 @@ import { ApplicationStatisticsService } from '../../application-statistics.servi
   imports: [
     CommonModule,
     CleanCardComponent,
-    HeroContentCardComponent,
     MatButtonModule,
     MatIconModule,
     ModulePartsModule,
@@ -35,10 +34,13 @@ import { ApplicationStatisticsService } from '../../application-statistics.servi
   providers: [ApplicationStatisticsService]
 })
 export class HomeDiscoverySectionComponent extends SubManager {
-  readonly discoveryBuckets: {key: ApplicationDiscoveryBucket; label: string; icon: string}[] = [
-    {key: 'mostOwned', label: 'Most Owned', icon: 'inventory_2'},
-    {key: 'mostWanted', label: 'Most Wanted', icon: 'bookmark_add'},
-    {key: 'mostSold', label: 'Most Sold', icon: 'sell'}
+  // "Most sold" is fed by marketplace listings, so it only shows where the marketplace is live.
+  readonly discoveryBuckets: {key: ApplicationDiscoveryBucket; label: string; icon: string; unit: string}[] = [
+    {key: 'mostOwned', label: 'Most owned', icon: 'inventory_2', unit: 'owners'},
+    {key: 'mostWanted', label: 'Most wanted', icon: 'bookmark_add', unit: 'want it'},
+    ...(environment.features.marketplaceEnabled
+      ? [{key: 'mostSold' as const, label: 'Most sold', icon: 'sell', unit: 'sold'}]
+      : [])
   ];
 
   selectedBucket: ApplicationDiscoveryBucket = 'mostOwned';
@@ -68,7 +70,11 @@ export class HomeDiscoverySectionComponent extends SubManager {
   }
 
   bucketLabel(bucket: ApplicationDiscoveryBucket): string {
-    return this.discoveryBuckets.find((entry) => entry.key === bucket)?.label ?? 'Most Owned';
+    return this.discoveryBuckets.find((entry) => entry.key === bucket)?.label ?? 'Most owned';
+  }
+
+  bucketUnit(bucket: ApplicationDiscoveryBucket): string {
+    return this.discoveryBuckets.find((entry) => entry.key === bucket)?.unit ?? '';
   }
 
   onBucketChange(bucket: ApplicationDiscoveryBucket | null | undefined): void {
