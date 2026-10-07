@@ -1,18 +1,17 @@
 :host {
-  --cl-ink-strong:  #0f1e34;
-  --cl-ink:         rgba(24, 37, 53, 0.88);
-  --cl-ink-muted:   rgba(24, 37, 53, 0.66);
-  --cl-surface:     rgba(255, 255, 255, 0.84);
-  --cl-border:      rgba(34, 75, 117, 0.13);
-  --cl-accent:      #1a5fa8;
+  --cl-ink:       var(--app-ink);
+  --cl-ink-muted: var(--app-ink-2);
+  --cl-accent:    var(--app-link);
+  --cl-underline: rgba(34, 75, 117, 0.24);
+  --cl-underline-hover: rgba(34, 75, 117, 0.84);
 
   display: block;
   padding: 1rem 0 4rem;
-  background:
-    radial-gradient(circle at 8% 4%,  rgba(61, 115, 188, 0.14), transparent 28rem),
-    radial-gradient(circle at 90% 12%, rgba(53, 93, 130, 0.10), transparent 22rem),
-    radial-gradient(circle at 50% 92%, rgba(34, 75, 117, 0.07), transparent 18rem),
-    linear-gradient(175deg, rgba(243, 248, 254, 0.97) 0%, rgba(255, 255, 255, 0.99) 100%);
+}
+
+:host-context(html.dark) {
+  --cl-underline: rgba(143, 184, 232, 0.32);
+  --cl-underline-hover: rgba(143, 184, 232, 0.9);
 }
 
 .changelog-page {
@@ -67,12 +66,12 @@
   font-weight: 600;
   text-decoration-line: underline;
   text-decoration-thickness: 0.0625rem;
-  text-decoration-color: rgba(34, 75, 117, 0.24);
+  text-decoration-color: var(--cl-underline);
   text-underline-offset: 0.18rem;
   transition: color 160ms ease, text-decoration-color 160ms ease;
 
   &:hover {
-    text-decoration-color: rgba(34, 75, 117, 0.84);
+    text-decoration-color: var(--cl-underline-hover);
   }
 }
 
