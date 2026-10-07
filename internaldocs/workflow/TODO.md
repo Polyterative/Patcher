@@ -169,6 +169,7 @@
 - [~] **HIGH: Supabase Cached Egress overquota — cut API + Storage bytes (6.25/5 GB; rack search paging + collection-cover proxy first)** → [GitHub issue #161](https://github.com/Polyterative/Patcher/issues/161) + [`plans/supabase-cached-egress-overquota.md`](./plans/supabase-cached-egress-overquota.md)
 - [ ] **MEDIUM: Self-hosted Supabase — full move evaluation (staging rehearsal in progress; tooling in `scripts/ops/`)** → local, gitignored `internaldocs/private/selfhost/` (master checklist, runbook, plan; not published because the repo is public)
 - [~] **MEDIUM: Cloudflare uptime watchdog (live) + Turnstile on email-sending auth (gate in log mode)** → [`plans/cloudflare-watchdog-and-turnstile.md`](./plans/cloudflare-watchdog-and-turnstile.md)
+- [~] **HIGH: Homepage marketing rebuild — explain Patcher in one scroll** → [`plans/homepage-marketing-rebuild.md`](./plans/homepage-marketing-rebuild.md)
 - [~] **MEDIUM: Immediate UI feedback — synchronous pending ack without pipe changes** → [`plans/immediate-ui-feedback-pending-ack.md`](./plans/immediate-ui-feedback-pending-ack.md)
 - [!] **HIGH: Security — hardening backlog (private)** → local, gitignored `internaldocs/security/` (sole-contributor setup; not published because the repo is public)
 - [ ] **HIGH: Application performance — Chrome-measured budget, per-flow baselines, and hypothesis-per-commit optimization loop (frontend-only; supersedes the bundle-only plan as sub-scope)** → [GitHub issue #150](https://github.com/Polyterative/Patcher/issues/150)
