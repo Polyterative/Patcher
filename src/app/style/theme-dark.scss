@@ -775,6 +775,18 @@ html.dark {
     border-color: rgba(198, 213, 230, 0.4);
   }
 
+  .brand-button.solid {
+    background-color: #8fb8e8;
+    color: #0c1117;
+    border-color: #8fb8e8;
+  }
+
+  .brand-button.solid:hover {
+    background-color: #b3d0f2 !important; // px-ok: filled CTA keeps its lift on hover
+    color: #0c1117 !important; // px-ok: dark ink must survive the generic hover label colour
+    border-color: #b3d0f2;
+  }
+
   .brand-button.disabled {
     background-color: rgba(255, 255, 255, 0.08);
     color: rgba(205, 219, 233, 0.5);

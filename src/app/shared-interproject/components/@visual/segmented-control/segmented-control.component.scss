@@ -1,0 +1,99 @@
+// Colours come from the Material button-toggle tokens (set per theme on <html>), so the control
+// follows light/dark exactly like `mat-button-toggle-group` does elsewhere in the app.
+:host {
+  display: inline-flex;
+  max-inline-size: 100%;
+}
+
+.segmented {
+  --segmented-height: var(--mat-button-toggle-height, 1.875rem);
+
+  display: inline-flex;
+  max-inline-size: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border: 1px solid var(--mat-button-toggle-divider-color);
+  border-radius: var(--mat-button-toggle-shape, 28px);
+  color: var(--mat-button-toggle-text-color);
+}
+
+.segmented--large {
+  --segmented-height: 2.75rem;
+
+  .segmented__segment {
+    font-size: 1rem;
+  }
+}
+
+.segmented__segment {
+  display: inline-flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  block-size: var(--segmented-height);
+  margin: 0;
+  padding: 0 0.95rem;
+  border: 0;
+  border-inline-start: 1px solid var(--mat-button-toggle-divider-color);
+  background: var(--mat-button-toggle-background-color, transparent);
+  color: inherit;
+  font-family: var(--mat-button-toggle-label-text-font, Roboto), sans-serif;
+  font-size: 0.875rem;
+  font-weight: var(--mat-button-toggle-label-text-weight, 500);
+  letter-spacing: var(--mat-button-toggle-label-text-tracking, 0.006rem);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 160ms ease, color 160ms ease;
+
+  &:first-child {
+    border-inline-start: 0;
+  }
+
+  &:hover {
+    background: color-mix(in srgb, var(--mat-button-toggle-state-layer-color) calc(var(--mat-button-toggle-hover-state-layer-opacity, 0.08) * 100%), transparent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--app-link, currentColor);
+    outline-offset: -2px;
+    border-radius: inherit;
+  }
+}
+
+.segmented__segment--selected,
+.segmented__segment--selected:hover {
+  background: var(--mat-button-toggle-selected-state-background-color);
+  color: var(--mat-button-toggle-selected-state-text-color);
+}
+
+.segmented__icon {
+  inline-size: 1.15rem;
+  block-size: 1.15rem;
+  font-size: 1.15rem;
+}
+
+@media (max-width: 40rem) {
+  :host {
+    display: flex;
+    inline-size: 100%;
+  }
+
+  .segmented {
+    inline-size: 100%;
+  }
+
+  .segmented--large {
+    --segmented-height: 3.5rem; // ~44px touch target at the app's 80% root font-size
+  }
+
+  .segmented__segment {
+    padding: 0 0.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .segmented__segment {
+    transition: none;
+  }
+}
