@@ -56,13 +56,13 @@ Status: Active on `develop`, frontend-only. No schema/migration/RLS/RPC change. 
 
 ## Layer 2 — Structural (assets, auth awareness, cleanup)
 
-- [ ] Fresh art-directed screenshots (module / rack / patch detail) in light and dark, WebP, theme-switched
-- [ ] Auth-aware CTAs (signed-in users get workspace links instead of sign-up)
-- [ ] Analytics: `home.cta_clicked` with `{cta, location}` per `patterns/ANALYTICS.md`
+- [x] Fresh art-directed screenshots (module / rack / patch detail) in light and dark, WebP, theme-switched
+- [x] Auth-aware CTAs (signed-in users get workspace links instead of sign-up)
+- [x] Analytics: `home.cta_clicked` with `{cta, location}` per `patterns/ANALYTICS.md`
 - [x] Developer API section (owner request mid-build): facts, real Maths request/response sample, docs + key CTAs
 - [x] Delete dead home components (proof-showcase, workflow-rail, curiosity-bridge, founder-note, insights-section,
       open-principles/invitation-cta if superseded) + their specs + dead `theme-dark.scss` overrides
-- [ ] SEO title/description refreshed; e2e `home.spec.ts` updated to the new sections
+- [x] SEO title/description refreshed; e2e `home.spec.ts` updated to the new sections
 
 ## Layer 3 — Polish
 
@@ -97,6 +97,15 @@ Status: Active on `develop`, frontend-only. No schema/migration/RLS/RPC change. 
   marketing copy to crawlers, and the hero's "Bring your racks" anchor can scroll to a stable position.
 - 2026-10-07: `ng lint` OOMs under local Node 26 (environment, unrelated); validated with scoped eslint on the home
   folder plus every custom check in the `lint` script.
+
+- 2026-10-07: Tour shots are captured by Playwright at 1440x900 @2x (shell chrome hidden, 2rem side padding) and
+  saved as 1600x1000 WebP, so the 16:10 frame uses `object-fit: contain` and never crops (owner saw the interim 16:9
+  images cut off left/right). Only the active tab's image loads (`[hidden]` panels + `loading="lazy"`).
+- 2026-10-07: Removed orphaned homepage rules from `theme-dark.scss` Pass 3b (old gradients, cards, discovery toggle
+  overrides that fought the new token styling); kept selectors still used elsewhere (`.section-intro`, `.eyebrow`,
+  module-browser toggles).
+- 2026-10-07: e2e `home.spec.ts` + navigation + asset-recovery: 22/22 pass on Chromium. WebKit runs fail locally only
+  because the WebKit binary is not installed (`browserType.launch: Executable doesn't exist`).
 
 ## Documentation impact
 

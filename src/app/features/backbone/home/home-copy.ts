@@ -37,7 +37,7 @@ export const HOME_TOUR_TABS: HomeTourTab[] = [
     shot: {
       light: `${SHOT_ROOT}/tour-library-light.webp`,
       dark: `${SHOT_ROOT}/tour-library-dark.webp`,
-      alt: 'Module page in Patcher showing the panel, HP, depth, power draw and jack list'
+      alt: 'Module page for Make Noise Maths in Patcher with the panel, HP, depth, power draw and jack list'
     }
   },
   {
@@ -55,7 +55,7 @@ export const HOME_TOUR_TABS: HomeTourTab[] = [
     shot: {
       light: `${SHOT_ROOT}/tour-racks-light.webp`,
       dark: `${SHOT_ROOT}/tour-racks-dark.webp`,
-      alt: 'Rack page in Patcher with module panels laid out in rows and power analysis'
+      alt: 'Rack page in Patcher with power, depth and balance analysis above the module layout'
     }
   },
   {

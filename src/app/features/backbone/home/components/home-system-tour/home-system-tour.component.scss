@@ -174,8 +174,8 @@
   display: block;
   inline-size: 100%;
   block-size: 100%;
-  object-fit: cover;
-  object-position: top center;
+  // Shots are captured at exactly 16:10, so contain never letterboxes and never crops.
+  object-fit: contain;
   animation: tour-in 140ms ease-out;
 }
 
