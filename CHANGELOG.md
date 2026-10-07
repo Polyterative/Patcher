@@ -2,6 +2,63 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.7.27](https://github.com/Polyterative/Patcher/compare/v6.7.26...v6.7.27) (2026-10-07)
+
+
+### Features
+
+* **auth:** add turnstile on signup and password reset with edge auth gate ([0ff0c89](https://github.com/Polyterative/Patcher/commit/0ff0c89d2c3accc06d29d34e0af6aabe5d15538a))
+* **module:** add synchronous collection pending ack ([b6feb00](https://github.com/Polyterative/Patcher/commit/b6feb00400631a22f079158ccd38dfb5b25ae915))
+* **ops:** add anon rights probe comparing hosted and staging ([815aeaf](https://github.com/Polyterative/Patcher/commit/815aeafe9228af0e0f6e366ed9ae9a6f3d40135e))
+* **ops:** add api-only public gateway listener for the self-host tunnel ([2e12483](https://github.com/Polyterative/Patcher/commit/2e12483475256f0dfa1d52ca56b665cd4d911b74))
+* **ops:** add cloudflare uptime watchdog worker with ntfy alerts ([a6b3e6b](https://github.com/Polyterative/Patcher/commit/a6b3e6bbf8a3cf5a7e3f21c395f1b97077db8b5a))
+* **ops:** add live lock so staging-only data scripts refuse the production self-host ([ae966ae](https://github.com/Polyterative/Patcher/commit/ae966aedb294142f848411574509470a8d8bc271))
+* **ops:** add ntfy phone alerts for self-host health with public url check ([4bb4425](https://github.com/Polyterative/Patcher/commit/4bb442522cf224813b42fa9995f0937118fd0df3))
+* **ops:** add one-command staging refresh from hosted ([d726410](https://github.com/Polyterative/Patcher/commit/d726410a8eae17d2ff3e8823f8b18ce7794a4fc1))
+* **ops:** add owner-run setup for self-host edge function, pg_cron jobs and worker token ([c9fb40b](https://github.com/Polyterative/Patcher/commit/c9fb40b1f8137e106bcd96f5286103f72f413660))
+* **ops:** add read-only hosted auth config drift check ([df40dad](https://github.com/Polyterative/Patcher/commit/df40dad056db9d45a0c437bfc1cbed437c94ea31))
+* **ops:** add read-only self-host health check ([0c27d59](https://github.com/Polyterative/Patcher/commit/0c27d597fedbf52e4ace889df5e48d7586f0ccfa))
+* **ops:** add rolled-back probe of hosted rights needed for rollback ([6ad8fa1](https://github.com/Polyterative/Patcher/commit/6ad8fa1820fee1d47a3e352981a3e4361a9f9ca7))
+* **ops:** add self-host migration tooling for staging rehearsal ([f2a5449](https://github.com/Polyterative/Patcher/commit/f2a54491f7307d235924e698298f9f9f6ea1664e))
+* **ops:** add staging db helper via lan pooler ([8053715](https://github.com/Polyterative/Patcher/commit/8053715e7c8d4387cfcd228dc19181c50a0e2e0c))
+* **ops:** add storage reverse sync with baseline-aware deletes and conflict reporting ([f123b8d](https://github.com/Polyterative/Patcher/commit/f123b8dd2ba6fcdc4e6a0c7d1726be5db28227a4))
+* **ops:** add trigger-based write freeze for cutover and rollback windows ([7c3e816](https://github.com/Polyterative/Patcher/commit/7c3e8166e3286c189c37419d2d4069f257bedcd9))
+* **ops:** capture and replay hosted grants and ownership verbatim for self-host parity ([bf4d119](https://github.com/Polyterative/Patcher/commit/bf4d119021f53d7e26f89d4a7de7daca8983a869))
+* **ops:** carry api key pepper to self-host with smoke-key proof ([9ce306e](https://github.com/Polyterative/Patcher/commit/9ce306eb20cd4245b21195297d430409050df42c))
+* **ops:** carry storage object owners in staging refresh ([fc11a79](https://github.com/Polyterative/Patcher/commit/fc11a79aef7bfba256caa61bbf0ed6f689c2f5f8))
+* **ops:** mirror hosted auth config on self-host with email templates and google wiring ([9ebe58f](https://github.com/Polyterative/Patcher/commit/9ebe58f52227af8d985418ee5a10bdc274abd401))
+* **ops:** notify when a new self-hosted supabase release is out ([e2733ef](https://github.com/Polyterative/Patcher/commit/e2733efd2c7ffba3e60d78b781042bf5cc1bacd3))
+* **ops:** read hosted service key for private buckets in staging refresh ([cc43203](https://github.com/Polyterative/Patcher/commit/cc432030b3af017636a8b91151cff727cf3d0a1b))
+* **ops:** replace printout delta-sync with proven table sync for cutover rollback ([1e8db38](https://github.com/Polyterative/Patcher/commit/1e8db38ea4e6a41ae08ef3eb177de7ee60eda875))
+* **patch:** add linked-rack saving and instance pending ack ([d76e2b0](https://github.com/Polyterative/Patcher/commit/d76e2b02da00e99c65a730487a267ea33f66e647))
+* **rack:** add synchronous row layout pending ack ([6a4b649](https://github.com/Polyterative/Patcher/commit/6a4b64960d7d297bbe798fc9165a4f9ecec1a339))
+* **seo:** return 404 for unknown bot routes and render h1 and description in bot page ([061cb60](https://github.com/Polyterative/Patcher/commit/061cb60d81ed3ce8324027bce1eabdc6c718bf6b))
+* **support:** mention €1 and €5 pure-donation patreon tiers in footer and faq ([45484e2](https://github.com/Polyterative/Patcher/commit/45484e216b671fa1280840e359314ee2f391d782))
+
+
+### Bug Fixes
+
+* **auth:** collapse leading slashes in safe return url to block protocol-relative redirect ([d24cc5f](https://github.com/Polyterative/Patcher/commit/d24cc5fb9eb7e3260603da26336baf53e2778fed))
+* **backend:** gate public profile module count without nonexistent modules-authorid embed ([18fee09](https://github.com/Polyterative/Patcher/commit/18fee09b15e5fc494f0ae7738b7cde0348dcb641))
+* **deps:** bump angular to 22.2.1 and patch vulnerable transitive deps ([b55c6a5](https://github.com/Polyterative/Patcher/commit/b55c6a5c3df58849221b744a0d13a05d30dae5aa))
+* **env:** correct whitespace regex in existing environment fallback ([ba07147](https://github.com/Polyterative/Patcher/commit/ba0714782caa72fa92144016e5946096f62fc238))
+* **file-drag-host:** snapshot picked image bytes in memory and report unreadable files ([e56f503](https://github.com/Polyterative/Patcher/commit/e56f503baeebe074c5c264bf3b096740dc8c30fb))
+* **manufacturers:** gate unreleased detail sections behind feature flag ([3747818](https://github.com/Polyterative/Patcher/commit/374781896e944d2d19a8cdd21e6e643b16f56672))
+* **ops:** guard self-host function router slugs and drop sample function ([576c5ca](https://github.com/Polyterative/Patcher/commit/576c5ca8be41e22d648c80c2eafdcb63eaa15842))
+* **ops:** make grants replay and parity gate hold across PG15 to PG17 ([44fdfdd](https://github.com/Polyterative/Patcher/commit/44fdfdd95116968f761ee218891c2ea1d99146ca))
+* **ops:** make self-host load test open-loop at the offered rate and include panel images ([2dd44e5](https://github.com/Polyterative/Patcher/commit/2dd44e58ee467c32903fc503535503cbc2cb449a))
+* **ops:** normalise acl order and search_path in deep parity gate ([86e83dc](https://github.com/Polyterative/Patcher/commit/86e83dc463eef00eb018500949c43499fc8517e5))
+* **ops:** populate empty discovery matview before refresh in self-host setup ([b8b0ae2](https://github.com/Polyterative/Patcher/commit/b8b0ae2f5425d6fd6dd22771271c9c088c652546))
+* **ops:** probe static robots.txt in uptime watchdog instead of ssr home page ([a7fa4d2](https://github.com/Polyterative/Patcher/commit/a7fa4d2a8d7a3bd73d150b260de165d79c7437c0))
+* **ops:** restore pg17 maintain privilege in grants replay ([0994094](https://github.com/Polyterative/Patcher/commit/0994094726d1688f8fa3ab46ff12f30b2bd31921))
+* **ops:** retry hosted storage 429s in staging copy ([49eb744](https://github.com/Polyterative/Patcher/commit/49eb74424250c5ef8288d4b45d320ec6756ad71f))
+* **ops:** single-snapshot refresh with fatal orphan and parity gates ([833cfe6](https://github.com/Polyterative/Patcher/commit/833cfe61083ec61246649d94dd8d86945c90b854))
+* **prerender:** use profiles updated_at/created_at so user routes are listed ([06faa14](https://github.com/Polyterative/Patcher/commit/06faa14fdec2e7c64148610e2e89f1156e2f0a15))
+* **seo:** return 503 instead of 404 for bots when entity lookup fails ([1d0ca91](https://github.com/Polyterative/Patcher/commit/1d0ca91e4f2ae8807ffac7f65043db01ac540442))
+* **theme:** add dark overrides for account and api key surfaces ([639a18f](https://github.com/Polyterative/Patcher/commit/639a18fc864e46452ae073dd84e551d5bd3c8606))
+* **vercel:** allow sentry ingest and patreon button image in csp ([92a7702](https://github.com/Polyterative/Patcher/commit/92a7702d657580300d1f1dec7a190df73bfbebda))
+* **vercel:** apply security and cache headers through legacy routes ([a0267b0](https://github.com/Polyterative/Patcher/commit/a0267b01d7bade79efbd235be94e4570360f76a2))
+
 ### [6.7.26](https://github.com/Polyterative/Patcher/compare/v6.7.25...v6.7.26) (2026-10-04)
 
 
