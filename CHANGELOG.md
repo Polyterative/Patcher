@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.8.2](https://github.com/Polyterative/Patcher/compare/v6.8.1...v6.8.2) (2026-10-07)
+
+
+### Bug Fixes
+
+* **theme:** dark mode for insights chart and login page ([dffab23](https://github.com/Polyterative/Patcher/commit/dffab232444520190474dedc703a144e217f52bc))
+
 ### [6.8.1](https://github.com/Polyterative/Patcher/compare/v6.8.0...v6.8.1) (2026-10-07)
 
 
