@@ -1,32 +1,22 @@
-@let active = (activeIndex$ | async) ?? 0;
+@let active = (activeId$ | async) ?? tabs[0]?.id;
 
 <div class="tour">
-  <div class="tour__tabs" role="tablist" aria-label="What Patcher keeps track of">
-    @for (tab of tabs; track tab.id; let index = $index) {
-      <button #tabButton
-              type="button"
-              role="tab"
-              class="tour__tab"
-              [id]="'home-tour-tab-' + tab.id"
-              [class.tour__tab--active]="index === active"
-              [attr.aria-selected]="index === active"
-              [attr.aria-controls]="'home-tour-panel-' + tab.id"
-              [attr.tabindex]="index === active ? 0 : -1"
-              (click)="select(index)"
-              (keydown)="onTabKeydown($event, index)">
-        <span class="tour__tab-index" aria-hidden="true">0{{ index + 1 }}</span>
-        <mat-icon class="tour__tab-icon" aria-hidden="true">{{ tab.icon }}</mat-icon>
-        <span class="tour__tab-label">{{ tab.label }}</span>
-      </button>
-    }
-  </div>
+  <app-segmented-control class="tour__tabs"
+                         kind="tabs"
+                         size="large"
+                         idPrefix="home-tour"
+                         ariaLabel="What Patcher keeps track of"
+                         [options]="tabOptions"
+                         [value]="active"
+                         (valueChange)="select($event)"
+  ></app-segmented-control>
 
-  @for (tab of tabs; track tab.id; let index = $index) {
+  @for (tab of tabs; track tab.id) {
     <div class="tour__panel"
          role="tabpanel"
          [id]="'home-tour-panel-' + tab.id"
          [attr.aria-labelledby]="'home-tour-tab-' + tab.id"
-         [hidden]="index !== active">
+         [hidden]="tab.id !== active">
       <div class="tour__copy">
         <h3 class="tour__title">{{ tab.title }}</h3>
         <p class="tour__description">{{ tab.description }}</p>
@@ -35,12 +25,11 @@
             <li>{{ point }}</li>
           }
         </ul>
-        <a class="tour__link"
-           [routerLink]="tab.link.href"
-           (click)="ctaClicked.emit({cta: 'tour_' + tab.id, location: 'tour'})">
-          {{ tab.link.label }}
-          <mat-icon aria-hidden="true">arrow_forward</mat-icon>
-        </a>
+        <app-brand-primary-button class="tour__link"
+                                  theme="light"
+                                  [routerLink]="tab.link.href"
+                                  (click$)="ctaClicked.emit({cta: 'tour_' + tab.id, location: 'tour'})"
+        >{{ tab.link.label }}</app-brand-primary-button>
       </div>
       <div class="tour__shot">
         <img class="tour__img tour__img--light"

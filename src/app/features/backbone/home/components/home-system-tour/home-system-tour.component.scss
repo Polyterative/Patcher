@@ -10,79 +10,8 @@
   gap: 2rem;
 }
 
-// ── Tabs: one hairline rail, the active tab is underlined in the accent ──────
-
 .tour__tabs {
-  display: flex;
-  gap: 0;
-  border-block-end: 1px solid var(--app-border);
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.tour__tab {
-  @include heading-font;
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  min-block-size: 3.75rem;
-  padding: 0;
-  margin-inline-end: 2.25rem;
-  border: 0;
-  background: none;
-  color: var(--app-ink-3);
-  font-size: 1.02rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: color 140ms ease;
-
-  &::after {
-    content: "";
-    position: absolute;
-    inset-inline: 0;
-    inset-block-end: -1px;
-    block-size: 2px;
-    background: transparent;
-    transition: background-color 140ms ease;
-  }
-
-  &:hover {
-    color: var(--app-ink);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--home-accent);
-    outline-offset: -2px;
-    border-radius: 0.25rem;
-  }
-}
-
-.tour__tab--active {
-  color: var(--app-ink);
-
-  &::after {
-    background: var(--home-accent);
-  }
-
-  .tour__tab-icon {
-    color: var(--home-accent);
-  }
-}
-
-.tour__tab-index {
-  @include ui.home-mono;
-  font-size: 0.8rem;
-  color: var(--app-ink-faint);
-}
-
-.tour__tab-icon {
-  inline-size: 1.4rem;
-  block-size: 1.4rem;
-  font-size: 1.4rem;
-  transition: color 140ms ease;
+  justify-self: start;
 }
 
 // ── Panel ────────────────────────────────────────────────────────────────────
@@ -151,17 +80,6 @@
   }
 }
 
-.tour__link {
-  @include ui.home-text-link;
-  margin-block-start: 0.3rem;
-
-  mat-icon {
-    inline-size: 1.2rem;
-    block-size: 1.2rem;
-    font-size: 1.2rem;
-  }
-}
-
 .tour__shot {
   border: 1px solid var(--app-border-strong);
   border-radius: 0.5rem;
@@ -213,15 +131,5 @@
 @media (max-width: ui.$home-bp-wide) {
   .tour__panel {
     grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: ui.$home-bp-narrow) {
-  .tour__tab {
-    margin-inline-end: 1.25rem;
-  }
-
-  .tour__tab-index {
-    display: none;
   }
 }

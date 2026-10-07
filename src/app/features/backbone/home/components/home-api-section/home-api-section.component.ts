@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { RouterLink } from '@angular/router';
+import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
 import { HomeApiFact, HomeCtaClick } from '../../home-content.models';
 
 @Component({
@@ -9,7 +9,7 @@ import { HomeApiFact, HomeCtaClick } from '../../home-content.models';
   templateUrl: './home-api-section.component.html',
   styleUrls: ['./home-api-section.component.scss'],
   standalone: true,
-  imports: [MatIconModule, RouterLink]
+  imports: [BrandPrimaryButtonComponent, MatIconModule]
 })
 export class HomeApiSectionComponent {
   @Input({required: true}) facts: HomeApiFact[] = [];

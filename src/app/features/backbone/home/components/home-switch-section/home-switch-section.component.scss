@@ -104,10 +104,6 @@
   padding-block-start: 0.5rem;
 }
 
-.switch__cta {
-  @include ui.home-cta-primary;
-}
-
 .switch__note {
   @include content-font;
   color: var(--app-ink-3);
@@ -171,7 +167,7 @@
     gap: 1.25rem;
   }
 
-  .switch__cta {
-    inline-size: 100%;
+  .switch__actions app-brand-primary-button {
+    flex: 1 1 100%;
   }
 }

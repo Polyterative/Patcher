@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { RouterLink } from '@angular/router';
+import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
 import { HomeBenefit, HomeCtaClick, HomeSwitchStep } from '../../home-content.models';
 
 @Component({
@@ -9,7 +9,7 @@ import { HomeBenefit, HomeCtaClick, HomeSwitchStep } from '../../home-content.mo
   templateUrl: './home-switch-section.component.html',
   styleUrls: ['./home-switch-section.component.scss'],
   standalone: true,
-  imports: [MatIconModule, RouterLink]
+  imports: [BrandPrimaryButtonComponent, MatIconModule]
 })
 export class HomeSwitchSectionComponent {
   @Input({required: true}) steps: HomeSwitchStep[] = [];

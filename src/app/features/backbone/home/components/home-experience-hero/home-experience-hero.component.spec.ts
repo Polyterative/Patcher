@@ -91,6 +91,20 @@ describe('HomeExperienceHeroComponent', () => {
     expect(host.querySelector('a[href="/user/area"]')).not.toBeNull();
   });
 
+  it('tracks the primary and secondary hero CTAs', () => {
+    const clicks: HomeCtaClick[] = [];
+    fixture.componentInstance.ctaClicked.subscribe(click => clicks.push(click));
+    const host = fixture.nativeElement as HTMLElement;
+
+    host.querySelector<HTMLAnchorElement>('a[href="/auth/signup"]')?.click();
+    host.querySelector<HTMLAnchorElement>('a[href="/modules/browser"]')?.click();
+
+    expect(clicks).toEqual([
+      {cta: 'signup', location: 'hero'},
+      {cta: 'browse_modules', location: 'hero'}
+    ]);
+  });
+
   it('keeps the live patch graph in the hero panel', () => {
     const host = fixture.nativeElement as HTMLElement;
     expect(host.querySelector('.hero__graph app-patch-graph')).not.toBeNull();
@@ -113,7 +127,7 @@ describe('HomeExperienceHeroComponent', () => {
     fixture.componentInstance.ctaClicked.subscribe(click => clicks.push(click));
     fixture.componentInstance.switchRequested.subscribe(() => switchRequests++);
 
-    const link = (fixture.nativeElement as HTMLElement).querySelector<HTMLAnchorElement>('.hero__switch-link');
+    const link = (fixture.nativeElement as HTMLElement).querySelector<HTMLAnchorElement>('.hero__switch a[href="#switch"]');
     link?.click();
 
     expect(clicks).toEqual([{cta: 'switch_anchor', location: 'hero'}]);
