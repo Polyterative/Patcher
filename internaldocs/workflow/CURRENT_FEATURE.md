@@ -17,28 +17,26 @@
 
 ## Active
 
-### Immediate UI feedback — plan: [plans/immediate-ui-feedback-pending-ack.md](./plans/immediate-ui-feedback-pending-ack.md)
+### Homepage marketing rebuild — plan: [plans/homepage-marketing-rebuild.md](./plans/homepage-marketing-rebuild.md)
 
-#### Layer 1 — MVP (pending flags + template ack)
+#### Layer 1 — MVP
 
-- [x] Module collection pending flag + button busy state
-- [x] Rack row layout pending flag + Add/Remove disabled
-- [x] Patch linked-rack saving flag + control disabled + Saving hint
-- [x] Patch instance add latch fix + remove pending
+- [ ] New IA + copy: hero, proof strip, system tour, ModularGrid switch, community, open, final CTA
+- [ ] Live detail previews removed; specs + lint green
 
-#### Layer 2 — Structural (guards + regression specs)
+#### Layer 2 — Structural
 
-- [x] Pending set/clear on success + error specs for all four tracks
-- [x] Double-submit guards, no pipe body changes, lint green
+- [ ] Art-directed light/dark screenshots, auth-aware CTAs, analytics, dead component cleanup, SEO, e2e
 
-#### Layer 3 — Polish (CSS-only ack)
+#### Layer 3 — Polish
 
-- [x] aria-busy + tooltip copy per DESIGN_LANGUAGE
-- [ ] :active + focus ring (deferred to designer brief)
+- [ ] Responsive + both themes + a11y + copy pass, screenshot-verified
 
+> Immediate UI feedback plan (`plans/immediate-ui-feedback-pending-ack.md`) is paused with only its Layer 3
+> `:active`/focus-ring item open (waiting on a designer brief).
 > Egress overquota plan stays open in `plans/supabase-cached-egress-overquota.md`, paused on user-side dashboard verification.
 
-Updated: 2026-10-01
+Updated: 2026-10-07
 
 Recent completed checkpoints are archived in [COMPLETED.md](./COMPLETED.md); their validation
 notes and decisions live in the matching plan files (e.g.
