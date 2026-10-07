@@ -4,13 +4,15 @@
     "coolReactionsEnabled": false,
     "developerApiEnabled": true,
     "modularGridImportEnabled": true,
-    "marketplaceEnabled": false
+    "marketplaceEnabled": false,
+    "manufacturerInsightsEnabled": false
   },
   "development": {
     "collectionsEnabled": true,
     "coolReactionsEnabled": true,
     "developerApiEnabled": true,
     "modularGridImportEnabled": true,
-    "marketplaceEnabled": true
+    "marketplaceEnabled": true,
+    "manufacturerInsightsEnabled": true
   }
 }

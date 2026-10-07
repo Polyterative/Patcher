@@ -43,86 +43,88 @@
             </app-lib-showcase-grid>
           </lib-clean-card>
 
-          @if ({
-            featured: (featuredModules$ | async),
-            analytics: (analyticsRows$ | async),
-            widget: (widgetCard$ | async),
-            widgetSnippet: (widgetEmbedSnippet$ | async)
-          }; as extra) {
-            @if (extra.featured && extra.featured.length > 0) {
-              <section
-                class="manufacturer-section"
-                aria-label="Featured modules"
-              >
-                <h3 class="manufacturer-section__title">Featured</h3>
-                <div class="manufacturer-featured-strip">
-                  @for (module of extra.featured; track module.id) {
-                    <app-module-minimal
-                      [data]="module"
-                      [viewConfig]="moduleViewConfig"
-                    ></app-module-minimal>
-                  }
-                </div>
-              </section>
-            }
-
-            <section
-              class="manufacturer-section"
-              aria-label="Aggregate activity"
-            >
-              <h3 class="manufacturer-section__title">Activity</h3>
-              @if (extra.analytics && extra.analytics.length > 0) {
-                <ul class="manufacturer-analytics-list">
-                  @for (row of extra.analytics; track row.metricId) {
-                    <li class="manufacturer-analytics-row">
-                      <span
-                        class="manufacturer-analytics-row__label"
-                        [matTooltip]="row.description"
-                      >{{ row.label }}</span>
-                      <span class="manufacturer-analytics-row__value">{{ row.displayValue }}</span>
-                    </li>
-                  }
-                </ul>
-              } @else {
-                <p class="manufacturer-detail-data-note">
-                  {{ analyticsEmptyCopy }} Shown once at least {{ analyticsPrivacyThreshold }} aggregate events per metric exist.
-                </p>
-              }
-            </section>
-
-            @if (extra.widget) {
-              <section
-                class="manufacturer-section"
-                aria-label="Widget embed preview"
-              >
-                <h3 class="manufacturer-section__title">Widget embed preview</h3>
-                <p class="manufacturer-detail-data-note">
-                  Preview only — public fields, no user data, no endpoint. Copy the snippet below to embed this module card elsewhere.
-                </p>
-                <a
-                  class="manufacturer-widget-link"
-                  [href]="extra.widget.module.canonicalUrl"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >{{ extra.widget.module.canonicalUrl }}</a>
-                <pre class="manufacturer-widget-preview">{{ extra.widget | json }}</pre>
-                @if (extra.widgetSnippet) {
-                  <div class="manufacturer-widget-snippet-row">
-                    <code class="manufacturer-widget-snippet">{{ extra.widgetSnippet }}</code>
-                    <button
-                      mat-stroked-button
-                      color="primary"
-                      type="button"
-                      class="manufacturer-widget-copy-btn"
-                      (click)="copyWidgetSnippet(extra.widgetSnippet)"
-                      aria-label="Copy widget embed snippet"
-                    >
-                      <mat-icon>content_copy</mat-icon>
-                      Copy embed
-                    </button>
+          @if (manufacturerInsightsEnabled) {
+            @if ({
+              featured: (featuredModules$ | async),
+              analytics: (analyticsRows$ | async),
+              widget: (widgetCard$ | async),
+              widgetSnippet: (widgetEmbedSnippet$ | async)
+            }; as extra) {
+              @if (extra.featured && extra.featured.length > 0) {
+                <section
+                  class="manufacturer-section"
+                  aria-label="Featured modules"
+                >
+                  <h3 class="manufacturer-section__title">Featured</h3>
+                  <div class="manufacturer-featured-strip">
+                    @for (module of extra.featured; track module.id) {
+                      <app-module-minimal
+                        [data]="module"
+                        [viewConfig]="moduleViewConfig"
+                      ></app-module-minimal>
+                    }
                   </div>
+                </section>
+              }
+
+              <section
+                class="manufacturer-section"
+                aria-label="Aggregate activity"
+              >
+                <h3 class="manufacturer-section__title">Activity</h3>
+                @if (extra.analytics && extra.analytics.length > 0) {
+                  <ul class="manufacturer-analytics-list">
+                    @for (row of extra.analytics; track row.metricId) {
+                      <li class="manufacturer-analytics-row">
+                        <span
+                          class="manufacturer-analytics-row__label"
+                          [matTooltip]="row.description"
+                        >{{ row.label }}</span>
+                        <span class="manufacturer-analytics-row__value">{{ row.displayValue }}</span>
+                      </li>
+                    }
+                  </ul>
+                } @else {
+                  <p class="manufacturer-detail-data-note">
+                    {{ analyticsEmptyCopy }} Shown once at least {{ analyticsPrivacyThreshold }} aggregate events per metric exist.
+                  </p>
                 }
               </section>
+
+              @if (extra.widget) {
+                <section
+                  class="manufacturer-section"
+                  aria-label="Widget embed preview"
+                >
+                  <h3 class="manufacturer-section__title">Widget embed preview</h3>
+                  <p class="manufacturer-detail-data-note">
+                    Preview only — public fields, no user data, no endpoint. Copy the snippet below to embed this module card elsewhere.
+                  </p>
+                  <a
+                    class="manufacturer-widget-link"
+                    [href]="extra.widget.module.canonicalUrl"
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >{{ extra.widget.module.canonicalUrl }}</a>
+                  <pre class="manufacturer-widget-preview">{{ extra.widget | json }}</pre>
+                  @if (extra.widgetSnippet) {
+                    <div class="manufacturer-widget-snippet-row">
+                      <code class="manufacturer-widget-snippet">{{ extra.widgetSnippet }}</code>
+                      <button
+                        mat-stroked-button
+                        color="primary"
+                        type="button"
+                        class="manufacturer-widget-copy-btn"
+                        (click)="copyWidgetSnippet(extra.widgetSnippet)"
+                        aria-label="Copy widget embed snippet"
+                      >
+                        <mat-icon>content_copy</mat-icon>
+                        Copy embed
+                      </button>
+                    </div>
+                  }
+                </section>
+              }
             }
           }
         }

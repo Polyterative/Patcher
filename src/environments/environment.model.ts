@@ -12,5 +12,7 @@ export interface EnvironmentModel {
     developerApiEnabled: boolean;
     modularGridImportEnabled: boolean;
     marketplaceEnabled: boolean;
+    /** Manufacturer page Featured / Activity / Widget embed preview sections (unreleased). */
+    manufacturerInsightsEnabled: boolean;
   };
 }
