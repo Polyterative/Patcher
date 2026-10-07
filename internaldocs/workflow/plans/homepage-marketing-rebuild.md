@@ -109,6 +109,16 @@ Status: Active on `develop`, frontend-only. No schema/migration/RLS/RPC change. 
   module-browser toggles).
 - 2026-10-07: e2e `home.spec.ts` + navigation + asset-recovery: 22/22 pass on Chromium. WebKit runs fail locally only
   because the WebKit binary is not installed (`browserType.launch: Executable doesn't exist`).
+- 2026-10-07: Homepage controls moved onto the app's design system after owner feedback that the hand-rolled CTAs, tour
+  tabs and discovery toggle looked unlike the rest of the app. Reused `app-brand-primary-button` for every CTA and text
+  link (primary action = new additive `solid` theme, secondary = existing `light`); extended it with optional `href` +
+  `target` (external URLs and the in-page `#switch` anchor; `rel="noopener noreferrer"` is automatic for `_blank`), with
+  the dark `solid` variant living next to the other brand-button dark rules in `theme-dark.scss`. Built ONE shared
+  `app-segmented-control` (`@visual/segmented-control`, `kind: toggle | tabs`) for the tour tablist and the community
+  toggle: no existing component could do tablist semantics (`mat-button-toggle-group` is a radio group), and the app has
+  no `mat-tab` usage, so it reads the Material button-toggle tokens to match the app's `mat-button-toggle-group`
+  controls in both themes. Removed `home-cta-*`/`home-text-link` mixins and the unused accent variants from `_home-ui.scss`.
+  Trade-off: brand buttons are the app's compact size (about 34px tall), smaller than the old 56px CTAs.
 
 ## Documentation impact
 
