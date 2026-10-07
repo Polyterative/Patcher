@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
-import { MatIconModule } from '@angular/material/icon';
-import { RouterLink } from '@angular/router';
+import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
 import { HomeCtaClick, HomeProofFigure } from '../../home-content.models';
 
 @Component({
@@ -9,7 +8,7 @@ import { HomeCtaClick, HomeProofFigure } from '../../home-content.models';
   templateUrl: './home-proof-strip.component.html',
   styleUrls: ['./home-proof-strip.component.scss'],
   standalone: true,
-  imports: [MatIconModule, RouterLink]
+  imports: [BrandPrimaryButtonComponent]
 })
 export class HomeProofStripComponent {
   /** Live catalogue figures; the static "€0" cell always renders so the strip is never empty. */

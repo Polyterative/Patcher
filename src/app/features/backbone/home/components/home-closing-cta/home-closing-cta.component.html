@@ -4,29 +4,23 @@
   <p class="closing__text">It's free and runs in your browser. Look around first if you like.</p>
   <div class="closing__actions">
     @if (isSignedIn) {
-      <a class="closing__cta closing__cta--primary"
-         routerLink="/user/area"
-         (click)="ctaClicked.emit({cta: 'workspace', location: 'closing'})">
-        Open your workspace
-        <mat-icon aria-hidden="true">arrow_forward</mat-icon>
-      </a>
+      <app-brand-primary-button theme="solid"
+                                routerLink="/user/area"
+                                (click$)="ctaClicked.emit({cta: 'workspace', location: 'closing'})"
+      >Open your workspace</app-brand-primary-button>
     } @else {
-      <a class="closing__cta closing__cta--primary"
-         routerLink="/auth/signup"
-         (click)="ctaClicked.emit({cta: 'signup', location: 'closing'})">
-        Get started free
-        <mat-icon aria-hidden="true">arrow_forward</mat-icon>
-      </a>
-      <a class="closing__cta closing__cta--secondary"
-         routerLink="/auth/login"
-         (click)="ctaClicked.emit({cta: 'login', location: 'closing'})">
-        Log in
-      </a>
+      <app-brand-primary-button theme="solid"
+                                routerLink="/auth/signup"
+                                (click$)="ctaClicked.emit({cta: 'signup', location: 'closing'})"
+      >Get started free</app-brand-primary-button>
+      <app-brand-primary-button theme="light"
+                                routerLink="/auth/login"
+                                (click$)="ctaClicked.emit({cta: 'login', location: 'closing'})"
+      >Log in</app-brand-primary-button>
     }
-    <a class="closing__cta closing__cta--secondary"
-       routerLink="/modules/browser"
-       (click)="ctaClicked.emit({cta: 'browse_modules', location: 'closing'})">
-      Browse modules
-    </a>
+    <app-brand-primary-button theme="light"
+                              routerLink="/modules/browser"
+                              (click$)="ctaClicked.emit({cta: 'browse_modules', location: 'closing'})"
+    >Browse modules</app-brand-primary-button>
   </div>
 </section>

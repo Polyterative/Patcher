@@ -1,19 +1,12 @@
 @if (discovery$ | async; as discovery) {
   <div class="home-discovery">
-    <div class="home-discovery__mode-toggle" role="group" aria-label="Community rankings">
-      @for (bucket of discoveryBuckets; track bucket.key) {
-        <button
-          type="button"
-          class="home-discovery__mode-button"
-          [class.home-discovery__mode-button--active]="selectedBucket === bucket.key"
-          [attr.aria-pressed]="selectedBucket === bucket.key"
-          (click)="onBucketChange(bucket.key)"
-        >
-          <mat-icon class="home-discovery__mode-button-icon" aria-hidden="true">{{ bucket.icon }}</mat-icon>
-          {{ bucket.label }}
-        </button>
-      }
-    </div>
+    <app-segmented-control class="home-discovery__mode-toggle"
+                           size="large"
+                           ariaLabel="Community rankings"
+                           [options]="discoveryOptions"
+                           [value]="selectedBucket"
+                           (valueChange)="onBucketChange($event)"
+    ></app-segmented-control>
 
     @if (currentEntries(discovery).length > 0) {
       <div class="home-discovery__rows" [attr.aria-label]="bucketLabel(selectedBucket)">

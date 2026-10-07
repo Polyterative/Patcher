@@ -38,19 +38,11 @@
   margin-block-start: 0.5rem;
 }
 
-.closing__cta--primary {
-  @include ui.home-cta-primary;
-}
-
-.closing__cta--secondary {
-  @include ui.home-cta-secondary;
-}
-
 @media (max-width: ui.$home-bp-narrow) {
   .closing__actions {
     inline-size: 100%;
 
-    a {
+    app-brand-primary-button {
       flex: 1 1 100%;
     }
   }

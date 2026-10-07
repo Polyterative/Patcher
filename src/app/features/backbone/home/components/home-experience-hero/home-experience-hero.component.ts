@@ -9,13 +9,12 @@ import {
   PLATFORM_ID,
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { MatIconModule } from '@angular/material/icon';
-import { RouterLink } from '@angular/router';
 import { Observable, combineLatest, map, take, timer } from 'rxjs';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
 import { PatchModule } from 'src/app/components/patch-parts/patch.module';
 import { DETAIL_ANALYTICS_SURFACES } from 'src/app/components/detail-analytics-surface';
 import { PatchConnection } from 'src/app/models/connection';
+import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { HomeCtaClick, HomeHeroContent } from '../../home-content.models';
 
@@ -46,7 +45,7 @@ export function buildHeroPatchMeta(name: string | undefined, connections: PatchC
   templateUrl: './home-experience-hero.component.html',
   styleUrls: ['./home-experience-hero.component.scss'],
   standalone: true,
-  imports: [CommonModule, MatIconModule, PatchModule, RouterLink]
+  imports: [BrandPrimaryButtonComponent, CommonModule, PatchModule]
 })
 export class HomeExperienceHeroComponent extends SubManager implements OnInit {
   @Input({required: true}) content!: HomeHeroContent;

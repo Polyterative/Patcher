@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
+import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
 import { HomeCtaClick, HomeOpenPillar } from '../../home-content.models';
 
 @Component({
@@ -8,7 +9,7 @@ import { HomeCtaClick, HomeOpenPillar } from '../../home-content.models';
   templateUrl: './home-open-section.component.html',
   styleUrls: ['./home-open-section.component.scss'],
   standalone: true,
-  imports: [MatIconModule]
+  imports: [BrandPrimaryButtonComponent, MatIconModule]
 })
 export class HomeOpenSectionComponent {
   @Input({required: true}) pillars: HomeOpenPillar[] = [];

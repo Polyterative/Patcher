@@ -13,19 +13,16 @@
     </ul>
 
     <div class="api__actions">
-      <a class="api__cta api__cta--primary"
-         [href]="docsUrl"
-         target="_blank"
-         rel="noopener noreferrer"
-         (click)="ctaClicked.emit({cta: 'api_docs', location: 'api'})">
-        API reference
-        <mat-icon aria-hidden="true">north_east</mat-icon>
-      </a>
-      <a class="api__cta api__cta--secondary"
-         [routerLink]="isSignedIn ? '/user/account' : '/auth/signup'"
-         (click)="ctaClicked.emit({cta: isSignedIn ? 'api_key' : 'api_signup', location: 'api'})">
-        Get a free key
-      </a>
+      <app-brand-primary-button theme="solid"
+                                icon="north_east"
+                                [href]="docsUrl"
+                                target="_blank"
+                                (click$)="ctaClicked.emit({cta: 'api_docs', location: 'api'})"
+      >API reference</app-brand-primary-button>
+      <app-brand-primary-button theme="light"
+                                [routerLink]="isSignedIn ? '/user/account' : '/auth/signup'"
+                                (click$)="ctaClicked.emit({cta: isSignedIn ? 'api_key' : 'api_signup', location: 'api'})"
+      >Get a free key</app-brand-primary-button>
     </div>
   </div>
 

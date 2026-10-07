@@ -11,10 +11,8 @@
       <dd class="proof__value">€0</dd>
     </div>
   </dl>
-  <a class="proof__link"
-     routerLink="/info/insights"
-     (click)="ctaClicked.emit({cta: 'insights', location: 'proof'})">
-    Live community insights
-    <mat-icon aria-hidden="true">arrow_forward</mat-icon>
-  </a>
+  <app-brand-primary-button theme="light"
+                            routerLink="/info/insights"
+                            (click$)="ctaClicked.emit({cta: 'insights', location: 'proof'})"
+  >Live community insights</app-brand-primary-button>
 </div>

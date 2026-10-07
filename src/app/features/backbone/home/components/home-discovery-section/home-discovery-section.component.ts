@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
 import { ModulePartsModule } from 'src/app/components/module-parts/module-parts.module';
@@ -12,6 +11,7 @@ import {
   ModuleMinimalViewConfig
 } from 'src/app/components/module-parts/module-minimal/module-minimal.component';
 import { CleanCardComponent } from 'src/app/shared-interproject/components/@visual/clean-card/clean-card.component';
+import { SegmentedControlComponent } from 'src/app/shared-interproject/components/@visual/segmented-control/segmented-control.component';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { environment } from 'src/environments/environment';
 import { ApplicationDiscoveryBucket, ApplicationDiscoverySnapshot } from '../../application-statistics.models';
@@ -23,10 +23,10 @@ import { ApplicationStatisticsService } from '../../application-statistics.servi
   imports: [
     CommonModule,
     CleanCardComponent,
-    MatButtonModule,
     MatIconModule,
     ModulePartsModule,
-    RouterLink
+    RouterLink,
+    SegmentedControlComponent
   ],
   templateUrl: './home-discovery-section.component.html',
   styleUrls: ['./home-discovery-section.component.scss'],
@@ -42,6 +42,8 @@ export class HomeDiscoverySectionComponent extends SubManager {
       ? [{key: 'mostSold' as const, label: 'Most sold', icon: 'sell', unit: 'sold'}]
       : [])
   ];
+
+  readonly discoveryOptions = this.discoveryBuckets.map(({key, label, icon}) => ({id: key, label, icon}));
 
   selectedBucket: ApplicationDiscoveryBucket = 'mostOwned';
 
@@ -77,7 +79,8 @@ export class HomeDiscoverySectionComponent extends SubManager {
     return this.discoveryBuckets.find((entry) => entry.key === bucket)?.unit ?? '';
   }
 
-  onBucketChange(bucket: ApplicationDiscoveryBucket | null | undefined): void {
+  onBucketChange(key: string | null | undefined): void {
+    const bucket = this.discoveryBuckets.find((entry) => entry.key === key)?.key;
     if (!bucket || bucket === this.selectedBucket) {
       return;
     }

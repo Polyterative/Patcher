@@ -52,15 +52,7 @@
 }
 
 .open__link {
-  @include ui.home-text-link;
   justify-self: start;
-  font-size: 1.08rem;
-
-  mat-icon {
-    inline-size: 1.15rem;
-    block-size: 1.15rem;
-    font-size: 1.15rem;
-  }
 }
 
 @media (max-width: ui.$home-bp-narrow) {

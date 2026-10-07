@@ -4,14 +4,13 @@
       <mat-icon class="open__icon" aria-hidden="true">{{ pillar.icon }}</mat-icon>
       <h3 class="open__title">{{ pillar.title }}</h3>
       <p class="open__description">{{ pillar.description }}</p>
-      <a class="open__link"
-         [href]="pillar.link.href"
-         target="_blank"
-         rel="noopener noreferrer"
-         (click)="ctaClicked.emit({cta: ctaKey(pillar), location: 'open'})">
-        {{ pillar.link.label }}
-        <mat-icon aria-hidden="true">north_east</mat-icon>
-      </a>
+      <app-brand-primary-button class="open__link"
+                                theme="light"
+                                icon="north_east"
+                                [href]="pillar.link.href"
+                                target="_blank"
+                                (click$)="ctaClicked.emit({cta: ctaKey(pillar), location: 'open'})"
+      >{{ pillar.link.label }}</app-brand-primary-button>
     </li>
   }
 </ul>

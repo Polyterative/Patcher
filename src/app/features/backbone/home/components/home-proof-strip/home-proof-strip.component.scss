@@ -55,17 +55,6 @@
   color: var(--app-ink-3);
 }
 
-.proof__link {
-  @include ui.home-text-link;
-  font-size: 1.15rem;
-
-  mat-icon {
-    inline-size: 1.2rem;
-    block-size: 1.2rem;
-    font-size: 1.2rem;
-  }
-}
-
 @media (max-width: ui.$home-bp-narrow) {
   .proof__figures {
     display: grid;
