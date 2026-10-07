@@ -1,0 +1,789 @@
+{
+  "uid": "patcher-now",
+  "title": "Patcher \u2014 Right now",
+  "tags": [
+    "patcher",
+    "product"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": false,
+  "graphTooltip": 1,
+  "time": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "refresh": "1m",
+  "panels": [
+    {
+      "id": 1,
+      "title": "People active today",
+      "type": "stat",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "with ev as (\n  select created_at ts, payload->>'action' k, (payload->>'actor_id') uid from auth.audit_log_entries where payload->>'action' in ('login','user_signedup','user_recovery_requested')\n  union all select created::timestamptz, case when public then 'rack (public)' else 'rack (private)' end, authorid::text from public.racks where authorid is not null\n  union all select created::timestamptz, case when public then 'patch (public)' else 'patch (private)' end, authorid::text from public.patches where authorid is not null\n  union all select rm.created::timestamptz, 'module placed in a rack', r.authorid::text from public.rack_modules rm join public.racks r on r.id = rm.rackid\n  union all select created::timestamptz, 'collection', authorid::text from public.module_collections where authorid is not null\n  union all select created, 'comment', \"authorId\"::text from public.comments where \"authorId\" is not null\n  union all select created_at, 'reaction', user_id::text from public.reactions\n  union all select created_at, 'module acquisition', profileid::text from public.user_module_acquisitions\n  union all select created_at, 'marketplace listing', null from public.marketplace_listings) select count(distinct uid) as people from ev where ts >= date_trunc('day', now()) and uid is not null and k <> 'user_recovery_requested'"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto"
+      },
+      "description": "Distinct people who logged in, signed up or created/changed something since midnight (UTC)."
+    },
+    {
+      "id": 2,
+      "title": "Logins today",
+      "type": "stat",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 4,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "with ev as (\n  select created_at ts, payload->>'action' k, (payload->>'actor_id') uid from auth.audit_log_entries where payload->>'action' in ('login','user_signedup','user_recovery_requested')\n  union all select created::timestamptz, case when public then 'rack (public)' else 'rack (private)' end, authorid::text from public.racks where authorid is not null\n  union all select created::timestamptz, case when public then 'patch (public)' else 'patch (private)' end, authorid::text from public.patches where authorid is not null\n  union all select rm.created::timestamptz, 'module placed in a rack', r.authorid::text from public.rack_modules rm join public.racks r on r.id = rm.rackid\n  union all select created::timestamptz, 'collection', authorid::text from public.module_collections where authorid is not null\n  union all select created, 'comment', \"authorId\"::text from public.comments where \"authorId\" is not null\n  union all select created_at, 'reaction', user_id::text from public.reactions\n  union all select created_at, 'module acquisition', profileid::text from public.user_module_acquisitions\n  union all select created_at, 'marketplace listing', null from public.marketplace_listings) select count(*) as logins from ev where ts >= date_trunc('day', now()) and k = 'login'"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 3,
+      "title": "New signups today",
+      "type": "stat",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "with ev as (\n  select created_at ts, payload->>'action' k, (payload->>'actor_id') uid from auth.audit_log_entries where payload->>'action' in ('login','user_signedup','user_recovery_requested')\n  union all select created::timestamptz, case when public then 'rack (public)' else 'rack (private)' end, authorid::text from public.racks where authorid is not null\n  union all select created::timestamptz, case when public then 'patch (public)' else 'patch (private)' end, authorid::text from public.patches where authorid is not null\n  union all select rm.created::timestamptz, 'module placed in a rack', r.authorid::text from public.rack_modules rm join public.racks r on r.id = rm.rackid\n  union all select created::timestamptz, 'collection', authorid::text from public.module_collections where authorid is not null\n  union all select created, 'comment', \"authorId\"::text from public.comments where \"authorId\" is not null\n  union all select created_at, 'reaction', user_id::text from public.reactions\n  union all select created_at, 'module acquisition', profileid::text from public.user_module_acquisitions\n  union all select created_at, 'marketplace listing', null from public.marketplace_listings) select count(*) as signups from ev where ts >= date_trunc('day', now()) and k = 'user_signedup'"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 4,
+      "title": "Racks + patches today",
+      "type": "stat",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "with ev as (\n  select created_at ts, payload->>'action' k, (payload->>'actor_id') uid from auth.audit_log_entries where payload->>'action' in ('login','user_signedup','user_recovery_requested')\n  union all select created::timestamptz, case when public then 'rack (public)' else 'rack (private)' end, authorid::text from public.racks where authorid is not null\n  union all select created::timestamptz, case when public then 'patch (public)' else 'patch (private)' end, authorid::text from public.patches where authorid is not null\n  union all select rm.created::timestamptz, 'module placed in a rack', r.authorid::text from public.rack_modules rm join public.racks r on r.id = rm.rackid\n  union all select created::timestamptz, 'collection', authorid::text from public.module_collections where authorid is not null\n  union all select created, 'comment', \"authorId\"::text from public.comments where \"authorId\" is not null\n  union all select created_at, 'reaction', user_id::text from public.reactions\n  union all select created_at, 'module acquisition', profileid::text from public.user_module_acquisitions\n  union all select created_at, 'marketplace listing', null from public.marketplace_listings) select count(*) as built from ev where ts >= date_trunc('day', now()) and (k like 'rack%' or k like 'patch%')"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 5,
+      "title": "Modules placed in racks today",
+      "type": "stat",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "with ev as (\n  select created_at ts, payload->>'action' k, (payload->>'actor_id') uid from auth.audit_log_entries where payload->>'action' in ('login','user_signedup','user_recovery_requested')\n  union all select created::timestamptz, case when public then 'rack (public)' else 'rack (private)' end, authorid::text from public.racks where authorid is not null\n  union all select created::timestamptz, case when public then 'patch (public)' else 'patch (private)' end, authorid::text from public.patches where authorid is not null\n  union all select rm.created::timestamptz, 'module placed in a rack', r.authorid::text from public.rack_modules rm join public.racks r on r.id = rm.rackid\n  union all select created::timestamptz, 'collection', authorid::text from public.module_collections where authorid is not null\n  union all select created, 'comment', \"authorId\"::text from public.comments where \"authorId\" is not null\n  union all select created_at, 'reaction', user_id::text from public.reactions\n  union all select created_at, 'module acquisition', profileid::text from public.user_module_acquisitions\n  union all select created_at, 'marketplace listing', null from public.marketplace_listings) select count(*) as modules from ev where ts >= date_trunc('day', now()) and k = 'module placed in a rack'"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 6,
+      "title": "Comments + reactions today",
+      "type": "stat",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 20,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "with ev as (\n  select created_at ts, payload->>'action' k, (payload->>'actor_id') uid from auth.audit_log_entries where payload->>'action' in ('login','user_signedup','user_recovery_requested')\n  union all select created::timestamptz, case when public then 'rack (public)' else 'rack (private)' end, authorid::text from public.racks where authorid is not null\n  union all select created::timestamptz, case when public then 'patch (public)' else 'patch (private)' end, authorid::text from public.patches where authorid is not null\n  union all select rm.created::timestamptz, 'module placed in a rack', r.authorid::text from public.rack_modules rm join public.racks r on r.id = rm.rackid\n  union all select created::timestamptz, 'collection', authorid::text from public.module_collections where authorid is not null\n  union all select created, 'comment', \"authorId\"::text from public.comments where \"authorId\" is not null\n  union all select created_at, 'reaction', user_id::text from public.reactions\n  union all select created_at, 'module acquisition', profileid::text from public.user_module_acquisitions\n  union all select created_at, 'marketplace listing', null from public.marketplace_listings) select count(*) as social from ev where ts >= date_trunc('day', now()) and k in ('comment','reaction')"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 7,
+      "title": "Today vs yesterday vs a normal day",
+      "type": "table",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 10,
+        "h": 9
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "with ev as (\n  select created_at ts, payload->>'action' k, (payload->>'actor_id') uid from auth.audit_log_entries where payload->>'action' in ('login','user_signedup','user_recovery_requested')\n  union all select created::timestamptz, case when public then 'rack (public)' else 'rack (private)' end, authorid::text from public.racks where authorid is not null\n  union all select created::timestamptz, case when public then 'patch (public)' else 'patch (private)' end, authorid::text from public.patches where authorid is not null\n  union all select rm.created::timestamptz, 'module placed in a rack', r.authorid::text from public.rack_modules rm join public.racks r on r.id = rm.rackid\n  union all select created::timestamptz, 'collection', authorid::text from public.module_collections where authorid is not null\n  union all select created, 'comment', \"authorId\"::text from public.comments where \"authorId\" is not null\n  union all select created_at, 'reaction', user_id::text from public.reactions\n  union all select created_at, 'module acquisition', profileid::text from public.user_module_acquisitions\n  union all select created_at, 'marketplace listing', null from public.marketplace_listings),\nd as (select case when k = 'login' then 'logins' when k = 'user_signedup' then 'signups' when k like 'rack%' then 'racks' when k like 'patch%' then 'patches'\n  when k = 'module placed in a rack' then 'modules placed' when k in ('comment','reaction') then 'comments & reactions' else 'other' end as kind, k, uid, ts, (ts >= date_trunc('day', now())) today, (ts >= date_trunc('day', now()) - interval '1 day' and ts < date_trunc('day', now())) yest,\n      (ts >= date_trunc('day', now()) - interval '7 days' and ts < date_trunc('day', now())) wk from ev where k <> 'user_recovery_requested')\nselect metric, today, yesterday, round(week_avg::numeric, 1) as avg_per_day_last_7 from (\n select 'People active' metric, 1 o, count(distinct uid) filter (where today) today, count(distinct uid) filter (where yest) yesterday,\n   (select avg(c) from (select count(distinct uid) c from d where wk group by date_trunc('day', ts)) q) week_avg from d where uid is not null\n union all select 'Logins', 2, count(*) filter (where today and k='login'), count(*) filter (where yest and k='login'), count(*) filter (where wk and k='login')/7.0 from d\n union all select 'Signups', 3, count(*) filter (where today and k='user_signedup'), count(*) filter (where yest and k='user_signedup'), count(*) filter (where wk and k='user_signedup')/7.0 from d\n union all select 'Racks built', 4, count(*) filter (where today and k like 'rack%'), count(*) filter (where yest and k like 'rack%'), count(*) filter (where wk and k like 'rack%')/7.0 from d\n union all select 'Patches made', 5, count(*) filter (where today and k like 'patch%'), count(*) filter (where yest and k like 'patch%'), count(*) filter (where wk and k like 'patch%')/7.0 from d\n union all select 'Modules placed in racks', 6, count(*) filter (where today and k='module placed in a rack'), count(*) filter (where yest and k='module placed in a rack'), count(*) filter (where wk and k='module placed in a rack')/7.0 from d\n union all select 'Comments + reactions', 7, count(*) filter (where today and k in ('comment','reaction')), count(*) filter (where yest and k in ('comment','reaction')), count(*) filter (where wk and k in ('comment','reaction'))/7.0 from d) t order by o"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {},
+      "description": "avg_per_day_last_7 = average of the 7 full days before today. Today is still in progress (UTC day)."
+    },
+    {
+      "id": 8,
+      "title": "Activity per hour, last 48 hours",
+      "type": "timeseries",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 10,
+        "y": 4,
+        "w": 14,
+        "h": 9
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "time_series",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "with ev as (\n  select created_at ts, payload->>'action' k, (payload->>'actor_id') uid from auth.audit_log_entries where payload->>'action' in ('login','user_signedup','user_recovery_requested')\n  union all select created::timestamptz, case when public then 'rack (public)' else 'rack (private)' end, authorid::text from public.racks where authorid is not null\n  union all select created::timestamptz, case when public then 'patch (public)' else 'patch (private)' end, authorid::text from public.patches where authorid is not null\n  union all select rm.created::timestamptz, 'module placed in a rack', r.authorid::text from public.rack_modules rm join public.racks r on r.id = rm.rackid\n  union all select created::timestamptz, 'collection', authorid::text from public.module_collections where authorid is not null\n  union all select created, 'comment', \"authorId\"::text from public.comments where \"authorId\" is not null\n  union all select created_at, 'reaction', user_id::text from public.reactions\n  union all select created_at, 'module acquisition', profileid::text from public.user_module_acquisitions\n  union all select created_at, 'marketplace listing', null from public.marketplace_listings)\nselect $__timeGroup(ts, '1h') as time, case when k = 'login' then 'logins' when k = 'user_signedup' then 'signups' when k like 'rack%' then 'racks' when k like 'patch%' then 'patches'\n  when k = 'module placed in a rack' then 'modules placed' when k in ('comment','reaction') then 'comments & reactions' else 'other' end as metric, count(*) as events from ev where ts > now() - interval '48 hours' and k <> 'user_recovery_requested' group by 1, 2 order by 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 60,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "barAlignment": 0,
+            "stacking": {
+              "mode": "normal"
+            }
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "description": "Everything people did, hour by hour. Logins use the self-host log."
+    },
+    {
+      "id": 9,
+      "title": "Latest things people did",
+      "type": "table",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 13,
+        "w": 12,
+        "h": 12
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "with ev as (\n  select created_at ts, payload->>'action' k, (payload->>'actor_id') uid from auth.audit_log_entries where payload->>'action' in ('login','user_signedup','user_recovery_requested')\n  union all select created::timestamptz, case when public then 'rack (public)' else 'rack (private)' end, authorid::text from public.racks where authorid is not null\n  union all select created::timestamptz, case when public then 'patch (public)' else 'patch (private)' end, authorid::text from public.patches where authorid is not null\n  union all select rm.created::timestamptz, 'module placed in a rack', r.authorid::text from public.rack_modules rm join public.racks r on r.id = rm.rackid\n  union all select created::timestamptz, 'collection', authorid::text from public.module_collections where authorid is not null\n  union all select created, 'comment', \"authorId\"::text from public.comments where \"authorId\" is not null\n  union all select created_at, 'reaction', user_id::text from public.reactions\n  union all select created_at, 'module acquisition', profileid::text from public.user_module_acquisitions\n  union all select created_at, 'marketplace listing', null from public.marketplace_listings)\nselect ts as time, case k when 'login' then 'Logged in' when 'user_signedup' then 'Signed up' when 'user_recovery_requested' then 'Asked for password reset'\n  when 'rack (public)' then 'Built a rack (public)' when 'rack (private)' then 'Built a rack (private)'\n  when 'patch (public)' then 'Made a patch (public)' when 'patch (private)' then 'Made a patch (private)'\n  when 'module placed in a rack' then 'Placed a module in a rack' when 'collection' then 'Created a collection'\n  when 'comment' then 'Wrote a comment' when 'reaction' then 'Gave a reaction' when 'module acquisition' then 'Logged a module purchase'\n  when 'marketplace listing' then 'Listed a module for sale' else k end as what, case when uid is null then '' else 'user ' || left(uid, 6) end as who from ev\nwhere ts > now() - interval '7 days' and k <> 'user_recovery_requested' order by ts desc limit 40"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "time"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeFromNow"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {},
+      "description": "Newest 40 events of the last 7 days. 'who' is the first 6 characters of the account id: same code = same person. No names or emails."
+    },
+    {
+      "id": 10,
+      "title": "Last 7 days, day by day",
+      "type": "timeseries",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 13,
+        "w": 12,
+        "h": 12
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "time_series",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "with ev as (\n  select created_at ts, payload->>'action' k, (payload->>'actor_id') uid from auth.audit_log_entries where payload->>'action' in ('login','user_signedup','user_recovery_requested')\n  union all select created::timestamptz, case when public then 'rack (public)' else 'rack (private)' end, authorid::text from public.racks where authorid is not null\n  union all select created::timestamptz, case when public then 'patch (public)' else 'patch (private)' end, authorid::text from public.patches where authorid is not null\n  union all select rm.created::timestamptz, 'module placed in a rack', r.authorid::text from public.rack_modules rm join public.racks r on r.id = rm.rackid\n  union all select created::timestamptz, 'collection', authorid::text from public.module_collections where authorid is not null\n  union all select created, 'comment', \"authorId\"::text from public.comments where \"authorId\" is not null\n  union all select created_at, 'reaction', user_id::text from public.reactions\n  union all select created_at, 'module acquisition', profileid::text from public.user_module_acquisitions\n  union all select created_at, 'marketplace listing', null from public.marketplace_listings)\nselect $__timeGroup(ts, '1d') as time, case when k = 'login' then 'logins' when k = 'user_signedup' then 'signups' when k like 'rack%' then 'racks' when k like 'patch%' then 'patches'\n  when k = 'module placed in a rack' then 'modules placed' when k in ('comment','reaction') then 'comments & reactions' else 'other' end as metric, count(*) as events from ev where $__timeFilter(ts) and k <> 'user_recovery_requested' group by 1, 2 order by 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 60,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "barAlignment": 0,
+            "stacking": {
+              "mode": "normal"
+            }
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 11,
+      "title": "People active per day (new vs returning)",
+      "type": "timeseries",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 25,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "time_series",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "with ev as (\n  select created_at ts, payload->>'action' k, (payload->>'actor_id') uid from auth.audit_log_entries where payload->>'action' in ('login','user_signedup','user_recovery_requested')\n  union all select created::timestamptz, case when public then 'rack (public)' else 'rack (private)' end, authorid::text from public.racks where authorid is not null\n  union all select created::timestamptz, case when public then 'patch (public)' else 'patch (private)' end, authorid::text from public.patches where authorid is not null\n  union all select rm.created::timestamptz, 'module placed in a rack', r.authorid::text from public.rack_modules rm join public.racks r on r.id = rm.rackid\n  union all select created::timestamptz, 'collection', authorid::text from public.module_collections where authorid is not null\n  union all select created, 'comment', \"authorId\"::text from public.comments where \"authorId\" is not null\n  union all select created_at, 'reaction', user_id::text from public.reactions\n  union all select created_at, 'module acquisition', profileid::text from public.user_module_acquisitions\n  union all select created_at, 'marketplace listing', null from public.marketplace_listings)\nselect $__timeGroup(e.ts, '1d') as time, case when u.created_at >= date_trunc('day', e.ts) then 'new that day' else 'returning' end as metric, count(distinct e.uid) as people\nfrom ev e join auth.users u on u.id::text = e.uid where $__timeFilter(e.ts) and e.k <> 'user_recovery_requested' group by 1, 2 order by 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 60,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "barAlignment": 0,
+            "stacking": {
+              "mode": "normal"
+            }
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 12,
+      "title": "When people are around (hour of day, last 7 days, Rome time)",
+      "type": "barchart",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 25,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "with ev as (\n  select created_at ts, payload->>'action' k, (payload->>'actor_id') uid from auth.audit_log_entries where payload->>'action' in ('login','user_signedup','user_recovery_requested')\n  union all select created::timestamptz, case when public then 'rack (public)' else 'rack (private)' end, authorid::text from public.racks where authorid is not null\n  union all select created::timestamptz, case when public then 'patch (public)' else 'patch (private)' end, authorid::text from public.patches where authorid is not null\n  union all select rm.created::timestamptz, 'module placed in a rack', r.authorid::text from public.rack_modules rm join public.racks r on r.id = rm.rackid\n  union all select created::timestamptz, 'collection', authorid::text from public.module_collections where authorid is not null\n  union all select created, 'comment', \"authorId\"::text from public.comments where \"authorId\" is not null\n  union all select created_at, 'reaction', user_id::text from public.reactions\n  union all select created_at, 'module acquisition', profileid::text from public.user_module_acquisitions\n  union all select created_at, 'marketplace listing', null from public.marketplace_listings)\nselect lpad(extract(hour from ts at time zone 'Europe/Rome')::int::text, 2, '0') || ':00' as hour, count(*) as events\nfrom ev where ts > now() - interval '7 days' and k <> 'user_recovery_requested' group by 1 order by 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "xField": "hour",
+        "legend": {
+          "showLegend": false
+        },
+        "showValue": "never",
+        "xTickLabelSpacing": 40
+      }
+    },
+    {
+      "id": 13,
+      "title": "Modules people placed in racks this week",
+      "type": "bargauge",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 33,
+        "w": 8,
+        "h": 9
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select m.name as module, count(*) as times\nfrom public.rack_modules rm join public.modules m on m.id = rm.moduleid where rm.created > now() - interval '7 days' group by m.id, m.name order by 2 desc limit 15"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-BlPu"
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "values": true,
+          "calcs": [],
+          "fields": ""
+        },
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "showUnfilled": true,
+        "valueMode": "color",
+        "minVizHeight": 14,
+        "namePlacement": "left"
+      }
+    },
+    {
+      "id": 14,
+      "title": "Modules added to 'own' lists this week",
+      "type": "bargauge",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 33,
+        "w": 8,
+        "h": 9
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select m.name as module, count(*) as people\nfrom public.user_modules um join public.modules m on m.id = um.moduleid where um.kind = 'HAS' and um.updated > now() - interval '7 days' group by m.id, m.name order by 2 desc limit 15"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-BlPu"
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "values": true,
+          "calcs": [],
+          "fields": ""
+        },
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "showUnfilled": true,
+        "valueMode": "color",
+        "minVizHeight": 14,
+        "namePlacement": "left"
+      },
+      "description": "Based on the last change time of a list entry; bulk edits can inflate it."
+    },
+    {
+      "id": 15,
+      "title": "New people this week: what did they do?",
+      "type": "table",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 33,
+        "w": 8,
+        "h": 9
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select u.created_at as signed_up, 'user ' || left(u.id::text, 6) as who,\n  (select count(*) from public.racks r where r.authorid = u.id) as racks,\n  (select count(*) from public.patches p where p.authorid = u.id) as patches,\n  (select count(*) from public.user_modules um where um.profileid = u.id) as module_list_entries,\n  (select count(*) from auth.sessions s where s.user_id = u.id) as sessions\nfrom auth.users u where u.created_at > now() - interval '7 days' and u.deleted_at is null order by u.created_at desc limit 20"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "signed_up"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeFromNow"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {}
+    }
+  ],
+  "templating": {
+    "list": []
+  },
+  "annotations": {
+    "list": []
+  },
+  "links": [
+    {
+      "title": "Right now",
+      "type": "link",
+      "url": "/d/patcher-now"
+    },
+    {
+      "title": "Pulse",
+      "type": "link",
+      "url": "/d/patcher-pulse"
+    },
+    {
+      "title": "What people build",
+      "type": "link",
+      "url": "/d/patcher-build"
+    },
+    {
+      "title": "Ecosystem",
+      "type": "link",
+      "url": "/d/patcher-eco"
+    },
+    {
+      "title": "Usage (tech)",
+      "type": "link",
+      "url": "/d/patcher-usage"
+    },
+    {
+      "title": "Content",
+      "type": "link",
+      "url": "/d/patcher-content"
+    },
+    {
+      "title": "Database",
+      "type": "link",
+      "url": "/d/patcher-db"
+    }
+  ]
+}
