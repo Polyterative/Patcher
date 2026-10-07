@@ -8,9 +8,14 @@
 --
 -- BYPASSRLS is needed because every source table has RLS on and no policy for a new
 -- role, so without it every count would read 0. It only widens *which rows* the role
--- can see; WHAT it can read is limited to the column-level SELECT grants below
--- (no auth.users.encrypted_password, no cron.job.command / run-details command, which
--- can hold the snapshot bearer token, no IPs or user agents).
+-- can see; WHAT it can read is limited by the column-level SELECT grants below
+-- (no auth.users.encrypted_password or email, no IPs or user agents).
+-- KNOWN GAP (verified 2026-10-07): cron.job and cron.job_run_details are already
+-- SELECT-granted to PUBLIC by pg_cron, and BYPASSRLS skips pg_cron's per-user policy,
+-- so grafana_ro (and any Grafana admin via Explore) CAN read cron.job.command, which for
+-- the snapshot job holds a literal bearer token. The column grants on cron.* below do not
+-- prevent that. Mitigation = treat the Grafana admin login as secret-holder, or rotate the
+-- snapshot token / move it to Vault (owner decision, see checklist item 37).
 BEGIN;
 
 SELECT format('CREATE ROLE grafana_ro LOGIN BYPASSRLS PASSWORD %L CONNECTION LIMIT 5', :'pw')
