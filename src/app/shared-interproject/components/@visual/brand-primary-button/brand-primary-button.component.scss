@@ -57,5 +57,10 @@
 
   &.light { color: $brand-secondary; border: 0.2rem solid $brand-secondary; }
 
+  // Filled call-to-action: the one emphasised button of a group, next to `light` or `primary` siblings.
+  &.solid { background-color: $brand-primary; color: white; border: 0.2rem solid $brand-primary; }
+
+  &.solid:hover { background-color: color.adjust($brand-primary, $lightness: -8%) !important; border-color: color.adjust($brand-primary, $lightness: -8%); }
+
   &.disabled { background-color: color.adjust($brand-secondary, $lightness: 20%); color: rgba(255, 255, 255, 0.81); border: 0.2rem solid white; cursor: not-allowed; }
 }

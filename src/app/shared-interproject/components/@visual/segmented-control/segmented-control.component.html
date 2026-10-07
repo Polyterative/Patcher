@@ -1,0 +1,27 @@
+<div class="segmented"
+     [class.segmented--large]="size === 'large'"
+     [attr.role]="kind === 'tabs' ? 'tablist' : 'group'"
+     [attr.aria-label]="ariaLabel || null"
+>
+  @for (option of options; track option.id; let index = $index) {
+    @let selected = isSelected(option);
+    <button #segment
+            type="button"
+            class="segmented__segment"
+            [class.segmented__segment--selected]="selected"
+            [attr.id]="kind === 'tabs' ? tabId(option) : null"
+            [attr.role]="kind === 'tabs' ? 'tab' : null"
+            [attr.aria-selected]="kind === 'tabs' ? selected : null"
+            [attr.aria-pressed]="kind === 'toggle' ? selected : null"
+            [attr.aria-controls]="kind === 'tabs' ? panelId(option) : null"
+            [attr.tabindex]="kind === 'tabs' ? (selected ? 0 : -1) : null"
+            (click)="select(option)"
+            (keydown)="onKeydown($event, index)"
+    >
+      @if (option.icon) {
+        <mat-icon class="segmented__icon" aria-hidden="true">{{ option.icon }}</mat-icon>
+      }
+      <span class="segmented__label">{{ option.label }}</span>
+    </button>
+  }
+</div>

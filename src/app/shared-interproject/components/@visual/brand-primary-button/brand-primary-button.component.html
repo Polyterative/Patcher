@@ -1,18 +1,44 @@
-<a mat-raised-button
-   [style.flex]="innerFlex"
-   [routerLink]="(disabled||error)?null:routerLink"
-   [fragment]="fragment"
-   [class]="'brand-button'+' '+theme"
-   [disabled]="disabled||error"
-   [ngClass]='{"disabled": disabled, "error": error }'
-   [matTooltip]="tooltip"
-   [matTooltipDisabled]="!tooltip"
-   [matTooltipPosition]="tooltipPosition"
-   [cdkTrapFocus]="autoFocus"
-   (click)="(disabled||error)?doNothing():click$.emit()"
->
-  @if (icon) {
-    <mat-icon>{{ icon }}</mat-icon>
-  }
-  <ng-content></ng-content>
-</a>
+@if (href !== undefined) {
+  <a mat-raised-button
+     [style.flex]="innerFlex"
+     [attr.href]="(disabled||error)?null:href"
+     [attr.target]="target ?? null"
+     [attr.rel]="linkRel"
+     [class]="'brand-button'+' '+theme"
+     [disabled]="disabled||error"
+     [ngClass]='{"disabled": disabled, "error": error }'
+     [matTooltip]="tooltip"
+     [matTooltipDisabled]="!tooltip"
+     [matTooltipPosition]="tooltipPosition"
+     [cdkTrapFocus]="autoFocus"
+     (click)="(disabled||error)?doNothing():click$.emit()"
+  >
+    @if (icon) {
+      <mat-icon>{{ icon }}</mat-icon>
+    }
+    <ng-container *ngTemplateOutlet="label"></ng-container>
+  </a>
+} @else {
+  <a mat-raised-button
+     [style.flex]="innerFlex"
+     [routerLink]="(disabled||error)?null:routerLink"
+     [fragment]="fragment"
+     [class]="'brand-button'+' '+theme"
+     [disabled]="disabled||error"
+     [ngClass]='{"disabled": disabled, "error": error }'
+     [matTooltip]="tooltip"
+     [matTooltipDisabled]="!tooltip"
+     [matTooltipPosition]="tooltipPosition"
+     [cdkTrapFocus]="autoFocus"
+     (click)="(disabled||error)?doNothing():click$.emit()"
+  >
+    @if (icon) {
+      <mat-icon>{{ icon }}</mat-icon>
+    }
+    <ng-container *ngTemplateOutlet="label"></ng-container>
+  </a>
+}
+
+<!-- Single projection point shared by both anchors. The icon stays a direct child of each anchor so Material
+     keeps it in its icon slot. -->
+<ng-template #label><ng-content></ng-content></ng-template>

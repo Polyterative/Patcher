@@ -1,5 +1,5 @@
 import { A11yModule } from '@angular/cdk/a11y';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -21,7 +21,8 @@ export type BrandPrimaryButtonTheme =
   | 'warning'
   | 'positive'
   | 'negative'
-  | 'light';
+  | 'light'
+  | 'solid';
 
 /**
  *  UI ONLY COMPONENT
@@ -38,6 +39,7 @@ export type BrandPrimaryButtonTheme =
     MatButtonModule,
     MatIconModule,
     MatTooltipModule,
+    NgTemplateOutlet,
     RouterModule,
     A11yModule
   ]
@@ -50,11 +52,19 @@ export class BrandPrimaryButtonComponent {
   @Input() innerFlex: string = undefined;
   @Input() routerLink: string | readonly unknown[] = undefined;
   @Input() fragment: string | undefined = undefined;
+  /** Plain (non-router) link target: external URLs and in-page anchors. Wins over `routerLink`. */
+  @Input() href: string | undefined = undefined;
+  @Input() target: '_blank' | '_self' | undefined = undefined;
   @Input() autoFocus = false;
   @Input() icon: string | undefined = undefined;
   @Input() tooltip = '';
   @Input() tooltipPosition: TooltipPosition = 'above';
   
+  /** External links opened in a new tab never leak the opener. */
+  get linkRel(): string | null {
+    return this.target === '_blank' ? 'noopener noreferrer' : null;
+  }
+
   doNothing() {
     // do not delete this
   }
