@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.8.4](https://github.com/Polyterative/Patcher/compare/v6.8.3...v6.8.4) (2026-10-08)
+
+
+### Bug Fixes
+
+* **racks:** capture rack image in light theme regardless of viewer theme ([c99e7b0](https://github.com/Polyterative/Patcher/commit/c99e7b0b263763b3e86f474d9e7bb4479ec300cb))
+* **vercel:** allow image host in csp connect-src so rack capture inlines panels ([5d9e1f9](https://github.com/Polyterative/Patcher/commit/5d9e1f938beac9e0170528ecafb90bcbedf9aad5))
+
 ### [6.8.3](https://github.com/Polyterative/Patcher/compare/v6.8.2...v6.8.3) (2026-10-07)
 
 
