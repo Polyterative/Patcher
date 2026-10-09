@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.8.6](https://github.com/Polyterative/Patcher/compare/v6.8.5...v6.8.6) (2026-10-09)
+
+
+### Bug Fixes
+
+* **racks:** keep rack visible when viewport measures zero width during navigation ([2683f5d](https://github.com/Polyterative/Patcher/commit/2683f5de94c3d338fff0f370b9025d829fa58774))
+
 ### [6.8.5](https://github.com/Polyterative/Patcher/compare/v6.8.4...v6.8.5) (2026-10-09)
 
 
