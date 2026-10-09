@@ -883,6 +883,28 @@ describe('RackEditorComponent', () => {
     expect(component.autoScale).toBeCloseTo(0.5, 4);
   });
 
+  it('keeps the previous auto scale when the viewport has not been laid out yet', () => {
+    const component = createComponent(
+      {} as MatSnackBar,
+      {} as RackDetailDataService,
+      {} as GeneralContextMenuDataService,
+      {markForCheck: () => undefined} as ChangeDetectorRef,
+      jasmine.createSpyObj<MatDialog>('MatDialog', ['open'])
+    );
+
+    component.data = {hp: 104} as unknown as RackMinimal;
+    spyOn(window, 'getComputedStyle').and.returnValue({fontSize: '10'} as CSSStyleDeclaration);
+    const viewport = {clientWidth: 0};
+    (component as unknown as RackEditorTestAccessor).rackViewportRef = {nativeElement: viewport};
+
+    (component as unknown as RackEditorTestAccessor).updateAutoScale();
+    expect(component.autoScale).toBe(1);
+
+    viewport.clientWidth = 520;
+    (component as unknown as RackEditorTestAccessor).updateAutoScale();
+    expect(component.autoScale).toBeCloseTo(0.5, 4);
+  });
+
   it('combines auto scale and reduced scale into the drag surface scale', () => {
     const component = createComponent(
       {} as MatSnackBar,
