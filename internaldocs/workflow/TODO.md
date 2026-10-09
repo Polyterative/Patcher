@@ -90,6 +90,7 @@
   prefix/IP mitigation. This is a documentation-only standing approval;
   remote SQL apply of the follow-up migration stays gated below
   ([GitHub issue #135](https://github.com/Polyterative/Patcher/issues/135)).
+- Price Hub NAS full refresh: running live writes on the NAS cron job every 3 days at 03:00 UTC was approved by the owner on 2026-10-09 → [plan](./plans/price-hub-scheduled-refresh.md).
 
 ### Pending questions (owner: answer inline, agents move resolved lines)
 
@@ -169,6 +170,7 @@
 - [~] **HIGH: Supabase Cached Egress overquota — cut API + Storage bytes (6.25/5 GB; rack search paging + collection-cover proxy first)** → [GitHub issue #161](https://github.com/Polyterative/Patcher/issues/161) + [`plans/supabase-cached-egress-overquota.md`](./plans/supabase-cached-egress-overquota.md)
 - [ ] **MEDIUM: Self-hosted Supabase — full move evaluation (staging rehearsal in progress; tooling in `scripts/ops/`)** → local, gitignored `internaldocs/private/selfhost/` (master checklist, runbook, plan; not published because the repo is public)
 - [~] **MEDIUM: Cloudflare uptime watchdog (live) + Turnstile on email-sending auth (gate in log mode)** → [`plans/cloudflare-watchdog-and-turnstile.md`](./plans/cloudflare-watchdog-and-turnstile.md)
+- [~] **MEDIUM: Price Hub scheduled full refresh on the self-host NAS (live on the NAS cron; crawler fixes open)** → [`plans/price-hub-scheduled-refresh.md`](./plans/price-hub-scheduled-refresh.md)
 - [~] **HIGH: Homepage marketing rebuild — explain Patcher in one scroll** → [`plans/homepage-marketing-rebuild.md`](./plans/homepage-marketing-rebuild.md)
 - [~] **MEDIUM: Immediate UI feedback — synchronous pending ack without pipe changes** → [`plans/immediate-ui-feedback-pending-ack.md`](./plans/immediate-ui-feedback-pending-ack.md)
 - [!] **HIGH: Security — hardening backlog (private)** → local, gitignored `internaldocs/security/` (sole-contributor setup; not published because the repo is public)

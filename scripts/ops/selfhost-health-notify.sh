@@ -74,7 +74,7 @@ push() { # title priority tags body
   curl -fsS -m 20 -o /dev/null -H "Title: $1" -H "Priority: $2" -H "Tags: $3" -d "$4" "$NTFY_SERVER/$topic"
 }
 
-out="$(PUBLIC_URL="$PUBLIC_URL" DUMP_DIR="$DUMP_DIR" ZFS_DATASET="$ZFS_DATASET" REPLICA_DATASET="$REPLICA_DATASET" bash "$OPS_DIR/selfhost-health-remote.sh" 2>&1)"; rc=$?
+out="$(PUBLIC_URL="$PUBLIC_URL" PRICE_HUB_DIR="$OPS_DIR/price-hub" DUMP_DIR="$DUMP_DIR" ZFS_DATASET="$ZFS_DATASET" REPLICA_DATASET="$REPLICA_DATASET" bash "$OPS_DIR/selfhost-health-remote.sh" 2>&1)"; rc=$?
 now=$(date +%s)
 state=ok; [ "$rc" -eq 0 ] || state=fail
 prev=ok; last_push=0

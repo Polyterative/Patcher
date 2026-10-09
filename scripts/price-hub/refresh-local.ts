@@ -13,7 +13,7 @@ const WRITE_KEY_HELP = 'Set SUPABASE_SERVICE_ROLE_KEY or SUPABASE_SERVICE_KEY in
 const MODULE_INPUT_HELP = 'Pass --modules=modules.json, or set SUPABASE_ANON_KEY/SUPABASE_SERVICE_ROLE_KEY in .env, .env.local, or PRICE_HUB_ENV_FILE so the script can fetch approved modules itself.';
 const MODULE_FETCH_PAGE_SIZE = 500;
 
-interface RefreshLocalOptions {
+export interface RefreshLocalOptions {
   store: string;
   maxPages: number;
   maxProducts?: number;
@@ -35,7 +35,7 @@ interface SupabaseModuleRow {
   manufacturer: { name: string | null } | { name: string | null }[] | null;
 }
 
-interface StoreRefreshSummary {
+export interface StoreRefreshSummary {
   storeSlug: string;
   status: 'imported' | 'dry_run' | 'skipped' | 'failed';
   products: number;
@@ -55,9 +55,7 @@ async function main(): Promise<void> {
 
   const stores = readApprovedPriceHubStores(options.store);
   const modules = await resolveModules(options);
-  const supabase = options.dryRun
-    ? (options.supabaseReadKey ? createClient<Database>(options.supabaseUrl, options.supabaseReadKey, { auth: { persistSession: false } }) : null)
-    : createClient<Database>(options.supabaseUrl, options.supabaseKey, { auth: { persistSession: false } });
+  const supabase = createRefreshSupabaseClient(options);
   const summaries: StoreRefreshSummary[] = [];
 
   for (const store of stores) {
@@ -88,6 +86,17 @@ async function main(): Promise<void> {
   if (summaries.some((summary) => summary.status === 'failed' || summary.status === 'skipped')) {
     process.exitCode = 1;
   }
+}
+
+export type RefreshSupabaseClient = ReturnType<typeof createClient<Database>>;
+
+export function createRefreshSupabaseClient(options: RefreshLocalOptions): RefreshSupabaseClient | null {
+  if (options.dryRun) {
+    return options.supabaseReadKey
+      ? createClient<Database>(options.supabaseUrl, options.supabaseReadKey, { auth: { persistSession: false } })
+      : null;
+  }
+  return createClient<Database>(options.supabaseUrl, options.supabaseKey, { auth: { persistSession: false } });
 }
 
 export function readRefreshCliOptions(args: readonly string[], env: NodeJS.ProcessEnv = process.env): RefreshLocalOptions {
@@ -156,11 +165,11 @@ export function readRefreshCliOptions(args: readonly string[], env: NodeJS.Proce
   return options;
 }
 
-async function refreshStore(
+export async function refreshStore(
   store: ApprovedPriceHubStoreConfig,
   modules: readonly PriceHubModuleInput[],
   options: RefreshLocalOptions,
-  supabase: ReturnType<typeof createClient<Database>> | null,
+  supabase: RefreshSupabaseClient | null,
 ): Promise<StoreRefreshSummary> {
   const crawl = await crawlPriceHubStoreCatalog(store, {
     maxPages: options.maxPages,
@@ -355,7 +364,7 @@ async function readModules(path: string): Promise<PriceHubModuleInput[]> {
   return body.map(readModuleInput);
 }
 
-async function resolveModules(options: RefreshLocalOptions): Promise<PriceHubModuleInput[]> {
+export async function resolveModules(options: RefreshLocalOptions): Promise<PriceHubModuleInput[]> {
   if (options.modulesPath) {
     return readModules(options.modulesPath);
   }
@@ -436,7 +445,7 @@ function readModuleInput(value: unknown): PriceHubModuleInput {
   };
 }
 
-function printStoreSummary(summary: StoreRefreshSummary): void {
+export function printStoreSummary(summary: StoreRefreshSummary): void {
   const imported = summary.status === 'imported'
     ? `, imported ${summary.importedSnapshots} snapshots / ${summary.upsertedListings} listings, deactivated ${summary.deactivatedListings}`
     : '';

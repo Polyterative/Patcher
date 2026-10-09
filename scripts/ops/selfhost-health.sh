@@ -29,5 +29,5 @@ case "${1:-}" in
   *) echo "unknown argument: $1" >&2; exit 1 ;;
 esac
 
-ssh "$SSH_HOST" "GATEWAY='$GATEWAY' DUMP_DIR='$DUMP_DIR' ZFS_DATASET='$ZFS_DATASET' REPLICA_DATASET='$REPLICA_DATASET' PUBLIC_URL='$PUBLIC_URL' bash -s" \
+ssh "$SSH_HOST" "GATEWAY='$GATEWAY' DUMP_DIR='$DUMP_DIR' ZFS_DATASET='$ZFS_DATASET' REPLICA_DATASET='$REPLICA_DATASET' PUBLIC_URL='$PUBLIC_URL' PRICE_HUB_DIR='${OPS_DIR:+$OPS_DIR/price-hub}' bash -s" \
   < "$(dirname "${BASH_SOURCE[0]}")/lib/selfhost-health-remote.sh"
