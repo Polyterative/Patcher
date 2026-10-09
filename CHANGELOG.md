@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.8.5](https://github.com/Polyterative/Patcher/compare/v6.8.4...v6.8.5) (2026-10-09)
+
+
+### Bug Fixes
+
+* **racks:** reload rack detail when navigating between racks ([0736f48](https://github.com/Polyterative/Patcher/commit/0736f486209fea5c12b538287055c30834e260be))
+
 ### [6.8.4](https://github.com/Polyterative/Patcher/compare/v6.8.3...v6.8.4) (2026-10-08)
 
 
