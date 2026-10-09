@@ -101,3 +101,9 @@ The one-off 2026-08 backfill that converted historical data to this shape (archi
 ## 8. Approval boundaries
 
 This guide covers local scripts and reviewed imports only. Do not deploy Edge Functions, enable Supabase Cron, change RLS/policies/grants, release, push, or switch production branches without explicit approval recorded in the workflow approvals ledger. The Price Hub snapshot worker's three-day schedule is the current approved exception; its token is stored in Supabase Vault.
+
+## 9. Scheduled full refresh on the self-host NAS
+
+`scheduled-refresh.ts` wraps the `refresh-local` per-store pipeline for unattended runs: resume checkpoint, per-store timeout + retry, run deadline, ntfy progress/failure pushes, and a `last-run.json` for the health cron's dead-man check. It accepts the same flags (`--dry-run`, `--store=...`). Locally: `PRICE_HUB_STATE_DIR=tmp/ph-state pnpm price-hub:scheduled-refresh --dry-run --store=<slug>`.
+
+On the NAS it runs as a one-shot container installed and driven by `scripts/ops/price-hub-refresh-nas.sh` (`--install`, `--dry-run`, `--run`, `--status`, `--logs`, `--stop`, `--enable-cron`). Enabling the cron job is owner-gated in the approvals ledger. Plan and decision log: `internaldocs/workflow/plans/price-hub-scheduled-refresh.md`.

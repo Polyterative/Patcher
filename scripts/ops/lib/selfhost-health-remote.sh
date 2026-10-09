@@ -2,7 +2,7 @@
 # Runs ON the NAS: the checks behind scripts/ops/selfhost-health.sh (piped over ssh)
 # and the 15-minute alert cron (selfhost-health-notify.sh). Read-only.
 # Env: GATEWAY (http://127.0.0.1:8000), DUMP_DIR, ZFS_DATASET, REPLICA_DATASET (required),
-#      PUBLIC_URL (optional, e.g. https://supabase.patcher.xyz).
+#      PUBLIC_URL (optional, e.g. https://supabase.patcher.xyz), PRICE_HUB_DIR (optional, $OPS_DIR/price-hub).
 GATEWAY="${GATEWAY:-http://127.0.0.1:8000}"
 DUMP_DIR="${DUMP_DIR:?}" ZFS_DATASET="${ZFS_DATASET:?}" REPLICA_DATASET="${REPLICA_DATASET:?}"
 set -uo pipefail
@@ -93,6 +93,24 @@ if [ "$cf" = 0 ]; then ok "pg_cron 24 h: $cs succeeded, 0 failed"
 else fail "pg_cron 24 h: $cf not succeeded ($cs succeeded)"; fi
 mv=$(q "select ispopulated from pg_matviews where schemaname='public' and matviewname='module_discovery_snapshot'")
 [ "$mv" = t ] && ok "module_discovery_snapshot populated" || fail "module_discovery_snapshot populated=$mv"
+
+# Price Hub full refresh dead-man (price-hub-refresh-nas.sh): only once --enable-cron set the marker.
+if [ -n "${PRICE_HUB_DIR:-}" ] && [ -f "$PRICE_HUB_DIR/cron-enabled" ]; then
+  echo "== price hub refresh"
+  last="$PRICE_HUB_DIR/state/last-run.json"
+  if [ -f "$last" ]; then
+    fin=$(sed -n 's/.*"finishedAt": *"\([^"]*\)".*/\1/p' "$last" | head -1)
+    st=$(sed -n 's/.*"status": *"\([^"]*\)".*/\1/p' "$last" | head -1)
+    ft=$(date -d "$fin" +%s 2>/dev/null || echo 0)
+    if [ $((now - ft)) -ge 345600 ]; then fail "price hub last live run finished $(age_h "$ft") h ago (every 3 days)"
+    elif [ "$st" != ok ]; then warn "price hub last live run $st, $(age_h "$ft") h ago"
+    else ok "price hub last live run ok, $(age_h "$ft") h ago"; fi
+  else
+    mt=$(stat -c %Y "$PRICE_HUB_DIR/cron-enabled")
+    [ $((now - mt)) -ge 345600 ] && fail "price hub cron enabled $(age_h "$mt") h ago but no live run finished" \
+      || ok "price hub cron enabled, first run pending"
+  fi
+fi
 
 echo "== gateway (LAN, no key: 401 = routed to auth)"
 code=$(curl -s -o /dev/null -m 10 -w '%{http_code}' "$GATEWAY/auth/v1/health" || true)
