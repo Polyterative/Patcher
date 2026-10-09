@@ -16,6 +16,7 @@ export class RackEditorViewportService implements OnDestroy {
   rackScaleSurfaceRef?: ElementRef<HTMLElement>;
 
   private rackScaleSurfaceResizeObserver?: ResizeObserver;
+  private rackViewportResizeObserver?: ResizeObserver;
   private rackSurfaceBaseHeightPx = 0;
   private rackHp = 0;
 
@@ -23,6 +24,7 @@ export class RackEditorViewportService implements OnDestroy {
 
   ngOnDestroy(): void {
     this.rackScaleSurfaceResizeObserver?.disconnect();
+    this.rackViewportResizeObserver?.disconnect();
   }
 
   setRackData(data: RackMinimal | null | undefined, updateFrameAsync = false): void {
@@ -43,6 +45,7 @@ export class RackEditorViewportService implements OnDestroy {
 
   setRackViewport(reference: ElementRef<HTMLElement> | undefined): void {
     this.rackViewportRef = reference;
+    this.observeRackViewport(reference?.nativeElement);
     if (reference) {
       queueMicrotask(() => {
         this.updateAutoScale();
@@ -70,6 +73,14 @@ export class RackEditorViewportService implements OnDestroy {
   updateAutoScale(): void {
     const rackWidth = this.rackWidthPx;
     const availableWidth = this.rackViewportRef?.nativeElement.clientWidth ?? window.innerWidth;
+    // A 0px viewport means it hasn't been laid out yet (route swap, loading
+    // placeholder, hidden tab). Scaling to 0 there leaves the rack invisible until
+    // a window resize, so keep the previous scale and let the viewport observer
+    // recompute once the element actually has a width.
+    if (availableWidth <= 0) {
+      this.updateRackSurfaceFrame();
+      return;
+    }
     this.autoScale = rackWidth > 0
       ? Math.min(1, availableWidth / rackWidth)
       : 1;
@@ -110,6 +121,22 @@ export class RackEditorViewportService implements OnDestroy {
     const fontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
     const rem = Number.isFinite(fontSize) && fontSize > 0 ? fontSize : 16;
     return this.rackHp * rem;
+  }
+
+  private observeRackViewport(element: HTMLElement | undefined): void {
+    this.rackViewportResizeObserver?.disconnect();
+    this.rackViewportResizeObserver = undefined;
+
+    if (!(element instanceof Element) || typeof ResizeObserver === 'undefined') {
+      return;
+    }
+
+    this.rackViewportResizeObserver = new ResizeObserver(() => {
+      this.updateAutoScale();
+      this.cdr.markForCheck();
+    });
+
+    this.rackViewportResizeObserver.observe(element);
   }
 
   private observeRackScaleSurface(element: HTMLElement | undefined): void {
