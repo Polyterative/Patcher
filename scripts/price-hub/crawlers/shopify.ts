@@ -24,7 +24,8 @@ import type { CrawledWooCommerceStoreCatalog, CrawlWooCommerceStoreCatalogOption
 
 const SHOPIFY_CATALOG_RETRY_STATUSES = new Set([429, 500, 502, 503, 504]);
 const SHOPIFY_CATALOG_MAX_ATTEMPTS = 10;
-const SHOPIFY_CATALOG_MAX_RETRY_DELAY_MS = 30_000;
+const SHOPIFY_CATALOG_MAX_RETRY_DELAY_MS = 60_000;
+const SHOPIFY_CATALOG_PAGE_PACING_MS = 1500;
 const CURL_TLS_CERTIFICATE_FAILURE_EXIT_CODE = 60;
 const SHOPIFY_CURL_KILL_TIMEOUT_GRACE_MS = 1000;
 const execFileAsync = promisify(execFile);
@@ -48,6 +49,11 @@ export async function crawlShopifyProductJsonCatalog(
   let hitMaxPages = false;
 
   for (let page = 1; page <= maxPages; page += 1) {
+    if (page > 1 && !options.fetchFn) {
+      // Polite pacing between pages (only for the real curl fetcher) to avoid 429s.
+      await sleep(SHOPIFY_CATALOG_PAGE_PACING_MS);
+    }
+
     const pageSize = maxProducts === undefined
       ? perPage
       : Math.min(perPage, maxProducts - products.length);
