@@ -33,11 +33,13 @@ Open work: the per-store crawler failures listed in Layer 3.
 ## Layer 3 — Polish
 
 - [ ] Per-store crawler failures from the first live run. None are NAS-specific; each fails the same way from the Mac:
-  - Shopify 429 (`control`, `found-sound`, `moog-audio`): the 5-min retry is not enough, so the Shopify crawler needs
-    pacing or `Retry-After` handling between pages.
+  - Shopify 429 (`control`, `found-sound`, `moog-audio`): 1.5 s pacing between pages and a 60 s retry-wait cap added
+    2026-10-09 (the crawler already honoured `Retry-After`). Confirm in the next scheduled run.
   - `signal-sounds-uk`: the store returns 403 on its BigCommerce sitemap (bot block).
   - `escape-from-noise`: 0 products, because the site's pages no longer expose usable product metadata.
-  - `control-voltage`: blocked by the sitemap-file limit before proving catalog exhaustion; needs a per-store limit.
+  - `control-voltage`: its HTML catalog pages fan out into hundreds of filter/sort URLs (200 visited, 787 queued),
+    so a higher file limit does not help. It needs catalog-URL canonicalisation or include filters. (Fixed on the way:
+    already-visited leftovers no longer count as "hit the file limit".)
   - `whimsical-raps`: the store's DNS round-robins to a host with a self-signed certificate (also fails on the Mac).
 
 - [ ] Decide whether the bounded edge snapshot worker is still needed once the full refresh is reliable.

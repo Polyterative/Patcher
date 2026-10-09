@@ -282,7 +282,8 @@ async function fetchCustomProductSitemap(
     }
   }
 
-  const hitMaxSitemapFiles = pendingSitemaps.length > 0;
+  // Catalog pages link back to pages already visited; only unvisited leftovers mean the file limit cut the crawl short.
+  const hitMaxSitemapFiles = pendingSitemaps.some((url) => !visitedSitemaps.has(url));
   const uniqueProductUrls = uniqueStrings(productUrls);
   if (uniqueProductUrls.length === 0) {
     throw new Error(`Custom sitemap for ${store.slug} did not include any approved product URLs.`);

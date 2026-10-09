@@ -1178,7 +1178,7 @@ test('Shopify retry delay honors bounded Retry-After seconds and dates', () => {
   assert.equal(readShopifyRetryDelayMs({
     status: 429,
     headers: headersLike({ 'retry-after': '120' }),
-  }, 1), 30000);
+  }, 1), 60000);
 });
 
 test('uses TechnoSynth WooCommerce Store API config', async () => {
