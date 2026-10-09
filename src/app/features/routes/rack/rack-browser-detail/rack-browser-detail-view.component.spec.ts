@@ -123,6 +123,7 @@ describe('RackBrowserDetailViewComponent', () => {
       hp: 84,
       rows: 2,
       public: true,
+      public_id: 'abc123XYZ_-0',
       locked: false,
       author: {id: 'author-1', username: 'modular_jane'},
       created: '2024-01-01',
@@ -337,6 +338,23 @@ describe('RackBrowserDetailViewComponent', () => {
     expect(updateSingleRackByPublicIdNextSpy).toHaveBeenCalledWith('neverEmitsXYZ');
     expect(setPublicDetailModeSpy).not.toHaveBeenCalled();
     expect(updateModulesDataNextSpy).not.toHaveBeenCalled();
+  });
+
+  it('reloads when the route switches to another rack while the component is reused', () => {
+    const params$ = new BehaviorSubject<{publicId: string}>({publicId: 'rackAAAA_001'});
+    component = new RackBrowserDetailViewComponent(
+      dataService,
+      userAreaDataService,
+      withServicePrototype(ActivatedRoute, {params: params$}),
+      seoService,
+      commentsDataService,
+      userManagementService
+    );
+
+    component.ngOnInit();
+    params$.next({publicId: 'rackBBBB_002'});
+
+    expect(updateSingleRackByPublicIdNextSpy.calls.allArgs()).toEqual([['rackAAAA_001'], ['rackBBBB_002']]);
   });
 
   it('calculates rack utilization as a percentage string', () => {

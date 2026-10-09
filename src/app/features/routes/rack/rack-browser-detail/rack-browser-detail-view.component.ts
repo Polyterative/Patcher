@@ -8,8 +8,10 @@ import { ActivatedRoute } from '@angular/router';
 import { SeoSocialShareData } from 'src/app/models/seo.model';
 import { combineLatest } from 'rxjs';
 import {
+  distinctUntilChanged,
   filter,
   map,
+  switchMap,
   take
 } from 'rxjs/operators';
 import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
@@ -74,7 +76,8 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
     const publicId$ = this.route.params.pipe(
       map(x => (x && typeof x.publicId === 'string' && x.publicId.length > 0) ? x.publicId : ''),
       filter(x => !!x),
-      take(1)
+      distinctUntilChanged(),
+      this.takeUntilDestroyed()
     );
 
     // Load the rack's own data as soon as the route resolves — independent of auth
@@ -82,6 +85,8 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
     // window lasts (or, for a truly anonymous visitor, never resolve to a truthy
     // value at all), so gating this on it — as `combineLatest` did before — left
     // every anonymous/crawler request with no rack data at all.
+    // Angular reuses this component for rack -> rack navigation (back/forward or a
+    // direct link), so every publicId change must reload, not just the first one.
     publicId$.subscribe(publicId => this.dataService.updateSingleRackByPublicId$.next(publicId));
 
     // Auth-dependent UI/API side effects only — must not block the data load above.
@@ -93,13 +98,16 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
     });
 
     if (!this.ignoreSeo) {
-      combineLatest([
-        this.dataService.singleRackData$,
-        this.dataService.rowedRackedModules$
-      ])
+      publicId$
         .pipe(
-          filter(x => !!x[0] && !!x[1]),
-          take(1)
+          switchMap(publicId => combineLatest([
+            this.dataService.singleRackData$,
+            this.dataService.rowedRackedModules$
+          ]).pipe(
+            filter(([rack, rows]) => !!rack && !!rows && rack.public_id === publicId),
+            take(1)
+          )),
+          this.takeUntilDestroyed()
         )
         .subscribe(([rackData, rowedRackedModules]) => {
           const rowedFlatted = rowedRackedModules.flatMap(x => x);
