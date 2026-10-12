@@ -47,6 +47,19 @@ Why this one:
 | `view_count` column on `modules` / `racks` / `patches` | Hot-row write contention, no time dimension (no "this week" vs "all time"), touches core tables (the `updated` timestamp trap in BACKEND_METHODS preflight). |
 | Raw events only, no rollup | Fine for weeks, slow for "all time" top-N; rollup keeps long-term queries cheap and lets raw rows expire. |
 
+## What counts as a view (the contract every number depends on)
+
+A **view** = a real browser tab showed an entity detail page (or a route) **after its data loaded
+successfully**, while the tab was visible. Concretely:
+
+- Fires on load success in the detail data service (same place as today's `*.viewed`), so 404s,
+  errors and redirects never count.
+- A tab opened in the background counts only when it first becomes visible; a prefetch never counts.
+- Same visitor + same entity inside 30 min = 1 view (refresh, back/forward, tab restore).
+- Not counted: SSR / prerender, `navigator.webdriver`, bot user agents (checked in the browser **and**
+  in the RPC from the request headers PostgREST exposes), non-production builds.
+- One call feeds both PostHog and Postgres, so the two can be reconciled.
+
 ## Data design (draft for backend-plan-reviewer)
 
 New schema `analytics`, **not exposed** through PostgREST (not in `db-schemas`), so clients can
@@ -69,9 +82,17 @@ only write through the RPC and nobody can read it except `grafana_ro` and servic
 Dedupe: unique index on `(visitor_hash, entity_type, entity_id, route, date_trunc('30 min'))`
 with `ON CONFLICT DO NOTHING` — a refresh or back/forward inside 30 min counts once.
 
-`analytics.view_daily` (rollup, kept forever, small):
-`(day, entity_type, entity_id, route) → views, unique_visitors, signed_in_views, owner_views, external_views`.
-pg_cron upserts today + yesterday every 5 min; nightly job deletes raw rows older than 90 days.
+Raw table is **range-partitioned by month** on `viewed_at`; retention = drop the old partition
+(no big DELETEs, no vacuum backlog). pg_cron creates next month's partition ahead of time.
+
+Two rollups, same columns
+`(bucket, entity_type, entity_id, route) → views, unique_visitors, signed_in_views, owner_views, external_views`:
+- `analytics.view_hourly` — kept 180 days (short-term charts, "last 24 h" without scanning raw).
+- `analytics.view_daily` — kept forever (long-term, all-time top-N).
+
+pg_cron re-aggregates the last 2 hours / 2 days every 5 min (idempotent upsert, so a missed run self-heals).
+Unique visitors are exact per day only (salt rotates daily); weekly/monthly "uniques" are labelled as
+sums of daily uniques, not people.
 
 `public.track_views(p_events jsonb)` (SECURITY DEFINER, `search_path` pinned, granted to `anon`, `authenticated`):
 - max 25 events per call, unknown `entity_type` / non-positive ids dropped silently;
@@ -95,6 +116,16 @@ Dashboards show private rack/patch names as "private rack #id".
 - Runs outside the Angular zone; no change detection, no effect on the cached-egress work.
 - Environment tag: production only by default, same guard as PostHog; a flag can enable it on the
   staging preview for testing.
+- Kill switch: a runtime env value turns sending off without a release; the RPC also has a
+  server-side on/off setting, so it can be stopped from the DB alone.
+
+## How we know the numbers are right
+
+- Spec + e2e: open a module page → exactly one row; refresh → still one; open in background tab →
+  zero until focused; e2e Playwright run → zero (webdriver).
+- First week in production: compare daily `module.viewed` in PostHog with `view_daily`. Postgres
+  should be equal or higher (no ad blockers); a big gap either way means a bug.
+- Health check fails if the rollup is > 30 min stale or raw rows stop arriving while the site is up.
 
 ## Grafana dashboard: "Patcher — What people look at" (`patcher-views.json`)
 
@@ -122,7 +153,7 @@ Template variables: entity type, include owner views (on/off), min views.
 
 ### Layer 1 — MVP (~2–3 days)
 - [ ] `backend-plan-reviewer` pass on the data design; record outcome in the Decision log.
-- [ ] Migration: `analytics` schema, `view_events`, `view_daily`, `track_views` RPC, rollup + prune pg_cron jobs.
+- [ ] Migration: `analytics` schema, partitioned `view_events`, `view_hourly` + `view_daily`, `track_views` RPC, rollup + partition pg_cron jobs.
 - [ ] `AnalyticsService.trackView` + queue/flush + browser/bot guards; wire the five existing `*.viewed` sites.
 - [ ] Unit specs: batching, flush on pagehide, SSR no-op, bot skip, non-production no-op.
 - [ ] `grafana-ro-role.sql` grants (owner-approved `role` re-run).
@@ -167,3 +198,5 @@ DEFINER RPC (backend review + owner), `grafana_ro` grant change (owner runs `rol
 ## Decision log
 
 - 2026-10-12: Proposal: first-party Postgres view log + daily rollup over PostHog API or log parsing (see table above).
+- 2026-10-12: Hardened: explicit view definition (load success + visible + 30-min dedupe), monthly
+  partitions for retention, hourly + daily rollups, server-side bot check, kill switch, PostHog reconciliation.
