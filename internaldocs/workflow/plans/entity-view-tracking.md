@@ -43,7 +43,7 @@ Why this one:
 | Option | Why not |
 |---|---|
 | Grafana Infinity/JSON plugin → PostHog query API | Cloud API key on the LAN box, rate/row limits, ad-block undercount, no join with names or DB activity. Still useful as a cross-check (Phase 0). |
-| Parse Cloudflare / Kong / Envoy access logs (Loki) | SPA navigation never hits the server for the page; Cloudflare cache hits never reach Kong. Counts would be wrong in both directions. |
+| Parse the Envoy gateway access log (or Postgres logs / `pg_stat_statements`) | Envoy logs every API request with the id in the query string, but: detail reads are cached in the browser (`moduleWithId` / `rackWithId`, LocalStorage TTL) so repeat views never reach it; SSR fetches come from the render server, not the visitor; a rack view also fetches every module in it, so "data needed" ≠ "page viewed"; pages without an entity fetch (browser, insights) are invisible; the log is container stdout, so it needs a shipper (Vector/Promtail → Loki) first, and parsing breaks silently when query shapes change. Postgres logs don't record SELECTs by default and `pg_stat_statements` drops parameter values (no ids). Good later for API / bot / API v1 traffic, not for views. |
 | `view_count` column on `modules` / `racks` / `patches` | Hot-row write contention, no time dimension (no "this week" vs "all time"), touches core tables (the `updated` timestamp trap in BACKEND_METHODS preflight). |
 | Raw events only, no rollup | Fine for weeks, slow for "all time" top-N; rollup keeps long-term queries cheap and lets raw rows expire. |
 
