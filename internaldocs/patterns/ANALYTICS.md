@@ -11,6 +11,12 @@ adding new instrumentation. **Any drift between this doc and the code is a bug.*
 |---|---|
 | **PostHog** | Product events, funnels, retention, user journeys |
 | **Sentry** | Errors, performance, replays on error |
+| **First-party view counts** (`ViewTrackingService` → `analytics.*` on the self-host DB) | How often modules / racks / patches / manufacturers / collections / routes are viewed, for the self-host Grafana ("What people look at") |
+
+View counts are fed automatically from the five `*.viewed` events below and from route changes
+(`AnalyticsService` forwards them) — do not call `ViewTrackingService` from features. Adding a new
+viewable entity = a new code in `analytics.entity_types` + `track_views` existence check + the
+`VIEW_EVENTS` map. Design, privacy rules and go-live: `workflow/plans/entity-view-tracking.md`.
 
 **Never** enable PostHog exception capture, Web Vitals capture, or session
 recording on top of Sentry replays — see the boundary rules in the archived plan

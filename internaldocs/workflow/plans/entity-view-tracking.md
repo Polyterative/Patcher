@@ -1,13 +1,14 @@
 # Entity view tracking → Grafana ("what people look at")
 
-<!-- Section: INFRA + ANALYTICS (proposal; not active) -->
+<!-- Section: INFRA (independent; pick any time a product task is blocked) -->
 
 Goal: see which modules, racks, patches, manufacturers, collections and pages get viewed the most,
 both right now (last hour / day) and long term (weeks / months / all time), in the self-host Grafana
 next to the existing Pulse / Build / Usage dashboards.
 
-Status: **proposal, 2026-10-12.** Nothing built. Needs owner answers (§Open questions) and the
-`backend-plan-reviewer` pass before Layer 1 starts.
+Status: **built on `develop` 2026-10-12, not live.** Migration validated on a throwaway local
+Postgres 17; client specs green; dashboards query-checked as `grafana_ro`. Waiting on the owner-gated
+production steps in §Go-live (DB apply, Grafana role + deploy, release).
 
 ## Where we are today
 
@@ -24,11 +25,11 @@ Status: **proposal, 2026-10-12.** Nothing built. Needs owner answers (§Open que
 
 ```text
 Detail page loads (browser only)
-  → AnalyticsService.trackView(type, id)     // same call sites as the existing *.viewed events
+  → AnalyticsService.capture('*.viewed') → ViewTrackingService   // + route templates on NavigationEnd
   → small in-memory queue, flushed every ~10 s and on pagehide (fetch keepalive)
-  → RPC public.track_views(jsonb)             // SECURITY DEFINER, validates + dedupes + caps
+  → RPC public.track_views(visitor, events)   // SECURITY DEFINER, validates + dedupes + caps
   → analytics.view_events (raw, 90 d)
-  → pg_cron rollup every 5 min → analytics.view_daily (forever)
+  → pg_cron rollup every 10 min → analytics.view_daily (forever)
   → Grafana "Patcher — What people look at" dashboard (+ a live panel on Pulse)
 ```
 
@@ -60,113 +61,88 @@ successfully**, while the tab was visible. Concretely:
   in the RPC from the request headers PostgREST exposes), non-production builds.
 - One call feeds both PostHog and Postgres, so the two can be reconciled.
 
-## Data design (draft for backend-plan-reviewer)
+## Data design (as built — `supabase/migrations/20261012120000_add_entity_view_tracking.sql`)
 
-New schema `analytics`, **not exposed** through PostgREST (not in `db-schemas`), so clients can
-only write through the RPC and nobody can read it except `grafana_ro` and service role.
+New schema `analytics`, **not exposed** through PostgREST, RLS on with no policies, all table
+privileges revoked from `anon` / `authenticated`. Only the RPC writes; only owners + `grafana_ro` read.
 
-`analytics.view_events` (raw, pruned after 90 days):
+| object | what |
+|---|---|
+| `analytics.entity_types` | code → name lookup for Grafana: 1 module, 2 rack, 3 patch, 4 manufacturer, 5 collection, 9 page |
+| `analytics.view_events` | raw views, 90 days. `viewed_at`, 30-min `bucket`, `entity_type` smallint, `entity_id` bigint (0 for pages), `route` text ('' for entities), `visitor_hash` bytea, `is_signed_in`, `is_owner`, `source` smallint. Unique dedupe index `(visitor_hash, entity_type, entity_id, route, bucket)`; BRIN on `viewed_at`. |
+| `analytics.view_daily` | rollup kept forever: `(day, entity_type, entity_id, route)` → views, unique_visitors, signed_in, owner, search, external |
+| `analytics.visitor_salts` | one random salt per UTC day, deleted after 2 days (never granted to Grafana) |
+| `public.track_views(p_visitor text, p_events jsonb)` | SECURITY DEFINER, `search_path = ''`, execute for anon + authenticated. ≤ 25 events, drops bots by request UA, drops unknown types / non-existent ids / bad routes, computes `is_owner` from `auth.uid()`, `ON CONFLICT DO NOTHING`, never raises. |
+| pg_cron `analytics-view-rollup` | every 10 min, recompute last 2 UTC days (idempotent upsert) |
+| pg_cron `analytics-view-prune` | 03:17 daily: roll up 3 days, delete raw > 90 d, delete old salts |
 
-| column | type | note |
-|---|---|---|
-| `id` | bigint identity | |
-| `viewed_at` | timestamptz default now() | server time, never client time |
-| `entity_type` | smallint | 1 module, 2 rack, 3 patch, 4 manufacturer, 5 collection, 6 profile, 9 page (matches the `reactions` smallint style) |
-| `entity_id` | bigint null | null for `page` |
-| `route` | text null | route *template* for `page` (e.g. `/modules/browser`), never raw URL or query string |
-| `visitor_hash` | bytea | sha256(random per-tab session id ‖ daily server salt) — no user id, no IP, unlinkable across days |
-| `is_signed_in` | boolean | |
-| `is_owner` | boolean | viewer owns the rack/patch/collection — so dashboards can exclude self-views |
-| `source` | smallint | 0 direct, 1 internal nav, 2 search engine, 3 other external (from `document.referrer` host class only) |
+Kill switch without a release: `revoke execute on function public.track_views(text, jsonb) from anon, authenticated;`
+— clients get 401/404, mark tracking missing and stop for the page session. Rollback SQL is in the migration header.
 
-Dedupe: unique index on `(visitor_hash, entity_type, entity_id, route, date_trunc('30 min'))`
-with `ON CONFLICT DO NOTHING` — a refresh or back/forward inside 30 min counts once.
+## Client design (as built)
 
-Raw table is **range-partitioned by month** on `viewed_at`; retention = drop the old partition
-(no big DELETEs, no vacuum backlog). pg_cron creates next month's partition ahead of time.
-
-Two rollups, same columns
-`(bucket, entity_type, entity_id, route) → views, unique_visitors, signed_in_views, owner_views, external_views`:
-- `analytics.view_hourly` — kept 180 days (short-term charts, "last 24 h" without scanning raw).
-- `analytics.view_daily` — kept forever (long-term, all-time top-N).
-
-pg_cron re-aggregates the last 2 hours / 2 days every 5 min (idempotent upsert, so a missed run self-heals).
-Unique visitors are exact per day only (salt rotates daily); weekly/monthly "uniques" are labelled as
-sums of daily uniques, not people.
-
-`public.track_views(p_events jsonb)` (SECURITY DEFINER, `search_path` pinned, granted to `anon`, `authenticated`):
-- max 25 events per call, unknown `entity_type` / non-positive ids dropped silently;
-- `is_owner` computed **server-side** from `auth.uid()` (client value ignored);
-- returns void, never errors to the client (tracking must not break pages);
-- a `statement_timeout` on the function so a slow DB never stalls the beacon.
-
-Grafana: extend `grafana-ro-role.sql` with `USAGE ON SCHEMA analytics` + `SELECT` on both tables, and
-`SELECT (id, name, public)` on `racks` / `patches` / `module_collections`, `(id, name)` on `manufacturers`.
-Dashboards show private rack/patch names as "private rack #id".
-
-## Client design
-
-- `AnalyticsService.trackView(type, id)` sits next to `capture()`; the existing five `*.viewed` call
-  sites call it too (one line each). Route pageviews reuse `wireRoutePageviews`, sending the matched
-  route template (walk `ActivatedRoute` snapshot `routeConfig.path`), not the URL.
-- Browser only (`isPlatformBrowser`): SSR / prerender never counts. Skip `navigator.webdriver`,
-  common bot UAs, and the Playwright e2e runs.
-- Batches in a plain array, flushes on a 10 s timer and on `pagehide` / `visibilitychange=hidden` via
-  `fetch(..., { keepalive: true })` (unlike `sendBeacon`, it can send the `apikey` header).
-- Runs outside the Angular zone; no change detection, no effect on the cached-egress work.
-- Environment tag: production only by default, same guard as PostHog; a flag can enable it on the
-  staging preview for testing.
-- Kill switch: a runtime env value turns sending off without a release; the RPC also has a
-  server-side on/off setting, so it can be stopped from the DB alone.
+- `ViewTrackingService` (`features/backbone/analytics-integration/view-tracking.service.ts`): queue,
+  10 s timer, `pagehide` / hidden flush with `keepalive`, hidden-tab deferral, landing-source
+  classification, daily-rotating visitor id in LocalStorage. Off unless browser + `environment.production`
+  + `features.viewTrackingEnabled` + not `navigator.webdriver` + not a bot UA.
+- `AnalyticsService.capture()` forwards the five existing `*.viewed` events (no call-site changes);
+  route `NavigationEnd` sends the matched route template (`modules/details/:id`), never the URL.
+- `SupabaseService.views.track` (`supabase-view-tracking.ts`): raw `fetch` to `/rest/v1/rpc/track_views`
+  with the current access token (signed out → anon key). Returns `ok | missing | error`, never throws.
+- Flag `viewTrackingEnabled`: production `true`, development `false` (`src/environments/features.json`).
+  Safe to release before the DB apply: the first 404 turns tracking off for that page session.
 
 ## How we know the numbers are right
 
-- Spec + e2e: open a module page → exactly one row; refresh → still one; open in background tab →
-  zero until focused; e2e Playwright run → zero (webdriver).
+- Local DB checks (2026-10-12): module/rack/page/collection rows land; repeat within 30 min deduped;
+  bot UA, empty UA, bad visitor id, non-array payload, unknown type, missing entity, bad route → ignored;
+  owner flagged only for the author; anon cannot read `analytics.*`; rollup idempotent.
+- Specs: `view-tracking.service.spec.ts`, `supabase-view-tracking.spec.ts`, `analytics.service.spec.ts`.
 - First week in production: compare daily `module.viewed` in PostHog with `view_daily`. Postgres
   should be equal or higher (no ad blockers); a big gap either way means a bug.
-- Health check fails if the rollup is > 30 min stale or raw rows stop arriving while the site is up.
+- Health check (`selfhost-health-remote.sh`): FAIL if the rollup hasn't succeeded in 30 min, WARN if
+  no views in 24 h. Skipped until the migration is applied.
 
 ## Grafana dashboard: "Patcher — What people look at" (`patcher-views.json`)
 
-The time picker decides short vs long term; panels use `$__timeFilter` on `view_events` for ≤ 7 d
-and `view_daily` beyond, so "last hour" and "last year" both work.
+Built (19 panels, default range 30 days, variable **Owner views** exclude/include). Aggregates read
+`view_daily`; the hourly series, visitor-days and live stats read raw `view_events` (90 days).
 
-1. Stats: views (range), unique visitors, % signed in, % from search engines.
-2. Time series: views per hour (short) / per day (long), stacked by entity type.
-3. Top modules (name + manufacturer, views, unique visitors, Δ vs previous period).
-4. Top racks, top patches, top collections (public names; private shown as #id), excluding owner views.
-5. Top manufacturers (direct page views) and manufacturers by module-page views (rolled up).
-6. Top pages / sections (route templates): browser, insights, marketplace, home, etc.
-7. Movers: biggest growth 7 d vs prior 7 d (what's trending).
-8. Look → do: module views vs adds to racks / own / want lists in the same period (conversion %).
-9. Where views come from: direct / internal / search / external.
+1. Stats: views, visitor-days, % signed in, % from search, views last 60 min, distinct modules viewed.
+2. Views per day by type (long term) and per hour by type (short term).
+3. Most viewed modules / racks / patches / collections / manufacturers with "vs previous" period change.
+   Private racks/patches/collections show only `#id`.
+4. Most visited pages / sections (route templates).
+5. Trending modules: last 7 d vs the 7 before.
+6. Look → do: module views vs rack adds and list changes in the same range.
+7. Pies: where views come from, signed in vs anonymous, what gets looked at.
 
-Plus a row on **Pulse**: "Viewed in the last 60 min" (count + top 5), so the live page gets it too.
-Template variables: entity type, include owner views (on/off), min views.
+**Pulse** gets a live row: "Viewed in the last 60 min" + "Being looked at right now". Every dashboard
+gets a "What people look at" link.
 
 ## Layers
 
-### Layer 0 — today, no code (optional)
-- [ ] PostHog → Insights → Trends on `module.viewed` broken down by `module_id` (and the same for racks /
-  patches), saved to a "Views" dashboard. Gives a rough top-N while Layer 1 is built.
+### Layer 1 — MVP
+- [x] Backend plan review (inline, persona checklist) — outcome in the Decision log.
+- [x] Migration: schema, raw + daily tables, salts, `track_views`, rollup + prune jobs; validated locally.
+- [x] `ViewTrackingService` + `SupabaseService.views` + forwarding from `AnalyticsService`; specs.
+- [x] `grafana-ro-role.sql` grants (analytics block skips itself until the migration exists).
+- [x] `patcher-views.json`; every query checked as `grafana_ro` on the local DB.
 
-### Layer 1 — MVP (~2–3 days)
-- [ ] `backend-plan-reviewer` pass on the data design; record outcome in the Decision log.
-- [ ] Migration: `analytics` schema, partitioned `view_events`, `view_hourly` + `view_daily`, `track_views` RPC, rollup + partition pg_cron jobs.
-- [ ] `AnalyticsService.trackView` + queue/flush + browser/bot guards; wire the five existing `*.viewed` sites.
-- [ ] Unit specs: batching, flush on pagehide, SSR no-op, bot skip, non-production no-op.
-- [ ] `grafana-ro-role.sql` grants (owner-approved `role` re-run).
-- [ ] `patcher-views.json` with panels 1–4 and 6; deploy with `selfhost-grafana.sh deploy`.
-- [ ] Verify on the staging preview: views land, rollup fills, dashboard shows them.
+### Layer 2 — Structural
+- [x] Route-template page views, `source` classification, 30-min dedupe.
+- [x] Trending, look → do, sources, Pulse live row, "vs previous" columns.
+- [x] Health check in `selfhost-health-remote.sh`.
+- [x] Docs: `patterns/ANALYTICS.md` boundary section.
+- [ ] Go-live (owner-gated, below) + first-week PostHog reconciliation.
+- [ ] Public privacy wording (anonymous aggregate counts, no IP, daily-rotating id) — after go-live, via `docs-publisher`.
 
-### Layer 2 — Structural (~2 days)
-- [ ] Route-template page views; `source` classification; 30-min dedupe index.
-- [ ] Panels 5, 7, 8, 9 and the Pulse live row; Δ vs previous period columns.
-- [ ] Health check: `selfhost-health-remote.sh` warns if the rollup job hasn't run for 30 min or
-  `view_events` got zero rows in 24 h while the site is up.
-- [ ] Docs: `ANALYTICS.md` (first-party views vs PostHog boundary), runbook entry, privacy policy wording
-  (anonymous aggregate counts, no cookies, no IP) queued for public docs.
+### Go-live (owner-gated: production DB + Grafana role)
+1. Apply the migration to the self-host DB:
+   `bash scripts/ops/with-staging-db.sh sh -c 'psql "$TARGET_DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/20261012120000_add_entity_view_tracking.sql'`
+2. `bash scripts/ops/selfhost-grafana.sh role` (re-asserts grants incl. analytics), then `bash scripts/ops/selfhost-grafana.sh deploy` (syncs dashboards).
+3. Release `develop` as usual; views start arriving with the new frontend.
+4. After a day: `pnpm health:selfhost` shows the rollup OK and a non-zero 24 h view count.
 
 ### Layer 3 — Polish / later
 - [ ] Spike alert to ntfy (e.g. a rack suddenly 10× normal = shared on a forum).
@@ -184,19 +160,29 @@ Template variables: entity type, include owner views (on/off), min views.
   Volume to confirm against real traffic after a week (assumption, not measured).
 - **Breaking prod**: purely additive (new schema + new RPC); old clients never call it.
 
-## Open questions for the owner
+## Owner questions — answered with defaults (change any by editing one line)
 
-1. Honour Do Not Track for first-party anonymous counts too (lower counts, consistent with PostHog), or count everyone?
-2. Exclude your own / admin views entirely, or just flag them (`is_owner`) and filter in Grafana?
-3. Raw retention: 90 days OK?
-4. Include API v1 reads in "views", or keep them separate?
-5. Will view counts ever be shown inside Patcher? (Decides how much anti-abuse Layer 1 needs.)
-
-Approvals needed (register in `TODO.md` Approvals ledger when this becomes active): new schema + SECURITY
-DEFINER RPC (backend review + owner), `grafana_ro` grant change (owner runs `role`).
+1. Do Not Track: **counted** — nothing personal is stored (no IP / UA / user id, id rotates daily). Flip by adding a `navigator.doNotTrack` check in `ViewTrackingService`.
+2. Own views: **flagged, not dropped** (`is_owner`); dashboards exclude them by default via the Owner views variable.
+3. Raw retention: **90 days** (`prune_view_events`).
+4. API v1 reads: **separate** (not views); Layer 3.
+5. Counts shown in the app: **no** for now — so the current anti-abuse level (dedupe, caps, existence check, bot UA) is enough.
 
 ## Decision log
 
 - 2026-10-12: Proposal: first-party Postgres view log + daily rollup over PostHog API or log parsing (see table above).
 - 2026-10-12: Hardened: explicit view definition (load success + visible + 30-min dedupe), monthly
   partitions for retention, hourly + daily rollups, server-side bot check, kill switch, PostHog reconciliation.
+- 2026-10-12: Backend review (persona checklist, inline). Representation: `entity_type` smallint +
+  lookup table (matches `reactions`; enum rejected — adding a type needs `ALTER TYPE`, text rejected —
+  wider rows/index for no gain); `entity_id` bigint NOT NULL with 0 / `route` NOT NULL with '' so the
+  dedupe unique index needs no expressions (nullable columns rejected: NULLs never conflict).
+  Simplified vs the hardened draft: **no monthly partitions and no hourly rollup** — expected volume is
+  small, raw rows already serve "last hours/days", and a nightly `DELETE` + BRIN is cheaper to operate
+  than partition-management cron (revisit if `view_events` passes ~20 M rows). Visitor hash =
+  sha256(daily-rotating client id ‖ per-day DB salt deleted after 2 days). No existing table is touched
+  (no `updated` trigger risk); no typegen beyond the `track_views` Functions entry (added by hand,
+  matching generator output). Verdict: APPROVE — additive, old clients unaffected.
+- 2026-10-12: Forwarding inside `AnalyticsService.capture()` instead of touching the five call sites:
+  one mapping table, the existing `shouldCaptureCanonicalDetailView` / load-success guards are reused.
+- 2026-10-12: Raw `fetch` with `keepalive` instead of supabase-js `rpc()`: only way to survive `pagehide`.
