@@ -42,6 +42,7 @@ import { createAuthNamespace } from './supabase-auth';
 import { extractSessionId, RecoveryEventSession } from './supabase-auth.helpers';
 import { createMergeNamespace } from './supabase-merge';
 import { createApiKeysNamespaceForSupabaseClient } from './supabase-api-keys';
+import { createViewTrackingNamespace } from './supabase-view-tracking';
 import {
   createSsrBootstrapGuard,
   createSsrPendingTasksFetch,
@@ -114,6 +115,7 @@ export class SupabaseService extends SubManager {
     );
 
     const {data: authListener} = this.supabase.auth.onAuthStateChange((event, session) => {
+      this.latestAccessToken = session?.access_token ?? null;
       this.authSession$.next(session ?? null);
       if (event === 'SIGNED_OUT') {
         this.user.logout$.emit();
@@ -184,6 +186,12 @@ export class SupabaseService extends SubManager {
     this.apiKeys = createApiKeysNamespaceForSupabaseClient(
       this.supabase,
       () => this.auth.getUserSession$()
+    );
+
+    this.views = createViewTrackingNamespace(
+      environment.supabase.url,
+      environment.supabase.key,
+      () => this.latestAccessToken
     );
 
     this.queries = new SupabaseQueriesService(
@@ -366,6 +374,8 @@ export class SupabaseService extends SubManager {
 
   // Initialized in constructor to allow platform-aware auth config (SSR vs browser).
   private supabase!: SupabaseClient<Database, 'public'>;
+  // Mirrors the auth session synchronously so `views.track` can send it during `pagehide`.
+  private latestAccessToken: string | null = null;
   
   readonly get!: ReturnType<typeof createGetNamespace>;
   readonly add!: ReturnType<typeof createAddNamespace>;
@@ -374,4 +384,5 @@ export class SupabaseService extends SubManager {
   readonly merge!: ReturnType<typeof createMergeNamespace>;
   readonly storage!: ReturnType<typeof createStorageNamespace>;
   readonly apiKeys!: ReturnType<typeof createApiKeysNamespaceForSupabaseClient>;
+  readonly views!: ReturnType<typeof createViewTrackingNamespace>;
 }

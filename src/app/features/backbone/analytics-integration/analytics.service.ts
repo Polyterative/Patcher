@@ -4,6 +4,7 @@ import {
   NgZone
 } from '@angular/core';
 import {
+  ActivatedRouteSnapshot,
   NavigationEnd,
   Router
 } from '@angular/router';
@@ -13,6 +14,19 @@ import {
   POSTHOG_CLIENT_LOADER,
   PostHogLoader
 } from './posthog-loader';
+import {
+  ViewEntityKind,
+  ViewTrackingService
+} from './view-tracking.service';
+
+/** Detail-view events that also feed first-party view counting, with their id property. */
+const VIEW_EVENTS: Record<string, { kind: ViewEntityKind; idProp: string }> = {
+  'module.viewed':            { kind: 'module', idProp: 'module_id' },
+  'rack.viewed':              { kind: 'rack', idProp: 'rack_id' },
+  'patch.viewed':             { kind: 'patch', idProp: 'patch_id' },
+  'manufacturer.viewed':      { kind: 'manufacturer', idProp: 'manufacturer_id' },
+  'module_collection.viewed': { kind: 'collection', idProp: 'collection_id' }
+};
 
 interface MinimalUser {
   id?: string;
@@ -35,7 +49,8 @@ export class AnalyticsService {
   constructor(
     private router: Router,
     private zone: NgZone,
-    @Inject(POSTHOG_CLIENT_LOADER) private loadPostHog: PostHogLoader
+    @Inject(POSTHOG_CLIENT_LOADER) private loadPostHog: PostHogLoader,
+    private viewTracking: ViewTrackingService
   ) {
     this.wireRoutePageviews();
   }
@@ -45,6 +60,10 @@ export class AnalyticsService {
    * snake_case (e.g. `rack.module_added`). Keep props small, no PII.
    */
   capture(event: string, props?: Record<string, unknown>): void {
+    const view = VIEW_EVENTS[event];
+    if (view) {
+      this.viewTracking.trackEntity(view.kind, props?.[view.idProp]);
+    }
     if (!environment.production) {
       return;
     }
@@ -101,8 +120,22 @@ export class AnalyticsService {
         .subscribe(event => {
           const url = event.urlAfterRedirects || event.url;
           this.capturePageview(url);
+          this.viewTracking.trackPage(this.currentRouteTemplate());
         });
     });
+  }
+
+  /** Matched route config paths joined, e.g. `modules/details/:id` — no ids, no query string. */
+  private currentRouteTemplate(): string {
+    const parts: string[] = [];
+    let node: ActivatedRouteSnapshot | null | undefined = this.router.routerState?.snapshot.root;
+    while (node) {
+      if (node.routeConfig?.path) {
+        parts.push(node.routeConfig.path);
+      }
+      node = node.firstChild;
+    }
+    return parts.join('/');
   }
 
   private capturePageview(url: string): void {
