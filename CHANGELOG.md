@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [6.9.0](https://github.com/Polyterative/Patcher/compare/v6.8.6...v6.9.0) (2026-10-12)
+
+
+### Features
+
+* **analytics:** send detail and route views to the first-party view tracker ([a6f8820](https://github.com/Polyterative/Patcher/commit/a6f8820642d6d3140149a64de69987f86d717b8b))
+* **db:** add analytics schema and track_views rpc for first-party view counts ([0869a09](https://github.com/Polyterative/Patcher/commit/0869a09ffc19e058c2586387167373ce6e92b181))
+* **grafana:** add what-people-look-at dashboard, live views on pulse and rollup health check ([72c53f5](https://github.com/Polyterative/Patcher/commit/72c53f5d2123d3a28544239b5f38ea0b696a94e1))
+* **price-hub:** add scheduled full refresh runner for the self-host NAS ([d06d099](https://github.com/Polyterative/Patcher/commit/d06d09995eb7028946ad6eabdf112227e86fe516))
+
+
+### Bug Fixes
+
+* **price-hub:** pace shopify catalog pages and ignore visited sitemap leftovers ([c258175](https://github.com/Polyterative/Patcher/commit/c2581753899ebe0bc1e51fa4259eda7772ebb8e3))
+
 ### [6.8.6](https://github.com/Polyterative/Patcher/compare/v6.8.5...v6.8.6) (2026-10-09)
 
 
