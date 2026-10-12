@@ -100,3 +100,6 @@ supabase/.temp/
 # Local agent screenshots
 .openchamber/
 .vercel
+
+# Claude Code per-machine settings (may hold local permissions/secrets)
+.claude/settings.local.json
