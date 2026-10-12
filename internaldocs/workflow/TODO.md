@@ -90,6 +90,7 @@
   prefix/IP mitigation. This is a documentation-only standing approval;
   remote SQL apply of the follow-up migration stays gated below
   ([GitHub issue #135](https://github.com/Polyterative/Patcher/issues/135)).
+- View tracking go-live: migration `20261012120000_add_entity_view_tracking` apply to the self-host DB + `selfhost-grafana.sh role` / `deploy` approved by the owner on 2026-10-12 (done the same day) → [plan](./plans/entity-view-tracking.md).
 - Price Hub NAS full refresh: running live writes on the NAS cron job every 3 days at 03:00 UTC was approved by the owner on 2026-10-09 → [plan](./plans/price-hub-scheduled-refresh.md).
 
 ### Pending questions (owner: answer inline, agents move resolved lines)
@@ -101,7 +102,6 @@
 - [ ] Cloudflare/R2: authorize traffic switch, cleanup, and any Supabase object deletion after the approved copy/verification stage (added 2026-07-08).
 - [ ] PostHog analytics review: provide credentials/export access (added 2026-07-08).
 - [ ] Turnstile rollout: at the self-host cutover set Vercel `TURNSTILE_SITE_KEY` (prod), then flip the auth gate `MODE` to `enforce` — default: do both at cutover → [plan](./plans/cloudflare-watchdog-and-turnstile.md) (added 2026-10-05).
-- [ ] View tracking go-live: apply migration `20261012120000_add_entity_view_tracking` (new `analytics` schema, RLS-on tables, anon-executable SECURITY DEFINER `track_views`) to the self-host DB, then re-run `selfhost-grafana.sh role` + `deploy` — default: approve; built + validated on develop → [plan](./plans/entity-view-tracking.md#go-live-owner-gated-production-db--grafana-role) (added 2026-10-12).
 - Consolidated owner message for the three stale questions above: [owner batch draft](./plans/owner-batch-pending-questions.md) (added 2026-09-25).
 
 ### Denials / permanent constraints
@@ -171,7 +171,7 @@
 - [~] **HIGH: Supabase Cached Egress overquota — cut API + Storage bytes (6.25/5 GB; rack search paging + collection-cover proxy first)** → [GitHub issue #161](https://github.com/Polyterative/Patcher/issues/161) + [`plans/supabase-cached-egress-overquota.md`](./plans/supabase-cached-egress-overquota.md)
 - [ ] **MEDIUM: Self-hosted Supabase — full move evaluation (staging rehearsal in progress; tooling in `scripts/ops/`)** → local, gitignored `internaldocs/private/selfhost/` (master checklist, runbook, plan; not published because the repo is public)
 - [~] **MEDIUM: Cloudflare uptime watchdog (live) + Turnstile on email-sending auth (gate in log mode)** → [`plans/cloudflare-watchdog-and-turnstile.md`](./plans/cloudflare-watchdog-and-turnstile.md)
-- [~] **MEDIUM: Entity view tracking → Grafana "What people look at" (built on develop; go-live owner-gated)** → [`plans/entity-view-tracking.md`](./plans/entity-view-tracking.md)
+- [~] **MEDIUM: Entity view tracking → Grafana "What people look at" (DB + Grafana live; frontend waits for the next release)** → [`plans/entity-view-tracking.md`](./plans/entity-view-tracking.md)
 - [~] **MEDIUM: Price Hub scheduled full refresh on the self-host NAS (live on the NAS cron; crawler fixes open)** → [`plans/price-hub-scheduled-refresh.md`](./plans/price-hub-scheduled-refresh.md)
 - [~] **HIGH: Homepage marketing rebuild — explain Patcher in one scroll** → [`plans/homepage-marketing-rebuild.md`](./plans/homepage-marketing-rebuild.md)
 - [~] **MEDIUM: Immediate UI feedback — synchronous pending ack without pipe changes** → [`plans/immediate-ui-feedback-pending-ack.md`](./plans/immediate-ui-feedback-pending-ack.md)
