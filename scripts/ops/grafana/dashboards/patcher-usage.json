@@ -605,6 +605,11 @@
       "url": "/d/patcher-build"
     },
     {
+      "title": "What people look at",
+      "type": "link",
+      "url": "/d/patcher-views"
+    },
+    {
       "title": "Ecosystem",
       "type": "link",
       "url": "/d/patcher-eco"

@@ -55,6 +55,26 @@ GRANT SELECT (id, created_at, revoked_at, last_used_at) ON public.api_keys TO gr
 GRANT SELECT (key_id, month, used) ON public.api_key_usage_monthly TO grafana_ro;
 GRANT SELECT (id, created_at, resolved) ON public.module_flags TO grafana_ro;
 
+-- Names for the "What people look at" dashboard (private rack/patch/collection names are only
+-- shown when public = true; the queries enforce that)
+GRANT SELECT ("manufacturerId") ON public.modules TO grafana_ro;
+GRANT SELECT (name) ON public.racks TO grafana_ro;
+GRANT SELECT (name) ON public.patches TO grafana_ro;
+GRANT SELECT (name) ON public.module_collections TO grafana_ro;
+GRANT SELECT (id, name) ON public.manufacturers TO grafana_ro;
+
+-- First-party view tracking (migration 20261012120000_add_entity_view_tracking). Skipped until
+-- that migration is applied, so this file keeps working on either side of it. Salts are never granted.
+DO $$
+BEGIN
+  IF to_regclass('analytics.view_events') IS NOT NULL THEN
+    GRANT USAGE ON SCHEMA analytics TO grafana_ro;
+    GRANT SELECT ON analytics.entity_types, analytics.view_events, analytics.view_daily TO grafana_ro;
+  ELSE
+    RAISE NOTICE 'analytics schema not found: view-tracking grants skipped (re-run after the migration)';
+  END IF;
+END $$;
+
 -- pg_cron status (no command text)
 GRANT SELECT (jobid, jobname, schedule, active) ON cron.job TO grafana_ro;
 GRANT SELECT (jobid, runid, status, return_message, start_time, end_time) ON cron.job_run_details TO grafana_ro;
