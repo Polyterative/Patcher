@@ -94,6 +94,15 @@ else fail "pg_cron 24 h: $cf not succeeded ($cs succeeded)"; fi
 mv=$(q "select ispopulated from pg_matviews where schemaname='public' and matviewname='module_discovery_snapshot'")
 [ "$mv" = t ] && ok "module_discovery_snapshot populated" || fail "module_discovery_snapshot populated=$mv"
 
+# First-party view tracking (migration 20261012120000): only once the analytics schema exists.
+if [ "$(q "select to_regclass('analytics.view_events') is not null")" = t ]; then
+  vr=$(q "select coalesce(extract(epoch from now() - max(d.end_time))::int, -1) from cron.job_run_details d join cron.job j using (jobid) where j.jobname = 'analytics-view-rollup' and d.status = 'succeeded'")
+  vn=$(q "select count(*) from analytics.view_events where viewed_at > now() - interval '24 hours'")
+  if ! [[ "$vr" =~ ^[0-9]+$ ]] || [ "$vr" -ge 1800 ]; then fail "view rollup not succeeded in 30 min (last: ${vr}s ago; pg_cron analytics-view-rollup)"
+  else ok "view rollup ${vr}s ago"; fi
+  [[ "$vn" =~ ^[1-9][0-9]*$ ]] && ok "views tracked 24 h: $vn" || warn "views tracked 24 h: $vn (is the release with view tracking live?)"
+fi
+
 # Price Hub full refresh dead-man (price-hub-refresh-nas.sh): only once --enable-cron set the marker.
 if [ -n "${PRICE_HUB_DIR:-}" ] && [ -f "$PRICE_HUB_DIR/cron-enabled" ]; then
   echo "== price hub refresh"

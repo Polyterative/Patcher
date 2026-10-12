@@ -1,0 +1,1330 @@
+{
+  "uid": "patcher-views",
+  "title": "Patcher \u2014 What people look at",
+  "tags": [
+    "patcher",
+    "product"
+  ],
+  "description": "First-party view tracking (analytics.view_events / view_daily). Plan: internaldocs/workflow/plans/entity-view-tracking.md",
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": false,
+  "graphTooltip": 1,
+  "time": {
+    "from": "now-30d",
+    "to": "now"
+  },
+  "refresh": "5m",
+  "templating": {
+    "list": [
+      {
+        "name": "owner",
+        "label": "Owner views",
+        "type": "custom",
+        "query": "exclude,include",
+        "current": {
+          "text": "exclude",
+          "value": "exclude"
+        },
+        "options": [
+          {
+            "text": "exclude",
+            "value": "exclude",
+            "selected": true
+          },
+          {
+            "text": "include",
+            "value": "include",
+            "selected": false
+          }
+        ],
+        "hide": 0,
+        "multi": false,
+        "includeAll": false
+      }
+    ]
+  },
+  "annotations": {
+    "list": []
+  },
+  "links": [
+    {
+      "title": "Pulse",
+      "type": "link",
+      "url": "/d/patcher-pulse"
+    },
+    {
+      "title": "What people build",
+      "type": "link",
+      "url": "/d/patcher-build"
+    },
+    {
+      "title": "What people look at",
+      "type": "link",
+      "url": "/d/patcher-views"
+    },
+    {
+      "title": "Ecosystem",
+      "type": "link",
+      "url": "/d/patcher-eco"
+    },
+    {
+      "title": "Usage (tech)",
+      "type": "link",
+      "url": "/d/patcher-usage"
+    },
+    {
+      "title": "Content",
+      "type": "link",
+      "url": "/d/patcher-content"
+    },
+    {
+      "title": "Database",
+      "type": "link",
+      "url": "/d/patcher-db"
+    }
+  ],
+  "panels": [
+    {
+      "id": 1,
+      "title": "Views",
+      "type": "stat",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select coalesce(sum(views - (case when '${owner}' = 'include' then 0 else owner_views end)), 0) as views from analytics.view_daily where entity_type <> 9 and day >= $__timeFrom()::date and day <= $__timeTo()::date"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto"
+      },
+      "description": "Detail-page views of modules, racks, patches, manufacturers and collections in the selected range (refresh within 30 min counts once)."
+    },
+    {
+      "id": 2,
+      "title": "Visitor-days",
+      "type": "stat",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 4,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select coalesce(sum(n), 0) from (select (viewed_at at time zone 'utc')::date as day, count(distinct visitor_hash) n from analytics.view_events where $__timeFilter(viewed_at) group by 1) t"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "purple"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto"
+      },
+      "description": "Distinct browsers per day, summed over the range (visitor ids rotate daily, so this is not a count of people). Raw data: last 90 days only."
+    },
+    {
+      "id": 3,
+      "title": "Signed in",
+      "type": "stat",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select sum(signed_in_views)::numeric / nullif(sum(views), 0) from analytics.view_daily where entity_type <> 9 and day >= $__timeFrom()::date and day <= $__timeTo()::date"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "green"
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto"
+      },
+      "description": "Share of entity views from signed-in people."
+    },
+    {
+      "id": 4,
+      "title": "From search engines",
+      "type": "stat",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select sum(search_views)::numeric / nullif(sum(views), 0) from analytics.view_daily where day >= $__timeFrom()::date and day <= $__timeTo()::date"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "orange"
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto"
+      },
+      "description": "Share of all views (pages + entities) that landed from Google, Bing, DuckDuckGo and similar."
+    },
+    {
+      "id": 5,
+      "title": "Views, last 60 min",
+      "type": "stat",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select count(*) from analytics.view_events where entity_type <> 9 and viewed_at > now() - interval '60 minutes'"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "red"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto"
+      },
+      "description": "Live: entity views in the last hour, independent of the time picker."
+    },
+    {
+      "id": 6,
+      "title": "Different modules viewed",
+      "type": "stat",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 20,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select count(distinct entity_id) from analytics.view_daily where entity_type = 1 and day >= $__timeFrom()::date and day <= $__timeTo()::date"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto"
+      },
+      "description": "How much of the catalogue people actually look at in the range."
+    },
+    {
+      "id": 7,
+      "title": "Views per day, by type",
+      "type": "timeseries",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 12,
+        "h": 9
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "time_series",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select day::timestamptz as time, t.name as metric, sum(views - (case when '${owner}' = 'include' then 0 else owner_views end)) as views from analytics.view_daily d join analytics.entity_types t on t.code = d.entity_type where t.name <> 'page' and day >= $__timeFrom()::date and day <= $__timeTo()::date group by 1, 2 order by 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 70,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "stacking": {
+              "mode": "normal"
+            }
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "description": "Long-term trend from the daily rollup (kept forever)."
+    },
+    {
+      "id": 8,
+      "title": "Views per hour, by type",
+      "type": "timeseries",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 4,
+        "w": 12,
+        "h": 9
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "time_series",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select $__timeGroup(viewed_at, '1h') as time, t.name as metric, count(*) as views from analytics.view_events v join analytics.entity_types t on t.code = v.entity_type where t.name <> 'page' and $__timeFilter(viewed_at) and (not v.is_owner or '${owner}' = 'include') group by 1, 2 order by 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 25,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "stacking": {
+              "mode": "normal"
+            }
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "description": "Short-term detail from raw events (last 90 days only). Pick a range of a few days or less."
+    },
+    {
+      "id": 9,
+      "title": "Most viewed modules",
+      "type": "table",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 13,
+        "w": 12,
+        "h": 12
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "with cur as (\n  select entity_id, sum(views - 0) as views, sum(unique_visitors) as visitor_days\n  from analytics.view_daily where entity_type = 1 and day >= $__timeFrom()::date and day <= $__timeTo()::date group by 1),\nprev as (\n  select entity_id, sum(views - 0) as views\n  from analytics.view_daily where entity_type = 1 and day >= ($__timeFrom()::timestamptz - ($__timeTo()::timestamptz - $__timeFrom()::timestamptz))::date and day < $__timeFrom()::date group by 1)\nselect m.name as module, mf.name as manufacturer, cur.views, cur.visitor_days as \"visitor-days\",\n  case when coalesce(prev.views, 0) = 0 then null else cur.views::numeric / prev.views - 1 end as \"vs previous\"\nfrom cur left join prev using (entity_id) join public.modules m on m.id = cur.entity_id left join public.manufacturers mf on mf.id = m.\"manufacturerId\"\nwhere cur.views > 0\norder by cur.views desc limit 25"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "views"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "basic"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "continuous-BlPu"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "vs previous"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      },
+      "description": "Module detail views in the range. 'vs previous' compares with the same-length period before it."
+    },
+    {
+      "id": 10,
+      "title": "Most viewed racks",
+      "type": "table",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 13,
+        "w": 12,
+        "h": 12
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "with cur as (\n  select entity_id, sum(views - (case when '${owner}' = 'include' then 0 else owner_views end)) as views, sum(unique_visitors) as visitor_days\n  from analytics.view_daily where entity_type = 2 and day >= $__timeFrom()::date and day <= $__timeTo()::date group by 1),\nprev as (\n  select entity_id, sum(views - (case when '${owner}' = 'include' then 0 else owner_views end)) as views\n  from analytics.view_daily where entity_type = 2 and day >= ($__timeFrom()::timestamptz - ($__timeTo()::timestamptz - $__timeFrom()::timestamptz))::date and day < $__timeFrom()::date group by 1)\nselect case when r.public then coalesce(r.name, 'untitled') else 'private rack #' || r.id end as rack, cur.views, cur.visitor_days as \"visitor-days\",\n  case when coalesce(prev.views, 0) = 0 then null else cur.views::numeric / prev.views - 1 end as \"vs previous\"\nfrom cur left join prev using (entity_id) join public.racks r on r.id = cur.entity_id\nwhere cur.views > 0\norder by cur.views desc limit 25"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "views"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "basic"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "continuous-BlPu"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "vs previous"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      },
+      "description": "Rack views; the owner's own views are excluded unless 'Owner views' is set to include. Private racks show only their id."
+    },
+    {
+      "id": 11,
+      "title": "Most viewed patches",
+      "type": "table",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 25,
+        "w": 8,
+        "h": 11
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "with cur as (\n  select entity_id, sum(views - (case when '${owner}' = 'include' then 0 else owner_views end)) as views, sum(unique_visitors) as visitor_days\n  from analytics.view_daily where entity_type = 3 and day >= $__timeFrom()::date and day <= $__timeTo()::date group by 1),\nprev as (\n  select entity_id, sum(views - (case when '${owner}' = 'include' then 0 else owner_views end)) as views\n  from analytics.view_daily where entity_type = 3 and day >= ($__timeFrom()::timestamptz - ($__timeTo()::timestamptz - $__timeFrom()::timestamptz))::date and day < $__timeFrom()::date group by 1)\nselect case when p.public then coalesce(p.name, 'untitled') else 'private patch #' || p.id end as patch, cur.views, cur.visitor_days as \"visitor-days\",\n  case when coalesce(prev.views, 0) = 0 then null else cur.views::numeric / prev.views - 1 end as \"vs previous\"\nfrom cur left join prev using (entity_id) join public.patches p on p.id = cur.entity_id\nwhere cur.views > 0\norder by cur.views desc limit 25"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "views"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "basic"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "continuous-BlPu"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "vs previous"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      },
+      "description": "Patch views, owner views excluded by default."
+    },
+    {
+      "id": 12,
+      "title": "Most viewed collections",
+      "type": "table",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 25,
+        "w": 8,
+        "h": 11
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "with cur as (\n  select entity_id, sum(views - (case when '${owner}' = 'include' then 0 else owner_views end)) as views, sum(unique_visitors) as visitor_days\n  from analytics.view_daily where entity_type = 5 and day >= $__timeFrom()::date and day <= $__timeTo()::date group by 1),\nprev as (\n  select entity_id, sum(views - (case when '${owner}' = 'include' then 0 else owner_views end)) as views\n  from analytics.view_daily where entity_type = 5 and day >= ($__timeFrom()::timestamptz - ($__timeTo()::timestamptz - $__timeFrom()::timestamptz))::date and day < $__timeFrom()::date group by 1)\nselect case when c.public then c.name else 'private collection #' || c.id end as collection, cur.views, cur.visitor_days as \"visitor-days\",\n  case when coalesce(prev.views, 0) = 0 then null else cur.views::numeric / prev.views - 1 end as \"vs previous\"\nfrom cur left join prev using (entity_id) join public.module_collections c on c.id = cur.entity_id\nwhere cur.views > 0\norder by cur.views desc limit 25"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "views"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "basic"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "continuous-BlPu"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "vs previous"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      },
+      "description": "Module collection views, owner views excluded by default."
+    },
+    {
+      "id": 13,
+      "title": "Most viewed manufacturers",
+      "type": "table",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 25,
+        "w": 8,
+        "h": 11
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "with cur as (\n  select entity_id, sum(views - 0) as views, sum(unique_visitors) as visitor_days\n  from analytics.view_daily where entity_type = 4 and day >= $__timeFrom()::date and day <= $__timeTo()::date group by 1),\nprev as (\n  select entity_id, sum(views - 0) as views\n  from analytics.view_daily where entity_type = 4 and day >= ($__timeFrom()::timestamptz - ($__timeTo()::timestamptz - $__timeFrom()::timestamptz))::date and day < $__timeFrom()::date group by 1)\nselect mf.name as manufacturer, cur.views, cur.visitor_days as \"visitor-days\",\n  case when coalesce(prev.views, 0) = 0 then null else cur.views::numeric / prev.views - 1 end as \"vs previous\"\nfrom cur left join prev using (entity_id) join public.manufacturers mf on mf.id = cur.entity_id\nwhere cur.views > 0\norder by cur.views desc limit 25"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "views"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "basic"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "continuous-BlPu"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "vs previous"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      },
+      "description": "Manufacturer page views (not module pages of that maker)."
+    },
+    {
+      "id": 14,
+      "title": "Most visited pages / sections",
+      "type": "table",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 36,
+        "w": 8,
+        "h": 12
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "with cur as (select route, sum(views) as views, sum(unique_visitors) as visitor_days from analytics.view_daily where entity_type = 9 and day >= $__timeFrom()::date and day <= $__timeTo()::date group by 1),\nprev as (select route, sum(views) as views from analytics.view_daily where entity_type = 9 and day >= ($__timeFrom()::timestamptz - ($__timeTo()::timestamptz - $__timeFrom()::timestamptz))::date and day < $__timeFrom()::date group by 1)\nselect cur.route as page, cur.views, cur.visitor_days as \"visitor-days\",\n  case when coalesce(prev.views, 0) = 0 then null else cur.views::numeric / prev.views - 1 end as \"vs previous\"\nfrom cur left join prev using (route) order by cur.views desc limit 25"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "views"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "basic"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "continuous-BlPu"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "vs previous"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      },
+      "description": "Every navigation, grouped by route template (ids are never stored)."
+    },
+    {
+      "id": 15,
+      "title": "Trending modules (last 7 days vs the 7 before)",
+      "type": "table",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 36,
+        "w": 8,
+        "h": 12
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "with d as (\n  select entity_id,\n    sum(views) filter (where day > current_date - 7) as now7,\n    sum(views) filter (where day <= current_date - 7 and day > current_date - 14) as prev7\n  from analytics.view_daily where entity_type = 1 and day > current_date - 14 group by 1)\nselect m.name as module, d.now7 as views, coalesce(d.prev7, 0) as \"previous 7 d\",\n  d.now7 - coalesce(d.prev7, 0) as \"gain\"\nfrom d join public.modules m on m.id = d.entity_id\nwhere d.now7 >= 5 order by 4 desc limit 20"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "views"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "basic"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "continuous-BlPu"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "vs previous"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      },
+      "description": "Independent of the time picker. Modules with at least 5 views this week, sorted by absolute gain."
+    },
+    {
+      "id": 16,
+      "title": "Look \u2192 do: modules",
+      "type": "table",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 36,
+        "w": 8,
+        "h": 12
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "with v as (select entity_id as module_id, sum(views) as views from analytics.view_daily where entity_type = 1 and day >= $__timeFrom()::date and day <= $__timeTo()::date group by 1),\nr as (select moduleid as module_id, count(*) as rack_adds from public.rack_modules where $__timeFilter(created) group by 1),\nl as (select moduleid as module_id, count(*) as list_adds from public.user_modules where $__timeFilter(updated) group by 1)\nselect m.name as module, v.views, coalesce(r.rack_adds, 0) as \"added to racks\", coalesce(l.list_adds, 0) as \"list changes\",\n  round(100.0 * coalesce(r.rack_adds, 0) / v.views, 1) as \"rack adds per 100 views\"\nfrom v join public.modules m on m.id = v.module_id left join r using (module_id) left join l using (module_id)\norder by v.views desc limit 25"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "views"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "basic"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "continuous-BlPu"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "vs previous"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      },
+      "description": "Do views turn into action? Rack adds and own/want/sell list changes in the same range."
+    },
+    {
+      "id": 17,
+      "title": "Where views come from",
+      "type": "piechart",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 48,
+        "w": 8,
+        "h": 8
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select 'search engines' as source, sum(search_views) as views from analytics.view_daily where day >= $__timeFrom()::date and day <= $__timeTo()::date\nunion all select 'other sites', sum(external_views - search_views) from analytics.view_daily where day >= $__timeFrom()::date and day <= $__timeTo()::date\nunion all select 'inside Patcher / direct', sum(views - external_views) from analytics.view_daily where day >= $__timeFrom()::date and day <= $__timeTo()::date"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "values": [
+            "percent"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": true
+        }
+      },
+      "description": "Landing source of the first page of each visit; later navigation counts as inside Patcher."
+    },
+    {
+      "id": 18,
+      "title": "Signed in vs anonymous",
+      "type": "piechart",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 48,
+        "w": 8,
+        "h": 8
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select 'signed in' as who, sum(signed_in_views) as views from analytics.view_daily where entity_type <> 9 and day >= $__timeFrom()::date and day <= $__timeTo()::date\nunion all select 'anonymous', sum(views - signed_in_views) from analytics.view_daily where entity_type <> 9 and day >= $__timeFrom()::date and day <= $__timeTo()::date"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "values": [
+            "percent"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": true
+        }
+      },
+      "description": "Entity views by sign-in state."
+    },
+    {
+      "id": 19,
+      "title": "What gets looked at",
+      "type": "piechart",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 48,
+        "w": 8,
+        "h": 8
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select t.name as type, sum(views - (case when '${owner}' = 'include' then 0 else owner_views end)) as views from analytics.view_daily d join analytics.entity_types t on t.code = d.entity_type where t.name <> 'page' and day >= $__timeFrom()::date and day <= $__timeTo()::date group by 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "values": [
+            "percent"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": true
+        }
+      },
+      "description": "Entity views by type."
+    }
+  ]
+}

@@ -586,6 +586,108 @@
         }
       },
       "description": "Racks, patches, collections, comments, reactions, acquisitions. 'module list' (owned/wanted/selling changes) is left out because it is bulk-edited."
+    },
+    {
+      "id": 12,
+      "title": "Viewed in the last 60 min",
+      "type": "stat",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 22,
+        "w": 6,
+        "h": 8
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select count(*) as views from analytics.view_events where entity_type <> 9 and not is_owner and viewed_at > now() - interval '60 minutes'"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "red"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto"
+      },
+      "description": "Live module / rack / patch / manufacturer / collection views (owner views excluded). Details: What people look at."
+    },
+    {
+      "id": 13,
+      "title": "Being looked at right now (last 60 min)",
+      "type": "table",
+      "datasource": {
+        "type": "postgres",
+        "uid": "patcher-pg"
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 22,
+        "w": 18,
+        "h": 8
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "patcher-pg"
+          },
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "editorMode": "code",
+          "rawSql": "select t.name as type,\n  coalesce(m.name, mf.name,\n    case when r.public then r.name when r.id is not null then 'private rack #' || r.id end,\n    case when p.public then p.name when p.id is not null then 'private patch #' || p.id end,\n    case when c.public then c.name when c.id is not null then 'private collection #' || c.id end,\n    '#' || v.entity_id) as name,\n  count(*) as views, max(v.viewed_at) as last_seen\nfrom analytics.view_events v\njoin analytics.entity_types t on t.code = v.entity_type\nleft join public.modules m on v.entity_type = 1 and m.id = v.entity_id\nleft join public.racks r on v.entity_type = 2 and r.id = v.entity_id\nleft join public.patches p on v.entity_type = 3 and p.id = v.entity_id\nleft join public.manufacturers mf on v.entity_type = 4 and mf.id = v.entity_id\nleft join public.module_collections c on v.entity_type = 5 and c.id = v.entity_id\nwhere v.entity_type <> 9 and not v.is_owner and v.viewed_at > now() - interval '60 minutes'\ngroup by 1, 2 order by views desc, last_seen desc limit 10"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "last_seen"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeFromNow"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      }
     }
   ],
   "templating": {
@@ -604,6 +706,11 @@
       "title": "What people build",
       "type": "link",
       "url": "/d/patcher-build"
+    },
+    {
+      "title": "What people look at",
+      "type": "link",
+      "url": "/d/patcher-views"
     },
     {
       "title": "Ecosystem",
