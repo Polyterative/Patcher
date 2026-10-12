@@ -14,5 +14,7 @@ export interface EnvironmentModel {
     marketplaceEnabled: boolean;
     /** Manufacturer page Featured / Activity / Widget embed preview sections (unreleased). */
     manufacturerInsightsEnabled: boolean;
+    /** First-party view counting for the self-host Grafana (`ViewTrackingService`). */
+    viewTrackingEnabled: boolean;
   };
 }

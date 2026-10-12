@@ -8,6 +8,7 @@ import {
   POSTHOG_CLIENT_LOADER,
   PostHogClient
 } from './posthog-loader';
+import { ViewTrackingService } from './view-tracking.service';
 
 describe('AnalyticsService', () => {
   let service: AnalyticsService;
@@ -76,8 +77,10 @@ describe('AnalyticsService', () => {
       resolve: (posthog: PostHogClient | null) => void;
     };
     let posthog: jasmine.SpyObj<PostHogClient>;
+    let viewTracking: jasmine.SpyObj<ViewTrackingService>;
 
     beforeEach(() => {
+      viewTracking = jasmine.createSpyObj<ViewTrackingService>('viewTracking', ['trackEntity', 'trackPage']);
       TestBed.resetTestingModule();
       environment.production = true;
       routerEvents$ = new Subject<NavigationEnd>();
@@ -103,6 +106,10 @@ describe('AnalyticsService', () => {
           {
             provide:  POSTHOG_CLIENT_LOADER,
             useValue: () => deferredPostHog.promise
+          },
+          {
+            provide:  ViewTrackingService,
+            useValue: viewTracking
           }
         ]
       });
@@ -140,6 +147,30 @@ describe('AnalyticsService', () => {
       expect(posthog.capture).toHaveBeenCalledOnceWith('$pageview', {
         $current_url: `${window.location.origin}/new`
       });
+    });
+
+    it('forwards detail-view events to first-party view tracking', () => {
+      service.capture('module.viewed', { module_id: 12, manufacturer_id: 3 });
+      service.capture('rack.viewed', { rack_id: 5, is_owner: false });
+      service.capture('module_collection.viewed', { collection_id: 9 });
+      service.capture('rack.module_added', { rack_id: 5, module_id: 12 });
+
+      expect(viewTracking.trackEntity.calls.allArgs()).toEqual([
+        ['module', 12],
+        ['rack', 5],
+        ['collection', 9]
+      ]);
+    });
+
+    it('sends the matched route template, not the URL, as a page view', () => {
+      const leaf = { routeConfig: { path: 'details/:id' }, firstChild: null };
+      const modules = { routeConfig: { path: 'modules' }, firstChild: leaf };
+      const router = TestBed.inject(Router) as unknown as { routerState: unknown };
+      router.routerState = { snapshot: { root: { routeConfig: null, firstChild: modules } } };
+
+      routerEvents$.next(new NavigationEnd(1, '/modules/details/12?x=1', '/modules/details/12?x=1'));
+
+      expect(viewTracking.trackPage).toHaveBeenCalledOnceWith('modules/details/:id');
     });
   });
 });
