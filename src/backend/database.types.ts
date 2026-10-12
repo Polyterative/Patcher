@@ -2659,6 +2659,10 @@ export type Database = {
         }
         Returns: number
       }
+      track_views: {
+        Args: { p_events: Json; p_visitor: string }
+        Returns: undefined
+      }
       verify_api_key: {
         Args: { p_hash: string }
         Returns: {
