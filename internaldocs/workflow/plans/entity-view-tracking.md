@@ -6,9 +6,9 @@ Goal: see which modules, racks, patches, manufacturers, collections and pages ge
 both right now (last hour / day) and long term (weeks / months / all time), in the self-host Grafana
 next to the existing Pulse / Build / Usage dashboards.
 
-Status: **built on `develop` 2026-10-12, not live.** Migration validated on a throwaway local
-Postgres 17; client specs green; dashboards query-checked as `grafana_ro`. Waiting on the owner-gated
-production steps in §Go-live (DB apply, Grafana role + deploy, release).
+Status: **DB + Grafana live since 2026-10-12; the frontend starts sending views with the next
+release of `develop`.** Migration validated locally, then applied to the self-host DB (owner-approved);
+API smoke test passed and was cleaned up; all 21 panel queries run through Grafana's API.
 
 ## Where we are today
 
@@ -134,7 +134,8 @@ gets a "What people look at" link.
 - [x] Trending, look → do, sources, Pulse live row, "vs previous" columns.
 - [x] Health check in `selfhost-health-remote.sh`.
 - [x] Docs: `patterns/ANALYTICS.md` boundary section.
-- [ ] Go-live (owner-gated, below) + first-week PostHog reconciliation.
+- [x] Go-live steps 1–2 (2026-10-12, owner-approved): migration applied, role re-run, dashboards deployed.
+- [ ] Step 3 release (owner) + first-week PostHog reconciliation.
 - [ ] Public privacy wording (anonymous aggregate counts, no IP, daily-rotating id) — after go-live, via `docs-publisher`.
 
 ### Go-live (owner-gated: production DB + Grafana role)
@@ -186,3 +187,7 @@ gets a "What people look at" link.
 - 2026-10-12: Forwarding inside `AnalyticsService.capture()` instead of touching the five call sites:
   one mapping table, the existing `shouldCaptureCanonicalDetailView` / load-success guards are reused.
 - 2026-10-12: Raw `fetch` with `keepalive` instead of supabase-js `rpc()`: only way to survive `pagehide`.
+- 2026-10-12: Go-live 1–2 done. Preflight: PG 17.6, pg_cron present, no `analytics` schema or
+  `track_views` before, all referenced columns present. Applied in one transaction. Live API checks:
+  RPC 204 with a browser UA, bot UA dropped, `Accept-Profile: analytics` → 406 (schema not exposed).
+  The two smoke rows were deleted. `grafana_ro` can read `view_daily` / `view_events`, not `visitor_salts`.
