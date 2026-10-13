@@ -595,6 +595,11 @@
   },
   "links": [
     {
+      "title": "Right now",
+      "type": "link",
+      "url": "/d/patcher-now"
+    },
+    {
       "title": "Pulse",
       "type": "link",
       "url": "/d/patcher-pulse"
