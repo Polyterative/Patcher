@@ -344,11 +344,16 @@ describe('RackCreatorComponent', () => {
     return TestBed.createComponent(RackCreatorComponent);
   }
 
+  let originalModularGridImportEnabled: boolean;
+
   beforeEach(() => {
     createdComponents = [];
+    originalModularGridImportEnabled = environment.features.modularGridImportEnabled;
+    environment.features.modularGridImportEnabled = true;
   });
 
   afterEach(() => {
+    environment.features.modularGridImportEnabled = originalModularGridImportEnabled;
     createdComponents.forEach((component) => component.ngOnDestroy());
     TestBed.resetTestingModule();
   });
