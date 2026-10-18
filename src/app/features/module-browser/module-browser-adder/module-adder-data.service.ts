@@ -1,3 +1,4 @@
+import { ReadOnlyModeService } from 'src/app/features/backbone/read-only-mode.service';
 import {
   DestroyRef,
   Injectable
@@ -52,6 +53,8 @@ import { SharedConstants } from "src/app/shared-interproject/SharedConstants";
 import { ModuleAdderFormData } from './module-adder-data.models';
 import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
 
+
+const readOnlyMode = new ReadOnlyModeService();
 
 @Injectable()
 export class ModuleAdderDataService extends SubManager {
@@ -288,6 +291,7 @@ export class ModuleAdderDataService extends SubManager {
     // confirmation is handled inline (armed-state button), so no dialog here
     this.submitModuleForm$
       .pipe(
+        filter(() => !readOnlyMode.enabled),
         tap(() => this.similarModulesData$.next(undefined)),
         map(() => {
           const manualValue    = this.formData.manual.control.value;

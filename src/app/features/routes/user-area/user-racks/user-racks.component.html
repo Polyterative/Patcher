@@ -29,6 +29,7 @@
         }
         <app-brand-primary-button appDiscoveryTipAnchor="user-area-racks-create"
                                   (click$)="dataService.addRack$.next()"
+                                  [disabled]="readOnly.enabled" [tooltip]="readOnly.enabled ? readOnly.tooltip : ''"
                                   icon="add"
         >Create rack
         </app-brand-primary-button>

@@ -1,3 +1,4 @@
+import { ReadOnlyModeService } from 'src/app/features/backbone/read-only-mode.service';
 import { Injectable } from '@angular/core';
 import { EMPTY } from 'rxjs';
 import {
@@ -24,6 +25,8 @@ import {
 } from '../patch-parts/linked-rack-rollout';
 import { generatePatchName } from '../patch-parts/patch-name-generator';
 import { RackDetailDataContext } from './rack-detail-data.service.types';
+
+const readOnlyMode = new ReadOnlyModeService();
 
 @Injectable()
 export class RackDetailEditingDataService {
@@ -91,7 +94,7 @@ export class RackDetailEditingDataService {
 
     context.requestCreatePatchFromRack$
       .pipe(
-        filter(() => !context.createPatchFromRackInProgress$.value),
+        filter(() => !readOnlyMode.enabled && !context.createPatchFromRackInProgress$.value),
         withLatestFrom(context.singleRackData$, context.isCurrentRackPropertyOfCurrentUser$),
         exhaustMap(([_, rack, isOwner]) => {
           if (!rack) {

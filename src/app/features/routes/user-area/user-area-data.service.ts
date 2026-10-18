@@ -1,3 +1,4 @@
+import { ReadOnlyModeService } from 'src/app/features/backbone/read-only-mode.service';
 import { Injectable } from '@angular/core';
 import {
   BehaviorSubject,
@@ -59,6 +60,8 @@ import {
 } from './user-area-data.utils';
 import { AnalyticsService } from 'src/app/features/backbone/analytics-integration/analytics.service';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
+
+const readOnlyMode = new ReadOnlyModeService();
 
 export type UserModuleCollectionFilter = 'MY_MODULES' | 'WISHLIST' | 'FOR_SALE';
 
@@ -500,6 +503,7 @@ export class UserAreaDataService extends SubManager {
     
     this.addPatch$
       .pipe(
+        filter(() => !readOnlyMode.enabled),
         tap(() => {
           this.analytics.capture('user_area.patch.create_clicked', {});
           this.discoveryTipService.recordAction('user-area.patches.create-clicked');
@@ -522,6 +526,7 @@ export class UserAreaDataService extends SubManager {
     
     this.addRack$
       .pipe(
+        filter(() => !readOnlyMode.enabled),
         tap(() => {
           this.analytics.capture('user_area.rack.create_clicked', {});
           this.discoveryTipService.recordAction('user-area.racks.create-clicked');

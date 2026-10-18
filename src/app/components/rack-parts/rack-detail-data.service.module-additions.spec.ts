@@ -23,6 +23,7 @@ import {
   RackMinimal
 } from 'src/app/models/rack';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
+import { environment } from 'src/environments/environment';
 import { RackDetailDataService } from './rack-detail-data.service';
 
 // Harness copied from the sibling `rack-detail-data.service.reactive.spec.ts` (direct
@@ -326,6 +327,24 @@ describe('RackDetailDataService module additions', () => {
       expect(rows[1][0].rackingData.row).toBe(1);
       expect(rows[1][0].rackingData.column).toBe(0);
       expect(refreshSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('read-only mode backstop', () => {
+    afterEach(() => {
+      environment.features.readOnlyModeEnabled = false;
+    });
+
+    it('ignores addModuleToRack$ while read-only mode is on', () => {
+      const {service, backend} = build();
+      service.singleRackData$.next(rack({id: 1, rows: 1}));
+      service.rowedRackedModules$.next([[]]);
+      environment.features.readOnlyModeEnabled = true;
+
+      service.addModuleToRack$.next(moduleFixture(777, 'New Module', 8, 0));
+
+      expect(backend.add.rackModule).not.toHaveBeenCalled();
+      expect((service.rowedRackedModules$.value ?? []).flatMap(row => row).length).toBe(0);
     });
   });
 

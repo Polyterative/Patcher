@@ -55,6 +55,10 @@
     background: color-mix(in srgb, var(--mat-sys-error-container, #a44626) 88%, black);
   }
 
+  .edit-fab-tooltip-anchor {
+    display: inline-block;
+  }
+
   button.bouncing {
     animation: fab-bounce 600ms ease-out 1;
   }

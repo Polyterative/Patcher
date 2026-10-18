@@ -1,3 +1,4 @@
+import { ReadOnlyModeService } from 'src/app/features/backbone/read-only-mode.service';
 import {
   ChangeDetectionStrategy,
   Component
@@ -60,6 +61,9 @@ const JSONLD_SCRIPT_ID = 'manufacturer-jsonld';
   standalone: false
 })
 export class ManufacturerDetailComponent extends SubManager {
+  /** Maintenance read-only mode (stateless; reads the build-time flag). */
+  readonly readOnly = new ReadOnlyModeService();
+
 
   readonly moduleViewConfig: ModuleMinimalViewConfig = {
     ...defaultModuleMinimalViewConfig,

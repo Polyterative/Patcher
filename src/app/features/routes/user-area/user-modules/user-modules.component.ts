@@ -1,3 +1,4 @@
+import { ReadOnlyModeService } from 'src/app/features/backbone/read-only-mode.service';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -31,6 +32,9 @@ type UserModulesSectionFilter = UserModuleCollectionFilter | 'COOL';
   standalone: false
 })
 export class UserModulesComponent extends SubManager {
+  /** Maintenance read-only mode (stateless; reads the build-time flag). */
+  readonly readOnly = new ReadOnlyModeService();
+
   @Input() modulesViewConfig: ModuleMinimalViewConfig;
   @Input() userModulesComponentViewConfig: UserModulesComponentViewConfig = userModulesDefaultViewConfig;
   @Input() readonly encloseVertically = true;

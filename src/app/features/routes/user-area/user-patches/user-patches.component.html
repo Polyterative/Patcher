@@ -30,6 +30,7 @@
         <app-brand-primary-button
           appDiscoveryTipAnchor="user-area-patches-create"
           (click$)="dataService.addPatch$.next()"
+          [disabled]="readOnly.enabled" [tooltip]="readOnly.enabled ? readOnly.tooltip : ''"
           icon="add"
         >Create patch
         </app-brand-primary-button>

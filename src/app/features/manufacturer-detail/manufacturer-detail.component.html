@@ -165,17 +165,24 @@
   </div>
 
   @if (bag.manufacturer) {
-    <a
-      mat-fab
-      extended
-      class="manufacturer-detail-submit-fab"
-      [routerLink]="['/modules/add']"
-      [queryParams]="{manufacturer: bag.manufacturer.id}"
-      matTooltip="Submit a new module for this manufacturer"
-      matTooltipPosition="above"
-    >
-      <mat-icon>add</mat-icon>
-      Submit a module
-    </a>
+    @if (readOnly.enabled) {
+      <button mat-fab extended class="manufacturer-detail-submit-fab" disabled [matTooltip]="readOnly.tooltip" matTooltipPosition="above">
+          <mat-icon>add</mat-icon>
+          Submit a module
+        </button>
+    } @else {
+      <a
+        mat-fab
+        extended
+        class="manufacturer-detail-submit-fab"
+        [routerLink]="['/modules/add']"
+        [queryParams]="{manufacturer: bag.manufacturer.id}"
+        matTooltip="Submit a new module for this manufacturer"
+        matTooltipPosition="above"
+      >
+        <mat-icon>add</mat-icon>
+        Submit a module
+      </a>
+    }
   }
 }

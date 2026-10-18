@@ -16,5 +16,7 @@ export interface EnvironmentModel {
     manufacturerInsightsEnabled: boolean;
     /** First-party view counting for the self-host Grafana (`ViewTrackingService`). */
     viewTrackingEnabled: boolean;
+    /** Maintenance read-only mode: creating and editing controls are disabled with a tooltip. */
+    readOnlyModeEnabled: boolean;
   };
 }

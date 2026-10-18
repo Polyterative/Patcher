@@ -43,7 +43,11 @@
               <div>• <a href="/patches/browser">Patches</a></div>
               <div>• <a href="/user/area">User Area</a></div>
               <div>• <a href="/user/account">Account</a></div>
-              <div>• <a href="/modules/add">Submit a module</a></div>
+              @if (readOnly.enabled) {
+                <div [title]="readOnly.tooltip">• <span>Submit a module</span></div>
+              } @else {
+                <div>• <a href="/modules/add">Submit a module</a></div>
+              }
             </div>
           </app-label-value-showcase>
         </div>

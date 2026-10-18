@@ -1,3 +1,4 @@
+import { ReadOnlyModeService } from 'src/app/features/backbone/read-only-mode.service';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -32,6 +33,9 @@ type UserRacksSectionFilter = 'PERSONAL' | 'COOL';
   standalone: false
 })
 export class UserRacksComponent {
+  /** Maintenance read-only mode (stateless; reads the build-time flag). */
+  readonly readOnly = new ReadOnlyModeService();
+
   rackMinimalViewConfig: RackMinimalViewConfig = {...defaultRackMinimalViewConfig};
   @Input() globalSearchQuery = '';
   @Input() showCoolFilter = false;

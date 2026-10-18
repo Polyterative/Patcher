@@ -1,3 +1,4 @@
+import { ReadOnlyModeService } from 'src/app/features/backbone/read-only-mode.service';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -64,6 +65,9 @@ function isCoreWorkspaceDataLoaded(data: CoreWorkspaceData): data is LoadedCoreW
   standalone: false
 })
 export class UserAreaRootComponent extends SubManager implements OnInit, OnDestroy {
+  /** Maintenance read-only mode (stateless; reads the build-time flag). */
+  readonly readOnly = new ReadOnlyModeService();
+
   readonly formTypes = FormTypes;
   readonly globalSearchControl = new UntypedFormControl('');
   readonly globalSearchQuery$ = this.globalSearchControl.valueChanges.pipe(

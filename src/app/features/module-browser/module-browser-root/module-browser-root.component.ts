@@ -1,3 +1,4 @@
+import { ReadOnlyModeService } from 'src/app/features/backbone/read-only-mode.service';
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
@@ -89,6 +90,9 @@ const OWNED_MODULES_DEFAULT_THRESHOLD = 20;
   ]
 })
 export class ModuleBrowserRootComponent extends SubManager implements OnInit {
+  /** Maintenance read-only mode (stateless; reads the build-time flag). */
+  readonly readOnly = new ReadOnlyModeService();
+
   @Input() showSubmitFab = true;
   @Input() compactSidebarAtTablet = false;
   @Input() titleBig = 'Modules';

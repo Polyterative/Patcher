@@ -64,23 +64,25 @@
             ></app-cool-button>
           }
           @if (bag.user && bag.isCurrentRackPropertyOfCurrentUser) {
-            <button mat-icon-button
-                    matTooltip="Create patch from this rack"
-                    aria-label="Create patch from this rack"
-                    [disabled]="dataService.createPatchFromRackInProgress$ | async"
-                    (click)="dataService.requestCreatePatchFromRack$.next()"
-            >
-              <mat-icon>settings_input_composite</mat-icon>
-            </button>
+            <span [matTooltip]="readOnly.enabled ? readOnly.tooltip : 'Create patch from this rack'">
+              <button mat-icon-button
+                      aria-label="Create patch from this rack"
+                      [disabled]="readOnly.enabled || (dataService.createPatchFromRackInProgress$ | async)"
+                      (click)="dataService.requestCreatePatchFromRack$.next()"
+              >
+                <mat-icon>settings_input_composite</mat-icon>
+              </button>
+            </span>
           }
-          <button mat-icon-button
-                  [matTooltip]="(userManagerService.loggedUser$|async) ? 'Duplicate rack' : 'Login to duplicate rack'"
-                  [attr.aria-label]="(userManagerService.loggedUser$|async) ? 'Duplicate rack' : 'Login to duplicate rack'"
-                  [disabled]="!(userManagerService.loggedUser$|async)"
-                  (click)="dataService.duplicateRack$.next(data)"
-          >
-            <mat-icon>file_copy</mat-icon>
-          </button>
+          <span [matTooltip]="readOnly.enabled ? readOnly.tooltip : ((userManagerService.loggedUser$|async) ? 'Duplicate rack' : 'Login to duplicate rack')">
+            <button mat-icon-button
+                    [attr.aria-label]="(userManagerService.loggedUser$|async) ? 'Duplicate rack' : 'Login to duplicate rack'"
+                    [disabled]="readOnly.enabled || !(userManagerService.loggedUser$|async)"
+                    (click)="dataService.duplicateRack$.next(data)"
+            >
+              <mat-icon>file_copy</mat-icon>
+            </button>
+          </span>
         </div>
       </div>
       @if (bag.user && bag.isCurrentRackPropertyOfCurrentUser) {

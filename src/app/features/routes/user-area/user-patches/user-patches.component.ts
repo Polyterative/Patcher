@@ -1,3 +1,4 @@
+import { ReadOnlyModeService } from 'src/app/features/backbone/read-only-mode.service';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -28,6 +29,9 @@ type UserPatchesSectionFilter = 'PERSONAL' | 'COOL';
   standalone: false
 })
 export class UserPatchesComponent {
+  /** Maintenance read-only mode (stateless; reads the build-time flag). */
+  readonly readOnly = new ReadOnlyModeService();
+
   @Input() globalSearchQuery = '';
   @Input() showCoolFilter = false;
   readonly activeSectionFilter$ = new BehaviorSubject<UserPatchesSectionFilter>('PERSONAL');

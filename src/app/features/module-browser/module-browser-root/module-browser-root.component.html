@@ -377,16 +377,23 @@
   </lib-hero-content-card>
   
   @if (showSubmitFab) {
-    <a
-      mat-fab
-      extended
-      class="module-browser-submit-fab"
-      routerLink="/modules/add"
-      matTooltip="Open the module submission form to add a new module to the database"
-      matTooltipPosition="above"
-    >
-      <mat-icon>add</mat-icon>
-      Submit a new module
-    </a>
+    @if (readOnly.enabled) {
+      <button mat-fab extended class="module-browser-submit-fab" disabled [matTooltip]="readOnly.tooltip" matTooltipPosition="above">
+          <mat-icon>add</mat-icon>
+          Submit a new module
+        </button>
+    } @else {
+      <a
+        mat-fab
+        extended
+        class="module-browser-submit-fab"
+        routerLink="/modules/add"
+        matTooltip="Open the module submission form to add a new module to the database"
+        matTooltipPosition="above"
+      >
+        <mat-icon>add</mat-icon>
+        Submit a new module
+      </a>
+    }
   }
 </div>

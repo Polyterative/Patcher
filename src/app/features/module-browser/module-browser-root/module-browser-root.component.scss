@@ -226,6 +226,11 @@
 }
 
 .module-browser-submit-fab {
+  &[disabled] {
+    pointer-events: auto;
+    cursor: not-allowed;
+  }
+
   position: fixed;
   right: calc(var(--app-floating-inset-inline, 1rem) + env(safe-area-inset-right));
   bottom: calc(var(--app-floating-inset-block, 1rem) + env(safe-area-inset-bottom) + var(--app-floating-bottom-offset, 0px));

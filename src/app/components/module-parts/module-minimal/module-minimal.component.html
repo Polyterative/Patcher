@@ -164,14 +164,16 @@
                 }
                 @if (bag.currentRackData; as rackData) {
                   @if (bag.isCurrentRackEditable) {
-                    <button (click)="rackDataService.addModuleToRack$.next(data)"
-                            [matTooltip]="'Add to '+rackData.name"
-                            [attr.aria-label]="'Add to ' + rackData.name"
-                            [title]="!bag.user ? 'Login to add to modules your rack':''"
-                            mat-icon-button
-                    >
-                      <mat-icon>playlist_add</mat-icon>
-                    </button>
+                    <span [matTooltip]="readOnly.enabled ? readOnly.tooltip : 'Add to '+rackData.name">
+                      <button (click)="rackDataService.addModuleToRack$.next(data)"
+                              [attr.aria-label]="'Add to ' + rackData.name"
+                              [title]="!bag.user ? 'Login to add to modules your rack':''"
+                              [disabled]="readOnly.enabled"
+                              mat-icon-button
+                      >
+                        <mat-icon>playlist_add</mat-icon>
+                      </button>
+                    </span>
                   }
                 }
               </div>

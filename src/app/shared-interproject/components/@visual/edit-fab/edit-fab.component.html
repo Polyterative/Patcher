@@ -22,8 +22,18 @@
     </button>
   }
 } @else {
-  <button mat-fab extended (click)="toggle$.emit()" [class.bouncing]="bouncing$ | async">
-    <mat-icon>{{ openIcon }}</mat-icon>
-    {{ openLabel }}
-  </button>
+  <span class="edit-fab-tooltip-anchor"
+        [matTooltip]="readOnly.tooltip"
+        [matTooltipDisabled]="!readOnly.enabled"
+        matTooltipPosition="above"
+  >
+    <button mat-fab extended
+            (click)="toggle$.emit()"
+            [disabled]="readOnly.enabled"
+            [class.bouncing]="(bouncing$ | async) && !readOnly.enabled"
+    >
+      <mat-icon>{{ openIcon }}</mat-icon>
+      {{ openLabel }}
+    </button>
+  </span>
 }

@@ -1,3 +1,4 @@
+import { ReadOnlyModeService } from 'src/app/features/backbone/read-only-mode.service';
 import { Injectable } from '@angular/core';
 import {
   EMPTY,
@@ -25,6 +26,8 @@ import {
   resolveQuickBlankStandardForRow
 } from './rack-detail-data.utils';
 import { RackDetailDataContext } from './rack-detail-data.service.types';
+
+const readOnlyMode = new ReadOnlyModeService();
 
 @Injectable()
 export class RackDetailModulePlacementDataService {
@@ -276,6 +279,7 @@ export class RackDetailModulePlacementDataService {
   bindModuleAdditions(context: RackDetailDataContext): void {
     context.addModuleToRack$
       .pipe(
+        filter(() => !readOnlyMode.enabled),
         withLatestFrom(context.singleRackData$, context.rowedRackedModules$),
         exhaustMap(([module, rack, rackModules]) => {
           if (!rack) {

@@ -6,7 +6,8 @@
     "modularGridImportEnabled": true,
     "marketplaceEnabled": false,
     "manufacturerInsightsEnabled": false,
-    "viewTrackingEnabled": true
+    "viewTrackingEnabled": true,
+    "readOnlyModeEnabled": false
   },
   "development": {
     "collectionsEnabled": true,
@@ -15,6 +16,7 @@
     "modularGridImportEnabled": true,
     "marketplaceEnabled": true,
     "manufacturerInsightsEnabled": true,
-    "viewTrackingEnabled": false
+    "viewTrackingEnabled": false,
+    "readOnlyModeEnabled": false
   }
 }

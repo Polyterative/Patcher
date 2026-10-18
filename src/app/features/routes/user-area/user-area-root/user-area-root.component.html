@@ -20,6 +20,7 @@
             <app-brand-primary-button
               data-testid="user-area-empty-create-rack"
               icon="add"
+              [disabled]="readOnly.enabled" [tooltip]="readOnly.enabled ? readOnly.tooltip : ''"
               (click$)="dataService.addRack$.next()"
             >Create rack
             </app-brand-primary-button>

@@ -1,3 +1,4 @@
+import { ReadOnlyModeService } from 'src/app/features/backbone/read-only-mode.service';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -19,6 +20,9 @@ import { ReactionEntityTypes } from 'src/app/features/backend/supabase-reactions
   standalone: false
 })
 export class RackMinimalComponent implements OnInit, OnDestroy {
+  /** Maintenance read-only mode (stateless; reads the build-time flag). */
+  readonly readOnly = new ReadOnlyModeService();
+
   @Input() data: RackMinimal;
   @Input() viewConfig: RackMinimalViewConfig = {
     ...defaultRackMinimalViewConfig,

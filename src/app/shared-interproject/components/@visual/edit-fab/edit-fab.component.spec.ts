@@ -1,9 +1,11 @@
+import { TestBed } from '@angular/core/testing';
 import { EventEmitter } from '@angular/core';
 import { of } from 'rxjs';
 import { EditFabComponent } from './edit-fab.component';
+import { environment } from 'src/environments/environment';
 
 function makeComp(): EditFabComponent {
-  return new EditFabComponent();
+  return TestBed.runInInjectionContext(() => new EditFabComponent());
 }
 
 describe('EditFabComponent', () => {
@@ -63,5 +65,28 @@ describe('EditFabComponent', () => {
       comp.editMode$ = of(true);
       expect(comp.editMode$).toBeTruthy();
     });
+  });
+});
+
+describe('EditFabComponent read-only mode', () => {
+  afterEach(() => {
+    environment.features.readOnlyModeEnabled = false;
+  });
+  
+  function render(enabled: boolean) {
+    TestBed.configureTestingModule({imports: [EditFabComponent]});
+    environment.features.readOnlyModeEnabled = enabled;
+    const fixture = TestBed.createComponent(EditFabComponent);
+    fixture.componentInstance.editMode$ = of(false);
+    fixture.detectChanges();
+    return fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+  }
+  
+  it('disables the open button when read-only mode is on', () => {
+    expect(render(true).disabled).toBeTrue();
+  });
+  
+  it('keeps the open button enabled when read-only mode is off', () => {
+    expect(render(false).disabled).toBeFalse();
   });
 });

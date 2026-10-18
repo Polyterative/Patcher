@@ -37,6 +37,7 @@
 
         <app-brand-primary-button appDiscoveryTipAnchor="user-area-modules-submit"
                                   routerLink="/modules/add"
+                                  [disabled]="readOnly.enabled" [tooltip]="readOnly.enabled ? readOnly.tooltip : ''"
                                   icon="upload"
         >Submit NEW
         </app-brand-primary-button>

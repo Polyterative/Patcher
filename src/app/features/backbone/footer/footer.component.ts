@@ -1,3 +1,4 @@
+import { ReadOnlyModeService } from 'src/app/features/backbone/read-only-mode.service';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -15,6 +16,9 @@ import { AppStateService } from 'src/app/shared-interproject/app-state.service';
   standalone: false
 })
 export class FooterComponent implements OnInit {
+  /** Maintenance read-only mode (stateless; reads the build-time flag). */
+  readonly readOnly = new ReadOnlyModeService();
+
   data = build;
   readonly instagramUrl = 'https://www.instagram.com/patcher.xyz/';
   readonly instagramHandle = '@patcher.xyz';

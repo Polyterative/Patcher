@@ -1,3 +1,4 @@
+import { ReadOnlyModeService } from 'src/app/features/backbone/read-only-mode.service';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import {
   ChangeDetectionStrategy,
@@ -99,6 +100,9 @@ import { type CoolToggleResult } from 'src/app/components/shared-atoms/cool-butt
   standalone: false
 })
 export class ModuleMinimalComponent extends SubManager implements OnInit, OnDestroy {
+  /** Maintenance read-only mode (stateless; reads the build-time flag). */
+  readonly readOnly = new ReadOnlyModeService();
+
   @Input() data: MinimalModule;
   @Input() viewConfig: ModuleMinimalViewConfig;
   /** Optional suffix shown inline next to the module name (e.g. instance label) */

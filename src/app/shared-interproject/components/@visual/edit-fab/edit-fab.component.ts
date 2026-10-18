@@ -3,9 +3,11 @@ import {
   ChangeDetectionStrategy,
   Component,
   EventEmitter,
+  inject,
   Input,
   Output
 } from '@angular/core';
+import { ReadOnlyModeService } from 'src/app/features/backbone/read-only-mode.service';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -50,6 +52,8 @@ export class EditFabComponent {
   @Input() closeIcon = 'close';
   @Input() discardIcon = 'warning';
   @Output() readonly toggle$ = new EventEmitter<void>();
+  /** Maintenance read-only mode: the "open editor" button is disabled with a tooltip. */
+  readonly readOnly = inject(ReadOnlyModeService);
   
   /** Emits true for BOUNCE_DURATION_MS, then false, on every timer tick. */
   readonly bouncing$: Observable<boolean> = timer(BOUNCE_DELAY_MS, BOUNCE_INTERVAL_MS).pipe(

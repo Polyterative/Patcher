@@ -1,3 +1,4 @@
+import { ReadOnlyModeService } from 'src/app/features/backbone/read-only-mode.service';
 import { Injectable } from '@angular/core';
 import {
   EMPTY,
@@ -22,6 +23,8 @@ import {
 import { SharedConstants } from '../../shared-interproject/SharedConstants';
 import { buildUploadGuardrailAdvisory } from '../../shared-interproject/upload-guardrails/upload-guardrails';
 import { RackDetailDataContext } from './rack-detail-data.service.types';
+
+const readOnlyMode = new ReadOnlyModeService();
 
 @Injectable()
 export class RackDetailMediaImportDataService {
@@ -173,6 +176,7 @@ export class RackDetailMediaImportDataService {
 
     context.duplicateRack$
       .pipe(
+        filter(() => !readOnlyMode.enabled),
         switchMap(() => context.askForConfirmationWhenDuplicatingRack()),
         withLatestFrom(context.singleRackData$),
         tap(([_, rack]) => context.snackBar.open(`Duplicating "${ rack.name }"…`, undefined,)),

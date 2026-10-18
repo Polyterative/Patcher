@@ -61,6 +61,7 @@ import { EditFabComponent } from "src/app/shared-interproject/components/@visual
 import { ManufacturerRowComponent } from "src/app/features/manufacturer-detail/manufacturer-browser-root/manufacturer-row/manufacturer-row.component";
 import { RecentActivityModule } from "src/app/components/shared-atoms/recent-activity/recent-activity.module";
 import { ModuleListModule } from './module-list/module-list.module';
+import { readOnlyModeGuard } from 'src/app/features/backbone/read-only-mode.service';
 import { ModuleEditorModule } from 'src/app/components/module-parts/module-editor/module-editor.module';
 import { ModuleBrowserSharedModule } from 'src/app/features/module-browser/module-browser-shared.module';
 
@@ -81,6 +82,7 @@ import { ModuleBrowserSharedModule } from 'src/app/features/module-browser/modul
       },
       {
         path: 'add',
+        canActivate: [readOnlyModeGuard],
         loadChildren: () => import('./module-adder/module-adder.module').then(m => m.ModuleAdderModule)
       },
       {
