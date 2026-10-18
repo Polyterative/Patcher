@@ -6,6 +6,7 @@ import {
   BrowserDynamicTestingModule,
   platformBrowserDynamicTesting
 } from '@angular/platform-browser-dynamic/testing';
+import { environment } from 'src/environments/environment';
 
 const originalConsoleWarn = console.warn.bind(console);
 
@@ -23,3 +24,9 @@ getTestBed().initTestEnvironment(
   platformBrowserDynamicTesting(),
   { teardown: { destroyAfterEach: false } }
 );
+
+// Specs assume normal (writable) mode regardless of the build's read-only flag;
+// read-only specs opt in by setting the flag inside their own setup.
+beforeEach(() => {
+  environment.features.readOnlyModeEnabled = false;
+});
