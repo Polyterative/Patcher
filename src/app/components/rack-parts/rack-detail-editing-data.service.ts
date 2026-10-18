@@ -33,6 +33,7 @@ export class RackDetailEditingDataService {
   bind(context: RackDetailDataContext): void {
     context.requestRackPrivacyStatusChange$
       .pipe(
+        filter(() => !readOnlyMode.enabled),
         withLatestFrom(context.singleRackData$),
         map(([_, x]) => {
           const previousPublic = x.public;
@@ -59,6 +60,7 @@ export class RackDetailEditingDataService {
 
     context.requestRackEditableStatusChange$
       .pipe(
+        filter(() => !readOnlyMode.enabled),
         withLatestFrom(context.singleRackData$, context.isCurrentRackEditable$),
         map(([_, x, y]) => {
           const previousEditable = y;

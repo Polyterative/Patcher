@@ -1,3 +1,4 @@
+import { ReadOnlyModeService } from 'src/app/features/backbone/read-only-mode.service';
 import { Injectable, PendingTasks } from '@angular/core';
 import {
   BehaviorSubject,
@@ -25,6 +26,9 @@ import {
   mergeRefreshedModules
 } from './rack-detail-data.utils';
 import { RackDetailDataContext } from './rack-detail-data.service.types';
+
+
+const readOnlyMode = new ReadOnlyModeService();
 
 @Injectable()
 export class RackDetailLoadingDataService {
@@ -151,7 +155,8 @@ export class RackDetailLoadingDataService {
         context.takeUntilDestroyed()
       )
       .subscribe(rack => {
-        context.isCurrentRackEditable$.next(!rack.locked);
+        // Read-only maintenance mode keeps every rack in view mode (name stays selectable text).
+        context.isCurrentRackEditable$.next(!rack.locked && !readOnlyMode.enabled);
         context.isCurrentRackPrivate$.next(!rack.public);
         context.formData.name.control.reset(rack.name, {emitEvent: false});
 

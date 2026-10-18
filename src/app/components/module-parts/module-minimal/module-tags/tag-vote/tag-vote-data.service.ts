@@ -1,3 +1,4 @@
+import { ReadOnlyModeService } from 'src/app/features/backbone/read-only-mode.service';
 import { Injectable } from '@angular/core';
 import {
   BehaviorSubject,
@@ -47,6 +48,7 @@ export class TagVoteDataService extends SubManager {
 
   // ACTIONS
   public loadVotes$ = new ReplaySubject<TagVoteCount[]>(1);
+  private readonly readOnlyMode = new ReadOnlyModeService();
   public toggleVote$ = new Subject<number>();
   public proposeTag$ = new Subject<{
     moduleId: number;
@@ -124,6 +126,7 @@ export class TagVoteDataService extends SubManager {
   
   private initializeToggleHandler(): void {
     this.toggleVote$.pipe(
+      filter(() => !this.readOnlyMode.enabled),
       debounceTime(150),
       withLatestFrom(this.userService.loggedUser$, this._myVotes$, this._tagVotes$),
       filter(([, user]) => !!user),
@@ -172,6 +175,7 @@ export class TagVoteDataService extends SubManager {
   
   private initializeProposeHandler(): void {
     this.proposeTag$.pipe(
+      filter(() => !this.readOnlyMode.enabled),
       withLatestFrom(this.userService.loggedUser$, this._allTags$),
       filter(([, user]) => !!user),
       switchMap(([{moduleId, tagId}, , allTags]) => {

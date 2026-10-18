@@ -1,3 +1,4 @@
+import { ReadOnlyModeService } from 'src/app/features/backbone/read-only-mode.service';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -104,6 +105,7 @@ export class ModuleTagsComponent extends SubManager implements OnInit {
   @Input() data: MinimalModule;
   @Input() showCounts = true;
   @Input() readOnly = false;
+  readonly maintenance = new ReadOnlyModeService();
   @Input() maxTags: number | null = null;
   @Input() colorTagsByAxis = false;
   @Output() proposerOpenChange = new EventEmitter<boolean>();

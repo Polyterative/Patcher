@@ -16,9 +16,9 @@
               [@leave]
               [class.zero-votes]="showCounts && !myVotes?.has(item.id) && (tagVotes?.get(item.id) ?? 0) === 0"
               [ngClass]="axisClassForTag(item.tag)"
-              [matTooltip]="showCounts ? (readOnly ? '' : (isLoggedIn ? (myVotes?.has(item.id) ? 'Remove your vote' : 'Vote for this tag') : 'Log in to vote on tags')) : ''"
+              [matTooltip]="showCounts ? (readOnly ? '' : maintenance.enabled ? maintenance.tooltip : (isLoggedIn ? (myVotes?.has(item.id) ? 'Remove your vote' : 'Vote for this tag') : 'Log in to vote on tags')) : ''"
               [selected]="showCounts && myVotes?.has(item.id)"
-              (click)="!readOnly && isLoggedIn && showCounts && tagVoteService.toggleVote$.next(item.id)"
+              (click)="!readOnly && !maintenance.enabled && isLoggedIn && showCounts && tagVoteService.toggleVote$.next(item.id)"
             >{{ item.tag.name }}@if (showCounts) {
               · {{ tagVotes?.get(item.id) ?? 0 }}
             }
@@ -26,7 +26,15 @@
           }
         </mat-chip-listbox>
       }
-      @if (showCounts && isLoggedIn && !readOnly && !proposerOpen) {
+      @if (showCounts && isLoggedIn && !readOnly && maintenance.enabled) {
+        <span [matTooltip]="maintenance.tooltip">
+          <button mat-button class="add-perspective-btn" disabled>
+            <mat-icon>add</mat-icon>
+            Add tag
+          </button>
+        </span>
+      }
+      @if (showCounts && isLoggedIn && !readOnly && !maintenance.enabled && !proposerOpen) {
         <button mat-button
                 class="add-perspective-btn"
                 (click)="openProposer()"
@@ -37,7 +45,7 @@
         </button>
       }
     </div>
-    @if (showCounts && isLoggedIn && !readOnly && proposerOpen) {
+    @if (showCounts && isLoggedIn && !readOnly && !maintenance.enabled && proposerOpen) {
       <div class="col gap1 proposer-panel"
            [@tagChooserPanel]>
         <div class="row gap1" style="align-items: center">
