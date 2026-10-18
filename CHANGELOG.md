@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.9.1](https://github.com/Polyterative/Patcher/compare/v6.9.0...v6.9.1) (2026-10-18)
+
+
+### Features
+
+* **banner:** add expandable full message, non-dismissible and logged-in-only options ([acb073e](https://github.com/Polyterative/Patcher/commit/acb073e5ed39f9632988e4e4f8958d4fe86993b7))
+* **banner:** support dated banner sequence with maintenance-in-progress notice ([6914402](https://github.com/Polyterative/Patcher/commit/691440294aa792b804dd22d57c2be12c0687ec17))
+
+
+### Bug Fixes
+
+* **banner:** show maintenance notice to all visitors ([f6749e4](https://github.com/Polyterative/Patcher/commit/f6749e451e576b84735312ce2cfa11e4ad129bec))
+* **banner:** use future tense in maintenance notice teaser ([a8db482](https://github.com/Polyterative/Patcher/commit/a8db482b474beb75d84a8ff8202ea07f614886dc))
+
 ## [6.9.0](https://github.com/Polyterative/Patcher/compare/v6.8.6...v6.9.0) (2026-10-12)
 
 
