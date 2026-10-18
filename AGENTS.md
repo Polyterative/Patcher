@@ -99,6 +99,12 @@ Key paths:
 
 ## 6) Git and delivery
 
+- **This repository is public.** Everything committed (code, scripts, docs, migrations, commit messages) is world-readable.
+  Never commit secrets, credentials, tokens, private hostnames/SSH aliases, IPs, NAS or local filesystem paths, OS/machine
+  details, or personal data. Take such values from env vars (gitignored `.env`) and use placeholders in docs.
+  Private notes belong in gitignored `internaldocs/private/`. Run `node scripts/checks/check-private-leaks.cjs --all`
+  before committing.
+
 - Primary branch: `develop`. Release branch: `production`.
 - Use helper scripts such as `pnpm switch:develop`, `pnpm switch:production`, and `pnpm merge:dev-to-prod`.
 - Commit format: `<type>(<scope>): <description>` in one line, imperative, lowercase, no trailing period.
