@@ -75,7 +75,7 @@ test.describe('Home Page', () => {
   test('ModularGrid hook in the hero scrolls to the switch section', async ({page}) => {
     await page.getByRole('link', {name: /bring your racks/i}).click();
     await expect(page.locator('#switch')).toBeInViewport({timeout: 5_000});
-    await expect(page.locator('#switch h2')).toContainText(/ModularGrid/);
+    await expect(page.locator('#switch h2')).toContainText('Import racks exported from ModularGrid');
   });
 
   test('developer API section links to the public API reference', async ({page}) => {

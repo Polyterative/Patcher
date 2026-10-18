@@ -58,7 +58,7 @@ export class HomeComponent {
     const seoData: SeoSocialShareData = {
       title: 'Patcher: your operating system for everything modular',
       description: 'Free, open-source workspace for Eurorack. Browse 10,000+ modules, plan racks with power analysis, document patches, import racks from ModularGrid and build on the public API.',
-      keywords: 'eurorack, modular synth, rack planner, patch documentation, module database, modulargrid alternative, modulargrid import, open source',
+      keywords: 'eurorack, modular synth, rack planner, patch documentation, module database, open source',
       type: 'website',
       url: 'https://patcher.xyz/',
     };

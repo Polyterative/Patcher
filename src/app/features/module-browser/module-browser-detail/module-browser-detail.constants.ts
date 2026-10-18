@@ -1,7 +1,7 @@
 export const JSONLD_SCRIPT_ID = 'module-jsonld';
 
 // Last audited: 2026-05-16. Re-check all URLs periodically (sites redesign).
-// Verified: Google, YouTube, Modwiggler, Lines, Elektronauts, Modulargrid,
+// Verified: Google, YouTube, Modwiggler, Lines, Elektronauts, ModularGrid,
 //           VCV Library, Wigglehunt, Thomann (geo-redirects to regional), Signalsounds,
 //           Exploding Shed, Elevator Sound, Perfect Circuit, Milk Audio, New Groove,
 //           Escape From Noise, Machineroom, Control, Patchwerks, Found Sound, Synthshop,
@@ -120,9 +120,9 @@ export const MODULE_SEARCH_LINKS: SearchLink[] = [
     url: (name: string) => buildSearchUrl('https://modulargrid.net/e/modules/browser', {
       SearchName: name
     }),
-    label: 'Modulargrid',
+    label: 'ModularGrid',
     icon: 'power',
-    tooltip: 'Search on Modulargrid',
+    tooltip: 'Search on ModularGrid',
     kind: 'community'
   },
   {

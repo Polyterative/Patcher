@@ -81,7 +81,7 @@ export const HOME_TOUR_TABS: HomeTourTab[] = [
 export const HOME_SWITCH_STEPS: HomeSwitchStep[] = [
   {
     label: 'Export',
-    description: 'In ModularGrid, export your rack as JSON. Their export needs a Unicorn account.'
+    description: 'In ModularGrid, export your rack as JSON.'
   },
   {
     label: 'Import',

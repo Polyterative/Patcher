@@ -128,6 +128,7 @@ describe('HomeExperienceHeroComponent', () => {
     fixture.componentInstance.switchRequested.subscribe(() => switchRequests++);
 
     const link = (fixture.nativeElement as HTMLElement).querySelector<HTMLAnchorElement>('.hero__switch a[href="#switch"]');
+    expect((fixture.nativeElement as HTMLElement).querySelector('.hero__switch-tag')?.textContent).toContain('Import your ModularGrid racks');
     link?.click();
 
     expect(clicks).toEqual([{cta: 'switch_anchor', location: 'hero'}]);

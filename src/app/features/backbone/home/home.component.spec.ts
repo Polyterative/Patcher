@@ -30,12 +30,13 @@ describe('HomeComponent', () => {
     comp = makeComponent('browser');
   });
 
-  it('registers homepage SEO that names the ModularGrid import', () => {
+  it('registers homepage SEO that names the ModularGrid import without using the name as a keyword', () => {
     expect(mockSeoSvc.updateSeo).toHaveBeenCalledTimes(1);
     const [seo, page] = mockSeoSvc.updateSeo.calls.mostRecent().args as [SeoSocialShareData, string];
     expect(page).toBe('Home');
     expect(seo.url).toBe('https://patcher.xyz/');
-    expect(seo.description).toContain('ModularGrid');
+    expect(seo.description).toContain('import racks from ModularGrid');
+    expect(seo.keywords?.toLowerCase()).not.toContain('modulargrid');
   });
 
   it('keeps the owner-approved headline', () => {

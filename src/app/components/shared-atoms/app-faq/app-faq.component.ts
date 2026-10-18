@@ -38,7 +38,7 @@ export class AppFaqComponent {
     {
       question: 'Can data from ModularGrid be imported?',
       icon: 'cloud_upload',
-      answer: 'Yes, partially. Export your rack as JSON from ModularGrid (requires a Unicorn account), then in the rack creator toggle "Import from ModularGrid" and upload that file. We\'ll match as many modules as possible and show you a preview split into confident, likely, ambiguous, and unmatched matches - you can resolve ambiguous ones manually before finishing the import. ModularGrid does not officially support this integration, so some modules may not match; you can always add those manually.'
+      answer: 'Yes, partially. Export your rack as JSON from ModularGrid, then in the rack creator toggle "Import from ModularGrid" and upload that file. We\'ll match as many modules as possible and show you a preview split into confident, likely, ambiguous, and unmatched matches - you can resolve ambiguous ones manually before finishing the import. ModularGrid does not officially support this integration, so some modules may not match; you can always add those manually.'
     },
     {
       question: 'How do I add gaps or spacing in my rack?',

@@ -26,7 +26,7 @@ export class SeoAndUtilsService {
     title:       'patcher.xyz',
     description: 'Manager and database for musicians using modular gear, with a focus on saving, and visualizing patch-notes.',
     image: 'https://patcher.xyz/assets/png/patcher_seo_hero.png',
-    keywords:    'eurorack, modular, tool, modulargrid, patch-notes, utility, database, doepfer, intellijel, makenoise' // seo keywords for google and other search engines
+    keywords:    'eurorack, modular, tool, patch-notes, utility, database, doepfer, intellijel, makenoise' // seo keywords for google and other search engines
     // ...
   };
   

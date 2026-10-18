@@ -59,6 +59,7 @@ describe('ModuleBrowserDetailComponent search links', () => {
     urls.forEach(url => expect(url).toContain('Maths'));
     expect(urls.some(url => url.includes('youtube.com'))).toBeTrue();
     expect(urls.some(url => url.includes('modulargrid.net'))).toBeTrue();
+    expect(component.searchLinks.some(link => link.label === 'ModularGrid' && link.tooltip === 'Search on ModularGrid')).toBeTrue();
     expect(urls.some(url => url.includes('perfectcircuit.com'))).toBeTrue();
   });
 
