@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.9.2](https://github.com/Polyterative/Patcher/compare/v6.9.1...v6.9.2) (2026-10-18)
+
+
+### Features
+
+* **banner:** add expandable full message, non-dismissible and logged-in-only options ([9df5ac6](https://github.com/Polyterative/Patcher/commit/9df5ac66adc022c9e19a4202c4a41890b52e9a7a))
+* **banner:** support dated banner sequence with maintenance-in-progress notice ([79d8cf9](https://github.com/Polyterative/Patcher/commit/79d8cf94a7e9ab9982f27352b6ab5a0a2cd4014a))
+* **flags:** add read-only maintenance mode flag gating create and edit actions ([6bc0db8](https://github.com/Polyterative/Patcher/commit/6bc0db8c8b5369010b2da47eff4ee35a8bb8698e))
+* **flags:** block rack edit mode, privacy and tag voting in read-only mode ([0b5fd76](https://github.com/Polyterative/Patcher/commit/0b5fd7656c6002161dbb7e22f2705e3f8b450bce))
+* **ops:** add Grafana right-now dashboard for today and last 7 days of activity ([57136f9](https://github.com/Polyterative/Patcher/commit/57136f964d204006abd168b32096b6e2bcd136ef))
+* **ops:** add read-only storage mirror-to-disk script ([b3e8c1e](https://github.com/Polyterative/Patcher/commit/b3e8c1eae61e83672fb4371b7a70f0a37066fbb1))
+
+
+### Bug Fixes
+
+* **banner:** show maintenance notice to all visitors ([72d4c9b](https://github.com/Polyterative/Patcher/commit/72d4c9b614f5541f97526e0e4f028ca720181373))
+* **copy:** use third-party names only to describe import compatibility ([daeb7d2](https://github.com/Polyterative/Patcher/commit/daeb7d25e188b0b7e497a92016454ecdc085b6db))
+* **lint:** run eslint directly instead of ng lint builder to avoid heap oom ([523c7e1](https://github.com/Polyterative/Patcher/commit/523c7e19fd7de8c219a49a1d9d2de39ea65f7685))
+* **ops:** include response body in mirror bucket list error ([071f0f2](https://github.com/Polyterative/Patcher/commit/071f0f25ad8540c54d989ac3df1559cdd0d07784))
+
 ### [6.9.1](https://github.com/Polyterative/Patcher/compare/v6.9.0...v6.9.1) (2026-10-18)
 
 
