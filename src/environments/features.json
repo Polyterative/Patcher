@@ -7,7 +7,7 @@
     "marketplaceEnabled": false,
     "manufacturerInsightsEnabled": false,
     "viewTrackingEnabled": true,
-    "readOnlyModeEnabled": false
+    "readOnlyModeEnabled": true
   },
   "development": {
     "collectionsEnabled": true,
