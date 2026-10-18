@@ -16,7 +16,6 @@ Investigate each target source below for a safe Price Hub integration path:
 
 | Region | Source |
 |---|---|
-| Global | Modular Grid |
 | Global | Reverb |
 | USA | Analogue Haven |
 | USA | Big City Music |
@@ -125,7 +124,6 @@ Investigate each target source below for a safe Price Hub integration path:
 
 | Source | Domain | Country | Currency | Platform/feed | Status | Evidence / blocker |
 |---|---|---:|---:|---|---|---|
-| Modular Grid | modulargrid.net | Global | EUR | custom community database | not a direct retailer | Homepage and robots.txt are public, but products.json, WooCommerce Store API, and sitemap.xml return 404. Blocker: Community database, not a direct retailer with first-party sellable offers. |
 | Reverb | reverb.com | Global | USD | marketplace | blocked | robots.txt is public, but homepage, products.json, WooCommerce Store API, and sitemap.xml returned 403. Blocker: Marketplace with access controls/API constraints; do not crawl without an approved API path. |
 | Analogue Haven | analoguehaven.com | United States | USD | static catalog | crawler-supported but needs QA | robots.txt and sitemap.xml returned 200; products.json and WooCommerce Store API returned 404. Blocker: Sitemap/static pages need product-page QA for price and availability extraction before import. |
 | Big City Music | bigcitymusic.com | United States | USD | Shopify `products.json` | importable | robots.txt identifies Shopify and products.json returned 200 with product JSON including module titles. |

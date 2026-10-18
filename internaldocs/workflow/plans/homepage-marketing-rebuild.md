@@ -3,7 +3,7 @@
 <!-- Section: PRODUCT (logged-out acquisition surface) -->
 
 Goal: replace the live-component showcase homepage with a focused, polished marketing page that tells a first-time
-visitor what Patcher is, why it beats their current tool (especially ModularGrid), and what to click next.
+visitor what Patcher is, why it is worth a look next to an existing rack planner, and what to click next.
 
 Status: Active on `develop`, frontend-only. No schema/migration/RLS/RPC change. No production/release/push.
 
@@ -12,8 +12,8 @@ Status: Active on `develop`, frontend-only. No schema/migration/RLS/RPC change. 
 - The current page embeds three full live detail views (patch, module, rack) inside device frames. They are heavy
   (three extra data loads + full detail trees), visually dense, and read as "the app" rather than an explanation.
   First-time visitors have to decode UI before they learn what the product does.
-- No competitive framing: most Eurorack visitors already use ModularGrid. The page never tells them they can bring
-  their racks over, or what they gain by doing so. That answer is buried in the FAQ.
+- No import path up front: many Eurorack visitors already plan racks in an existing rack planner. The page never
+  tells them they can bring their racks over, or what they gain by doing so. That answer is buried in the FAQ.
 - Seven stacked sections (showcase ×3, insights bridge, snapshot, trends, principles, workflow rail, CTA) repeat the
   same three ideas with different card styles; principles and workflow copy are generic.
 - Decorative radial-gradient + grid background and per-card gradients contradict `DESIGN_LANGUAGE.md`
@@ -21,24 +21,23 @@ Status: Active on `develop`, frontend-only. No schema/migration/RLS/RPC change. 
 
 ## Positioning
 
-- Audience: Eurorack musicians, most of whom already plan racks on ModularGrid.
+- Audience: Eurorack musicians, many of whom already plan racks in an existing rack planner.
 - One-line promise (kept, owner likes it): **"Your operating system for everything modular."**
-- Wedge vs ModularGrid: Patcher does what a rack planner does **and** treats patches as first-class documents
+- Positioning: what Patcher does: it covers rack planning **and** treats patches as first-class documents
   (cable graph, numbered copies of the same module, notes, auto-save). It is free for everyone with no tiers, open
-  source (AGPL-3.0), has an open data API, and imports ModularGrid rack JSON.
-- Claims about ModularGrid are limited to what our own FAQ already states (rack JSON export needs a Unicorn
-  account). Everything else is phrased as what Patcher does, never as what ModularGrid lacks.
+  source (AGPL-3.0), has an open data API, and imports rack JSON exported from ModularGrid (import compatibility only).
+- Claims about the import source are limited to what our own FAQ already states (rack JSON export needs a Unicorn
+  account). Everything else is phrased as what Patcher does, never as what other tools lack.
 
 ## Information architecture (top → bottom)
 
 1. **Hero** — eyebrow (free · open source · Eurorack), kept H1, one-sentence lede, primary CTA (Get started free /
-   Open your workspace when signed in), secondary link (Browse modules), switcher hook link ("Coming from
-   ModularGrid?"). Right side keeps the live patch graph inside an instrument-style frame with a caption.
+   Open your workspace when signed in), secondary link (Browse modules), import hook link to `#switch`. Right side keeps the live patch graph inside an instrument-style frame with a caption.
 2. **Proof strip** — live counts (modules, manufacturers, racks planned, €0) from `ApplicationStatisticsService`.
 3. **System tour** — tabbed "Library / Racks / Patches" showcase: one headline, three specific bullets, and an
    art-directed product screenshot per tab (light + dark captures). Replaces the three live device frames, the
    principles cards, and the workflow rail.
-4. **Switch section** (`#switch`) — "Coming from ModularGrid?": three-step import + "what you get here" list + CTA.
+4. **Import section** (`#switch`) — import of racks exported from ModularGrid as JSON, in three steps, + "what you get here" list + CTA.
 5. **Community** — existing Most owned / Most wanted discovery rail, restyled header.
 6. **Built in the open** — free for everyone, open source, open data API, community-maintained catalogue.
 7. **Final CTA** — single closing statement + primary/secondary actions.
@@ -50,7 +49,7 @@ Status: Active on `develop`, frontend-only. No schema/migration/RLS/RPC change. 
 - [x] Hero rewrite: kept headline, new lede/CTAs, patch graph in framed panel with caption
 - [x] Proof strip component bound to live statistics (graceful when stats fail/empty)
 - [x] System tour component (accessible tablist) using existing major-area screenshots as interim images
-- [x] ModularGrid switch section, open section, final CTA components
+- [x] Import section, open section, final CTA components
 - [x] Remove the three live detail previews and their delayed data loads from `HomeComponent`
 - [x] Unit specs updated/added; `pnpm lint` + targeted tests green
 
@@ -78,7 +77,7 @@ Status: Active on `develop`, frontend-only. No schema/migration/RLS/RPC change. 
 - 2026-10-07: Live embedded detail views dropped in favour of static, art-directed screenshots. Rationale: they
   confused first-time visitors and cost three extra detail loads. The live patch graph stays in the hero (owner likes
   it; it is the single "this is real" moment and is cheap).
-- 2026-10-07: Competitive copy names ModularGrid only in the switch section and only states facts already in our FAQ
+- 2026-10-07: Import copy names ModularGrid only in the import section and only states facts already in our FAQ
   (JSON export needs Unicorn). No comparison table: we cannot verify competitor feature claims and they rot.
 - 2026-10-07: Fabricated-looking `userStories` testimonials (unused in template) are deleted, not surfaced. No
   testimonials until real, attributable ones exist.
@@ -123,6 +122,8 @@ Status: Active on `develop`, frontend-only. No schema/migration/RLS/RPC change. 
 - 2026-10-07: Owner chose an optional `size="large"` on the shared `app-brand-primary-button` (45px, meets the 44px
   touch target) for page-level CTAs only: hero pair, switch primary, closing actions. Secondary links stay default
   size. Material pins button height via its container-height token, so `.large` sets `height`, not only line-height.
+
+- 2026-10-18: Third-party product names appear only to describe import compatibility; removed from SEO keywords and marketing framing.
 
 ## Documentation impact
 

@@ -21,7 +21,7 @@
 
 #### Layer 1 — MVP
 
-- [x] New IA + copy: hero, proof strip, system tour, ModularGrid switch, community, API, open, final CTA
+- [x] New IA + copy: hero, proof strip, system tour, import section, community, API, open, final CTA
 - [x] Live detail previews removed; specs + lint green
 
 #### Layer 2 — Structural
@@ -36,7 +36,7 @@
 > `:active`/focus-ring item open (waiting on a designer brief).
 > Egress overquota plan stays open in `plans/supabase-cached-egress-overquota.md`, paused on user-side dashboard verification.
 
-Updated: 2026-10-07
+Updated: 2026-10-18
 
 Recent completed checkpoints are archived in [COMPLETED.md](./COMPLETED.md); their validation
 notes and decisions live in the matching plan files (e.g.
