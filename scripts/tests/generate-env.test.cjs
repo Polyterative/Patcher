@@ -82,21 +82,20 @@ function runGeneratorWithoutSupabaseUrl() {
   return writes;
 }
 
-test('generate-env disables local-only production flags while preserving production-enabled developer API access', () => {
+test('generate-env writes each environment flag from features.json', () => {
   const writes = runGenerator();
   const devContent = writes.get('src/environments/environment.ts');
   const prodContent = writes.get('src/environments/environment.prod.ts');
+  // Expectations come from features.json so flipping a flag doesn't break this test.
+  const features = require(path.join(repoRoot, 'src/environments/features.json'));
 
   assert.match(devContent, /production:\s*false/);
-  assert.match(devContent, /coolReactionsEnabled:\s*true/);
-  assert.match(devContent, /developerApiEnabled:\s*true/);
-  assert.match(devContent, /modularGridImportEnabled:\s*true/);
-  assert.match(devContent, /marketplaceEnabled:\s*true/);
   assert.match(prodContent, /production:\s*true/);
-  assert.match(prodContent, /coolReactionsEnabled:\s*false/);
-  assert.match(prodContent, /developerApiEnabled:\s*true/);
-  assert.match(prodContent, /modularGridImportEnabled:\s*true/);
-  assert.match(prodContent, /marketplaceEnabled:\s*false/);
+  for (const [content, flags] of [[devContent, features.development], [prodContent, features.production]]) {
+    for (const [key, value] of Object.entries(flags)) {
+      assert.match(content, new RegExp(`${ key }:\\s*${ value }\\b`));
+    }
+  }
 });
 
 test('generate-env defaults to the Patcher Supabase URL when only the anon key is local', () => {
