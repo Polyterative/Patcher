@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.9.5](https://github.com/Polyterative/Patcher/compare/v6.9.4...v6.9.5) (2026-10-18)
+
+
+### Features
+
+* **flags:** load feature flags from database at bootstrap ([4d391fe](https://github.com/Polyterative/Patcher/commit/4d391fe70ba6e660072025ffeb3becee5b2974b3))
+
+
+### Bug Fixes
+
+* **scripts:** generate backend types from self-hosted supabase over ssh ([23985b8](https://github.com/Polyterative/Patcher/commit/23985b82d957ef85d35a5e1e1bed78f9d9aeec43))
+
 ### [6.9.4](https://github.com/Polyterative/Patcher/compare/v6.9.3...v6.9.4) (2026-10-18)
 
 
