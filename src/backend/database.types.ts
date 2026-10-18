@@ -130,6 +130,27 @@ export type Database = {
         }
         Relationships: []
       }
+      app_feature_flags: {
+        Row: {
+          enabled: boolean
+          environment: string
+          key: string
+          updated: string
+        }
+        Insert: {
+          enabled: boolean
+          environment: string
+          key: string
+          updated?: string
+        }
+        Update: {
+          enabled?: boolean
+          environment?: string
+          key?: string
+          updated?: string
+        }
+        Relationships: []
+      }
       comments: {
         Row: {
           authorId: string

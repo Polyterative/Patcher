@@ -23,13 +23,14 @@ import {
 import { fileURLToPath } from 'node:url';
 import { isKnownApplicationRoute } from './known-routes';
 
-// AppServerModule is exported as default from main.server.ts
-import AppServerModule from './main.server';
+// AppServerModule (default export of main.server.ts) is imported dynamically below, after
+// remote flags are merged, because module-scope route/toolbar consts read env.features.
 import {
   resolveRequestOrigin,
   resolveSsrAllowedHosts
 } from './ssr-host-config';
 import { environment } from './environments/environment';
+import { loadRemoteFeatureFlags } from './app/features/backbone/feature-flags/remote-feature-flags';
 import {
   NO_STORE_CACHE_CONTROL,
   getStaticAssetCacheControl
@@ -44,6 +45,31 @@ const csrHtml = join(browserDistFolder, 'index.csr.html');
 // In production the builder emits index.csr.html; in dev (ng serve) Vite serves
 // HTML in memory so the file never lands on disk.
 const isProd = existsSync(csrHtml);
+
+const FLAGS_TTL_MS = 60_000;
+let flagsFetchedAt = Date.now();
+
+// Top-level await is unavailable with Zone.js targets, so load flags then the module lazily.
+const appServerModule = loadRemoteFeatureFlags(environment)
+  .then(() => {
+    flagsFetchedAt = Date.now();
+    return import('./main.server');
+  })
+  .then(m => m.default);
+let flagsRefresh: Promise<unknown> | null = null;
+
+/** Refresh remote flags at most once per TTL; failures keep current values. */
+async function refreshFlagsIfStale(): Promise<void> {
+  if (Date.now() - flagsFetchedAt < FLAGS_TTL_MS) {
+    return;
+  }
+  flagsRefresh ??= loadRemoteFeatureFlags(environment)
+    .finally(() => {
+      flagsFetchedAt = Date.now();
+      flagsRefresh = null;
+    });
+  await flagsRefresh;
+}
 
 export function app(): express.Express {
   const server = express();
@@ -67,7 +93,15 @@ export function app(): express.Express {
   );
 
   // All other requests → Angular SSR via CommonEngine
-  server.use((req, res, next) => {
+  server.use(async (req, res, next) => {
+    let bootstrap: Awaited<typeof appServerModule>;
+    try {
+      bootstrap = await appServerModule;
+      await refreshFlagsIfStale();
+    } catch (err) {
+      next(err);
+      return;
+    }
     const { protocol, originalUrl, baseUrl, headers } = req;
     const ssrUrl = resolveChunkLoadRecoveryTarget(originalUrl) ?? originalUrl;
     const statusCode = resolveSsrStatusCode(ssrUrl);
@@ -85,7 +119,7 @@ export function app(): express.Express {
 
     engine
       .render({
-        bootstrap: AppServerModule,
+        bootstrap,
         documentFilePath: csrHtml,
         url: `${ requestOrigin }${ ssrUrl }`,
         publicPath: browserDistFolder,

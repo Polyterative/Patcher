@@ -4,7 +4,7 @@ import {
 } from '@angular/core';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 
-import { AppModule } from './app/app.module';
+import { loadRemoteFeatureFlags } from './app/features/backbone/feature-flags/remote-feature-flags';
 import { initializePostHog } from './app/features/backbone/analytics-integration/posthog-loader';
 import build from './build';
 import { environment } from './environments/environment';
@@ -93,8 +93,11 @@ function initializeSentry(): void {
   }, 1000);
 }
 
-platformBrowserDynamic()
-  .bootstrapModule(AppModule, {applicationProviders: [provideZoneChangeDetection()],})
+// Flags must be merged before AppModule is evaluated: routes/toolbar read them at module scope.
+loadRemoteFeatureFlags(environment)
+  .then(() => import('./app/app.module'))
+  .then(({ AppModule }) => platformBrowserDynamic()
+    .bootstrapModule(AppModule, {applicationProviders: [provideZoneChangeDetection()],}))
   .then(appRef => {
     initializeSentry();
     void initializePostHog();

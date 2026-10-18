@@ -101,6 +101,7 @@
 - [ ] Self-host evaluation gates — owner go/no-go decisions and staging steps are tracked in the local, gitignored `internaldocs/private/selfhost/` checklist (not published: it describes private infrastructure; public repo) (added 2026-10-01) — updated 2026-10-03.
 - [ ] Cloudflare/R2: authorize traffic switch, cleanup, and any Supabase object deletion after the approved copy/verification stage (added 2026-07-08).
 - [ ] PostHog analytics review: provide credentials/export access (added 2026-07-08).
+- [ ] Remote feature flags (DB-backed): code written, migration not yet applied — [plan](./plans/remote-feature-flags.md) (added 2026-10-18).
 - [ ] Turnstile rollout: at the self-host cutover set Vercel `TURNSTILE_SITE_KEY` (prod), then flip the auth gate `MODE` to `enforce` — default: do both at cutover → [plan](./plans/cloudflare-watchdog-and-turnstile.md) (added 2026-10-05).
 - Consolidated owner message for the three stale questions above: [owner batch draft](./plans/owner-batch-pending-questions.md) (added 2026-09-25).
 
