@@ -39,4 +39,10 @@ Docs impact: internal only (no user-visible change).
 Supabase table editor -> `app_feature_flags` -> edit the `enabled` cell of the (key, environment) row.
 Browsers pick it up on next page load; SSR within ~60 s (status code / `environment.features`) and module-scope
 route/toolbar consts on the next cold start. Deleting a row falls back to the bundled `features.json` default.
-Apply `supabase/migrations/20261018120000_app_feature_flags.sql` first (not yet applied; `pnpm updateBackendTypes` pending, types hand-added).
+Migration `20261018120000_app_feature_flags.sql` is applied (2026-10-18).
+
+## Validation (2026-10-18)
+
+- Migration applied to self-host DB (16 rows, recorded in `supabase_migrations.schema_migrations`); PostgREST returns flags after schema reload.
+- Generated types for `app_feature_flags` (supabase-meta) match the hand-added block; full regen skipped (generator drift).
+- `pnpm test:ssr` fails with domino `NotYetImplemented` 500 and `pnpm test:e2e` has 6 failures (module-editor-ux-review x4, navigation slash-modules, public-navigation submit-module); identical on the pre-change bootstrap, so pre-existing.
