@@ -8,6 +8,8 @@ import {
 import { MatButtonModule }   from '@angular/material/button';
 import { MatIconModule }     from '@angular/material/icon';
 import { By }                from '@angular/platform-browser';
+import { BehaviorSubject }   from 'rxjs';
+import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import { EventBannerComponent } from './event-banner.component';
 import {
   ACTIVE_EVENT_BANNER,
@@ -35,6 +37,8 @@ describe('EventBannerComponent', () => {
   let fixture: ComponentFixture<EventBannerComponent>;
   let component: EventBannerComponent;
 
+  const loggedUser$ = new BehaviorSubject<unknown>(null);
+
   function setup(overrideConfig: EventBannerConfig | null, platformId: string = 'browser') {
     TestBed.configureTestingModule({
       declarations: [EventBannerComponent],
@@ -42,6 +46,7 @@ describe('EventBannerComponent', () => {
       providers:    [
         { provide: PLATFORM_ID,          useValue: platformId },
         { provide: EVENT_BANNER_CONFIG,  useValue: overrideConfig },
+        { provide: UserManagementService, useValue: { loggedUser$ } },
       ],
     });
     fixture   = TestBed.createComponent(EventBannerComponent);
@@ -76,6 +81,25 @@ describe('EventBannerComponent', () => {
       expect(visible).toBeFalse();
       done();
     });
+  });
+
+  it('authOnly banner is hidden when logged out and shown when logged in', (done) => {
+    loggedUser$.next(null);
+    setup({ ...configWithDates(-1, 1), authOnly: true });
+    const seen: boolean[] = [];
+    component.isVisible$.subscribe(v => seen.push(v));
+    loggedUser$.next({ id: 'u1' });
+    expect(seen).toEqual([false, true]);
+    done();
+  });
+
+  it('expands the full communication and hides dismiss when not dismissible', () => {
+    loggedUser$.next(null);
+    setup({ ...configWithDates(-1, 1), paragraphs: ['One', 'Two'], dismissible: false });
+    fixture.nativeElement.querySelector('.event-banner__expand').click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelectorAll('.event-banner__full p').length).toBe(2);
+    expect(fixture.nativeElement.querySelector('.event-banner__dismiss')).toBeNull();
   });
 
   it('should be hidden when ACTIVE_EVENT_BANNER is null', (done) => {
