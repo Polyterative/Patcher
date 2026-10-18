@@ -164,6 +164,7 @@
 ### DATA MODEL (schema / domain gaps to address)
 
 - [ ] **MEDIUM: Rack module orientation — migrate storage from text to smallint (`0` normal, `1` rot180; Phase 1 read-tolerance + migration authored in `32d9f2ec`, remote apply + typegen + write switch still operator-gated)** → [GitHub issue #145](https://github.com/Polyterative/Patcher/issues/145)
+- [ ] **HIGH: Data quality: download my data, sources, change history and site policies (stage 1 code-only; stage 2+ DB/RLS gated on backend-plan-reviewer + owner approval)** → [`plans/data-provenance-and-policies.md`](./plans/data-provenance-and-policies.md)
 - [ ] **ON HOLD: LOW: Module I/O — bidirectional and passive port support (blocked before backend/model changes pending proposal review + explicit approval)** → [`plans/module-io-bidirectional-passive-port-support.md`](./plans/module-io-bidirectional-passive-port-support.md)
 
 ### INFRA (independent; pick any time a product task is blocked)
