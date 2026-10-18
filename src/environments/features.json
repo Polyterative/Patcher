@@ -17,6 +17,6 @@
     "marketplaceEnabled": true,
     "manufacturerInsightsEnabled": true,
     "viewTrackingEnabled": false,
-    "readOnlyModeEnabled": false
+    "readOnlyModeEnabled": true
   }
 }
