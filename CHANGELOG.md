@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.9.4](https://github.com/Polyterative/Patcher/compare/v6.9.3...v6.9.4) (2026-10-18)
+
+
+### Bug Fixes
+
+* **home:** drop module count claim from seo description ([05419c7](https://github.com/Polyterative/Patcher/commit/05419c7eb5a7c9c6735ca7f4be4a03e020424cbe))
+
 ### [6.9.3](https://github.com/Polyterative/Patcher/compare/v6.9.2...v6.9.3) (2026-10-18)
 
 
