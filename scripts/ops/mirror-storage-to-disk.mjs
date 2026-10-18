@@ -82,7 +82,7 @@ async function fetchOne(obj) {
 
 const bres = await api(`${BASE}/storage/v1/bucket`);
 if (!bres.ok) {
-  console.error(`bucket list failed: HTTP ${bres.status}`);
+  console.error(`bucket list failed: HTTP ${bres.status} ${(await bres.text()).slice(0, 300)}`);
   process.exit(1);
 }
 const buckets = (await bres.json()).map((b) => b.name).filter((n) => !FILTER.length || FILTER.includes(n));
