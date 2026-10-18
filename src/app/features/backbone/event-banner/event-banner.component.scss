@@ -14,6 +14,7 @@
 .event-banner {
   display:          flex;
   flex-direction:   row;
+  flex-wrap:        wrap;
   align-items:      flex-start;
   justify-content:  space-between;
   padding:          var(--event-banner-space-075) var(--event-banner-space-100);
@@ -57,10 +58,25 @@
     opacity:       0.9;
   }
 
-  &__cta {
+  &__cta,
+  &__expand {
     flex-shrink:   0;
     font-size:     0.875rem;
     margin-top:    0;
+  }
+
+  &__full {
+    flex:        0 0 100%;
+    order:       1;
+    max-height:  60vh;
+    overflow-y:  auto;
+    padding:     var(--event-banner-space-100) 0 var(--event-banner-space-050);
+    border-top:  1px solid color-mix(in srgb, currentColor 20%, transparent);
+    font-size:   0.9375rem;
+    line-height: 1.6;
+
+    p { margin: 0 0 0.75em; max-width: 72ch; white-space: pre-line; }
+    p:last-child { margin-bottom: 0; }
   }
 
   &__dismiss {
@@ -88,7 +104,8 @@
       flex-basis: 100%;
     }
 
-    &__cta {
+    &__cta,
+    &__expand {
       margin-top: var(--event-banner-space-050);
       width:      100%;
       text-align: center;

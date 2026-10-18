@@ -14,6 +14,7 @@ import {
   of
 }                        from 'rxjs';
 import { map }           from 'rxjs/operators';
+import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import { SubManager }    from 'src/app/shared-interproject/directives/subscription-manager';
 import {
   EVENT_BANNER_CONFIG,
@@ -38,20 +39,29 @@ export class EventBannerComponent extends SubManager {
 
   readonly isVisible$: Observable<boolean>;
 
+  readonly expanded$ = new BehaviorSubject<boolean>(false);
+
   readonly isMarqueeVisible$: Observable<boolean>;
 
   constructor(
     @Inject(PLATFORM_ID) private readonly platformId: object,
     @Inject(EVENT_BANNER_CONFIG) config: EventBannerConfig | null,
+    private readonly userService: UserManagementService,
   ) {
     super();
     this.config     = config;
     this.dismissed$ = new BehaviorSubject<boolean>(this.readDismissedState());
+    // Only depend on auth state when the banner is auth-gated.
+    const isLoggedIn$ = config?.authOnly
+      ? this.userService.loggedUser$.pipe(map(user => !!user))
+      : of(true);
     this.isVisible$ = combineLatest([
       of(this.computeDateVisible()),
       this.dismissed$,
+      isLoggedIn$,
     ]).pipe(
-      map(([dateVisible, dismissed]) => dateVisible && !dismissed),
+      map(([dateVisible, dismissed, loggedIn]) =>
+        dateVisible && !dismissed && loggedIn),
     );
     this.isMarqueeVisible$ = combineLatest([
       of(this.computeMarqueeVisible()),
@@ -59,6 +69,10 @@ export class EventBannerComponent extends SubManager {
     ]).pipe(
       map(([marqueeVisible, dismissed]) => marqueeVisible && !dismissed),
     );
+  }
+
+  toggleExpanded(): void {
+    this.expanded$.next(!this.expanded$.value);
   }
 
   dismiss(): void {

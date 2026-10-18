@@ -8,6 +8,16 @@
     <div class="event-banner__body">
       <span class="event-banner__title">{{ config.title }}</span>
       <span class="event-banner__description">{{ config.description }}</span>
+      @if (config.paragraphs?.length) {
+        <button
+          class="event-banner__expand"
+          mat-stroked-button
+          type="button"
+          [attr.aria-expanded]="expanded$ | async"
+          aria-controls="event-banner-full"
+          (click)="toggleExpanded()"
+        >{{ (expanded$ | async) ? 'Hide full communication' : (config.expandLabel ?? 'Show full communication') }}</button>
+      }
       @if (config.ctaUrl && config.ctaLabel) {
         <a
           class="event-banner__cta"
@@ -18,6 +28,7 @@
         >{{ config.ctaLabel }}</a>
       }
     </div>
+    @if (config.dismissible !== false) {
     <button
       class="event-banner__dismiss"
       mat-icon-button
@@ -26,6 +37,14 @@
     >
       <mat-icon>close</mat-icon>
     </button>
+    }
+    @if (config.paragraphs?.length && (expanded$ | async)) {
+      <div class="event-banner__full" id="event-banner-full">
+        @for (paragraph of config.paragraphs; track $index) {
+          <p>{{ paragraph }}</p>
+        }
+      </div>
+    }
   </div>
 }
 
