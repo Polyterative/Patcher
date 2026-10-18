@@ -76,7 +76,7 @@ Key paths:
   backward-compatible schema/API changes and keep existing production clients working.
 - Before a new backend method: register the table in `DatabaseStrings.ts`; make reads cacheable when appropriate; bust all
   invalidated cache keys after writes.
-- Run `pnpm updateBackendTypes` after schema changes.
+- Run `pnpm updateBackendTypes` after schema changes (self-host: `SUPABASE_SSH_HOST=<ssh alias> pnpm updateBackendTypes`).
 
 ### UI and naming
 
