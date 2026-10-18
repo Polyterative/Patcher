@@ -31,21 +31,23 @@
     ></app-home-system-tour>
   </section>
 
-  <section id="switch" class="home-section home-section--switch" aria-labelledby="home-switch-title">
-    <header class="home-section__head">
-      <p class="home-section__index">Switching</p>
-      <h2 id="home-switch-title" class="home-section__title">Import racks exported from ModularGrid</h2>
-      <p class="home-section__intro">
-        Import a rack file, check the matches and carry on where you left off.
-      </p>
-    </header>
-    <app-home-switch-section
-      [steps]="switchSteps"
-      [benefits]="switchBenefits"
-      [isSignedIn]="signedIn"
-      (ctaClicked)="homeData.ctaClicked$.next($event)"
-    ></app-home-switch-section>
-  </section>
+  @if (modularGridImportEnabled) {
+    <section id="switch" class="home-section home-section--switch" aria-labelledby="home-switch-title">
+      <header class="home-section__head">
+        <p class="home-section__index">Switching</p>
+        <h2 id="home-switch-title" class="home-section__title">Import racks exported from ModularGrid</h2>
+        <p class="home-section__intro">
+          Import a rack file, check the matches and carry on where you left off.
+        </p>
+      </header>
+      <app-home-switch-section
+        [steps]="switchSteps"
+        [benefits]="switchBenefits"
+        [isSignedIn]="signedIn"
+        (ctaClicked)="homeData.ctaClicked$.next($event)"
+      ></app-home-switch-section>
+    </section>
+  }
 
   <section class="home-section" aria-labelledby="home-community-title">
     <header class="home-section__head">

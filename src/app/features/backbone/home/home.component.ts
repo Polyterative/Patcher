@@ -1,5 +1,6 @@
 import { AsyncPipe, DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Inject, PLATFORM_ID } from '@angular/core';
+import { environment } from 'src/environments/environment';
 import { SeoSocialShareData } from 'src/app/models/seo.model';
 import { SeoAndUtilsService } from '../seo-and-utils.service';
 import { HomeApiSectionComponent } from './components/home-api-section/home-api-section.component';
@@ -41,6 +42,7 @@ import {
   providers: [HomeDataService]
 })
 export class HomeComponent {
+  readonly modularGridImportEnabled = environment.features.modularGridImportEnabled;
   readonly hero = HOME_HERO;
   readonly tourTabs = HOME_TOUR_TABS;
   readonly switchSteps = HOME_SWITCH_STEPS;
@@ -57,7 +59,9 @@ export class HomeComponent {
   ) {
     const seoData: SeoSocialShareData = {
       title: 'Patcher: your operating system for everything modular',
-      description: 'Free, open-source workspace for Eurorack. Browse 10,000+ modules, plan racks with power analysis, document patches, import racks from ModularGrid and build on the public API.',
+      description: this.modularGridImportEnabled
+        ? 'Free, open-source workspace for Eurorack. Browse 10,000+ modules, plan racks with power analysis, document patches, import racks from ModularGrid and build on the public API.'
+        : 'Free, open-source workspace for Eurorack. Browse 10,000+ modules, plan racks with power analysis, document patches and build on the public API.',
       keywords: 'eurorack, modular synth, rack planner, patch documentation, module database, open source',
       type: 'website',
       url: 'https://patcher.xyz/',

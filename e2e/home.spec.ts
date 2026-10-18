@@ -72,10 +72,9 @@ test.describe('Home Page', () => {
     await expect(page.locator('#home-tour-panel-library')).toBeHidden();
   });
 
-  test('ModularGrid hook in the hero scrolls to the switch section', async ({page}) => {
-    await page.getByRole('link', {name: /bring your racks/i}).click();
-    await expect(page.locator('#switch')).toBeInViewport({timeout: 5_000});
-    await expect(page.locator('#switch h2')).toContainText('Import racks exported from ModularGrid');
+  test('ModularGrid import hook and section are hidden while the import flag is off', async ({page}) => {
+    await expect(page.getByRole('link', {name: /bring your racks/i})).toHaveCount(0);
+    await expect(page.locator('#switch')).toHaveCount(0);
   });
 
   test('developer API section links to the public API reference', async ({page}) => {

@@ -25,14 +25,16 @@
       >Browse modules</app-brand-primary-button>
     </div>
 
-    <div class="hero__switch">
-      <span class="hero__switch-tag">Import your ModularGrid racks</span>
-      <app-brand-primary-button theme="light"
-                                icon="south"
-                                href="#switch"
-                                (click)="onSwitchLinkClick($event)"
-      >Bring your racks</app-brand-primary-button>
-    </div>
+    @if (modularGridImportEnabled) {
+      <div class="hero__switch">
+        <span class="hero__switch-tag">Import your ModularGrid racks</span>
+        <app-brand-primary-button theme="light"
+                                  icon="south"
+                                  href="#switch"
+                                  (click)="onSwitchLinkClick($event)"
+        >Bring your racks</app-brand-primary-button>
+      </div>
+    }
   </div>
 
   <figure class="hero__panel">

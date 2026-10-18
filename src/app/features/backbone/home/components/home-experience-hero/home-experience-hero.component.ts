@@ -16,6 +16,7 @@ import { DETAIL_ANALYTICS_SURFACES } from 'src/app/components/detail-analytics-s
 import { PatchConnection } from 'src/app/models/connection';
 import { BrandPrimaryButtonComponent } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
+import { environment } from 'src/environments/environment';
 import { HomeCtaClick, HomeHeroContent } from '../../home-content.models';
 
 const HERO_DEFAULT_PATCH_ID = 5;
@@ -53,6 +54,7 @@ export class HomeExperienceHeroComponent extends SubManager implements OnInit {
   @Output() readonly ctaClicked = new EventEmitter<HomeCtaClick>();
   @Output() readonly switchRequested = new EventEmitter<void>();
 
+  @Input() modularGridImportEnabled = environment.features.modularGridImportEnabled;
   readonly patchMeta$: Observable<HomeHeroPatchMeta | null>;
 
   constructor(

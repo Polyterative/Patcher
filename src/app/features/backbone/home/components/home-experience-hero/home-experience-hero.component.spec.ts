@@ -124,6 +124,8 @@ describe('HomeExperienceHeroComponent', () => {
   it('emits a tracked click and a scroll request from the ModularGrid hook', () => {
     const clicks: HomeCtaClick[] = [];
     let switchRequests = 0;
+    fixture.componentRef.setInput('modularGridImportEnabled', true);
+    fixture.detectChanges();
     fixture.componentInstance.ctaClicked.subscribe(click => clicks.push(click));
     fixture.componentInstance.switchRequested.subscribe(() => switchRequests++);
 
@@ -133,6 +135,12 @@ describe('HomeExperienceHeroComponent', () => {
 
     expect(clicks).toEqual([{cta: 'switch_anchor', location: 'hero'}]);
     expect(switchRequests).toBe(1);
+  });
+
+  it('hides the ModularGrid hook when the import flag is off', () => {
+    fixture.componentRef.setInput('modularGridImportEnabled', false);
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).querySelector('.hero__switch')).toBeNull();
   });
 
   it('uses the home preview analytics surface while mounted', () => {

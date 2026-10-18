@@ -1,6 +1,7 @@
 import type { SeoSocialShareData } from 'src/app/models/seo.model';
 import type { SeoAndUtilsService } from '../seo-and-utils.service';
 import type { HomeDataService } from './home-data.service';
+import { environment } from 'src/environments/environment';
 import { HOME_HERO, HOME_TOUR_TABS } from './home-copy';
 import { HomeComponent } from './home.component';
 
@@ -30,7 +31,28 @@ describe('HomeComponent', () => {
     comp = makeComponent('browser');
   });
 
+  it('omits ModularGrid from the SEO description when the import flag is off', () => {
+    const previous = environment.features.modularGridImportEnabled;
+    environment.features.modularGridImportEnabled = false;
+    try {
+      makeComponent('browser');
+    } finally {
+      environment.features.modularGridImportEnabled = previous;
+    }
+    const [seo] = mockSeoSvc.updateSeo.calls.mostRecent().args as [SeoSocialShareData, string];
+    expect(seo.description?.toLowerCase()).not.toContain('modulargrid');
+    expect(seo.description).toContain('document patches and build on the public API.');
+  });
+
   it('registers homepage SEO that names the ModularGrid import without using the name as a keyword', () => {
+    const previous = environment.features.modularGridImportEnabled;
+    environment.features.modularGridImportEnabled = true;
+    try {
+      mockSeoSvc.updateSeo.calls.reset();
+      makeComponent('browser');
+    } finally {
+      environment.features.modularGridImportEnabled = previous;
+    }
     expect(mockSeoSvc.updateSeo).toHaveBeenCalledTimes(1);
     const [seo, page] = mockSeoSvc.updateSeo.calls.mostRecent().args as [SeoSocialShareData, string];
     expect(page).toBe('Home');

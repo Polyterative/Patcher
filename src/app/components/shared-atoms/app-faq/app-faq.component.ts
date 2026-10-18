@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component
 } from '@angular/core';
+import { environment } from 'src/environments/environment';
 import { FaqComponent } from "src/app/shared-interproject/components/@visual/faq/faq.component";
 import { HeroContentCardComponent } from "src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.component";
 
@@ -18,7 +19,7 @@ import { HeroContentCardComponent } from "src/app/shared-interproject/components
 })
 export class AppFaqComponent {
   
-  faq = [
+  private readonly allFaq = [
     {
       question: 'What is the purpose of this project?',
       icon: 'info',
@@ -70,5 +71,7 @@ export class AppFaqComponent {
       answer: 'We are constantly improving the project. You can check the roadmap on our GitHub repository to see what is currently being developed.'
     }
   ];
+
+  readonly faq = this.allFaq.filter(item => environment.features.modularGridImportEnabled || !item.question.includes('ModularGrid'));
   
 }
