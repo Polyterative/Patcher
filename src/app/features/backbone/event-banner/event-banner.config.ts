@@ -43,7 +43,7 @@ const MAINTENANCE_NOTICE: EventBannerConfig = {
   startDate:   '2026-10-18',
   endDate:     '2026-10-23',
   dismissible: false,
-  authOnly:    true,
+  authOnly:    false,
   paragraphs:  [
     'Dear Patcher user,',
     "I'm writing this with a heavy heart, because it affects something many of you have spent hours building.",
