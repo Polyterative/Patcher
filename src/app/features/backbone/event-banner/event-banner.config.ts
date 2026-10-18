@@ -36,7 +36,7 @@ export interface EventBannerConfig {
 // Set to null to disable the banner entirely (no component renders).
 // To add a future event: replace this constant — one file edit, no DB migration.
 // Superbooth 2026 banner ran 2026-05-03..2026-05-10; cleared after event ended.
-export const ACTIVE_EVENT_BANNER: EventBannerConfig | null = {
+const MAINTENANCE_NOTICE: EventBannerConfig = {
   id:          'maintenance-catalogue-reset-2026-10',
   title:       'Patcher is going into maintenance on 23 October',
   description: 'The module catalogue will be deleted and rebuilt. Racks, patches and collections will be deleted with it. Your account stays.',
@@ -57,7 +57,35 @@ export const ACTIVE_EVENT_BANNER: EventBannerConfig | null = {
   ],
 };
 
+const MAINTENANCE_IN_PROGRESS: EventBannerConfig = {
+  id:          'maintenance-in-progress-2026-10',
+  title:       'Patcher is in maintenance mode',
+  description: 'We are rebuilding the database and will be back online soon.',
+  startDate:   '2026-10-24',
+  endDate:     '2026-11-23',
+  dismissible: false,
+};
+
+/** Banners in chronological order; the first one whose date window contains today is shown. */
+export const EVENT_BANNERS: readonly EventBannerConfig[] = [
+  MAINTENANCE_NOTICE,
+  MAINTENANCE_IN_PROGRESS,
+];
+
+export function pickActiveBanner(
+  banners: readonly EventBannerConfig[],
+  now: number = Date.now(),
+): EventBannerConfig | null {
+  return banners.find(b =>
+    now >= new Date(`${b.startDate}T00:00:00`).getTime()
+    && now <= new Date(`${b.endDate}T23:59:59`).getTime(),
+  ) ?? null;
+}
+
+// Kept for specs/consumers that want a single config: the banner active right now (or null).
+export const ACTIVE_EVENT_BANNER: EventBannerConfig | null = pickActiveBanner(EVENT_BANNERS);
+
 export const EVENT_BANNER_CONFIG = new InjectionToken<EventBannerConfig | null>(
   'EVENT_BANNER_CONFIG',
-  { factory: () => ACTIVE_EVENT_BANNER },
+  { factory: () => pickActiveBanner(EVENT_BANNERS) },
 );

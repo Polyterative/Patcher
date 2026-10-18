@@ -13,6 +13,8 @@ import { UserManagementService } from 'src/app/features/backbone/login/user-mana
 import { EventBannerComponent } from './event-banner.component';
 import {
   ACTIVE_EVENT_BANNER,
+  EVENT_BANNERS,
+  pickActiveBanner,
   EVENT_BANNER_CONFIG,
   EventBannerConfig
 }                            from './event-banner.config';
@@ -186,6 +188,13 @@ describe('EventBannerComponent', () => {
     const start = new Date(ACTIVE_EVENT_BANNER.startDate).getTime();
     const end   = new Date(`${ACTIVE_EVENT_BANNER.endDate}T23:59:59`).getTime();
     expect(start).toBeLessThanOrEqual(end);
+  });
+
+  it('pickActiveBanner selects the banner whose window contains the date', () => {
+    const at = (d: string) => new Date(`${d}T12:00:00`).getTime();
+    expect(pickActiveBanner(EVENT_BANNERS, at('2026-10-20'))?.id).toBe('maintenance-catalogue-reset-2026-10');
+    expect(pickActiveBanner(EVENT_BANNERS, at('2026-10-24'))?.id).toBe('maintenance-in-progress-2026-10');
+    expect(pickActiveBanner(EVENT_BANNERS, at('2026-11-24'))).toBeNull();
   });
 
   // ─── Marquee tests ──────────────────────────────────────────────────────
