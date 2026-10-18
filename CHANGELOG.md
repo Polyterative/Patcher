@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.9.3](https://github.com/Polyterative/Patcher/compare/v6.9.2...v6.9.3) (2026-10-18)
+
+
+### Features
+
+* **home:** hide modulargrid import copy when import flag is off ([f91be35](https://github.com/Polyterative/Patcher/commit/f91be35ffd28a4a0a54bae3d70075e0a89cf9e6d))
+
 ### [6.9.2](https://github.com/Polyterative/Patcher/compare/v6.9.1...v6.9.2) (2026-10-18)
 
 
