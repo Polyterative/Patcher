@@ -29,4 +29,5 @@ getTestBed().initTestEnvironment(
 // read-only specs opt in by setting the flag inside their own setup.
 beforeEach(() => {
   environment.features.readOnlyModeEnabled = false;
+  environment.features.maintenanceModeEnabled = false;
 });

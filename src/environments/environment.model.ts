@@ -18,5 +18,7 @@ export interface EnvironmentModel {
     viewTrackingEnabled: boolean;
     /** Maintenance read-only mode: creating and editing controls are disabled with a tooltip. */
     readOnlyModeEnabled: boolean;
+    /** Full maintenance mode: content routes redirect to /maintenance and data calls short-circuit (admins bypass). */
+    maintenanceModeEnabled: boolean;
   };
 }

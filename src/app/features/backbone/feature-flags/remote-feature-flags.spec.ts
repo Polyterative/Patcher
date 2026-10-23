@@ -15,7 +15,8 @@ function makeEnv() {
       marketplaceEnabled: false,
       manufacturerInsightsEnabled: false,
       viewTrackingEnabled: true,
-      readOnlyModeEnabled: true
+      readOnlyModeEnabled: true,
+      maintenanceModeEnabled: false
     }
   };
 }
@@ -73,5 +74,25 @@ describe('loadRemoteFeatureFlags', () => {
     const failing = (() => Promise.reject(new Error('x'))) as unknown as typeof fetch;
     await loadRemoteFeatureFlags(env, { fetchFn: failing, storage: memStorage('{not json'), useCache: true });
     expect(env.features).toEqual(makeEnv().features);
+  });
+
+  it('keeps a cached maintenanceModeEnabled=true when the fetch fails', async () => {
+    const env = makeEnv();
+    const storage = memStorage(JSON.stringify([{ key: 'maintenanceModeEnabled', enabled: true }]));
+    const fetchFn = (() => Promise.reject(new Error('down'))) as unknown as typeof fetch;
+    await loadRemoteFeatureFlags(env, { fetchFn, storage, useCache: true });
+    expect(env.features.maintenanceModeEnabled).toBeTrue();
+  });
+
+  it('clears maintenance mode after a successful fetch returning false', async () => {
+    const env = makeEnv();
+    env.features.maintenanceModeEnabled = true;
+    const storage = memStorage(JSON.stringify([{ key: 'maintenanceModeEnabled', enabled: true }]));
+    await loadRemoteFeatureFlags(env, {
+      fetchFn: okFetch([{ key: 'maintenanceModeEnabled', enabled: false }]),
+      storage, useCache: true
+    });
+    expect(env.features.maintenanceModeEnabled).toBeFalse();
+    expect(storage.getItem(FEATURE_FLAGS_CACHE_KEY)).toContain('false');
   });
 });

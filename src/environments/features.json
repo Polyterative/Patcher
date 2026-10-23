@@ -7,7 +7,8 @@
     "marketplaceEnabled": false,
     "manufacturerInsightsEnabled": false,
     "viewTrackingEnabled": true,
-    "readOnlyModeEnabled": true
+    "readOnlyModeEnabled": true,
+    "maintenanceModeEnabled": false
   },
   "development": {
     "collectionsEnabled": true,
@@ -17,6 +18,7 @@
     "marketplaceEnabled": true,
     "manufacturerInsightsEnabled": true,
     "viewTrackingEnabled": false,
-    "readOnlyModeEnabled": true
+    "readOnlyModeEnabled": true,
+    "maintenanceModeEnabled": false
   }
 }
