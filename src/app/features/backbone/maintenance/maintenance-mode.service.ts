@@ -48,9 +48,10 @@ export const maintenanceGuard: CanMatchFn = (): boolean | UrlTree | Observable<b
     return true;
   }
   const blocked = inject(Router).parseUrl('/maintenance');
-  // The server cannot know the viewer's session, so it always serves the maintenance page.
+  // The server cannot know the viewer's session, so it lets the route match; the
+  // fetch short-circuit keeps its data empty and the client guard re-runs on bootstrap.
   if (isPlatformServer(inject(PLATFORM_ID))) {
-    return blocked;
+    return true;
   }
   return maintenance.isAdmin$.pipe(
     take(1),

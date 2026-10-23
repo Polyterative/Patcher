@@ -44,8 +44,8 @@ describe('maintenanceGuard', () => {
     expect(await run(true, true)).toBeTrue();
   });
 
-  it('always redirects on the server', async () => {
-    expect(await run(true, true, 'server')).toBe(tree);
+  it('lets the route match on the server (client guard decides)', async () => {
+    expect(await run(true, false, 'server')).toBeTrue();
   });
 
   it('service reads the flag live', () => {
