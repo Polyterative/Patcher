@@ -41,6 +41,7 @@ import { WideShellToolbarComponent } from './shared-interproject/components/@vis
 import { AnalyticsService } from './features/backbone/analytics-integration/analytics.service';
 import { normalizeUrlPath } from './shared-interproject/url-path.util';
 import { ChunkLoadRecoveryService } from './services/chunk-load-recovery.service';
+import { MaintenanceBannerComponent } from './features/backbone/maintenance/maintenance-banner.component';
 import { AppThemeService } from './shared-interproject/app-theme.service';
 
 type AppShellArea = 'home' | 'modules' | 'racks' | 'patches' | 'marketplace' | 'manufacturers' | 'user' | 'manuals' | 'comments' | 'info';
@@ -77,6 +78,7 @@ type AppShellArea = 'home' | 'modules' | 'racks' | 'patches' | 'marketplace' | '
     SelectionPanelOutletComponent,
     DiscoveryTipSurfaceComponent,
     WideShellToolbarComponent,
+    MaintenanceBannerComponent,
   ]
 })
 export class AppComponent implements OnDestroy {

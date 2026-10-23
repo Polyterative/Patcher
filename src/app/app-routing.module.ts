@@ -1,6 +1,10 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { environment } from 'src/environments/environment';
+import { maintenanceGuard } from './features/backbone/maintenance/maintenance-mode.service';
+
+const loadMaintenancePageComponent = () =>
+  import('./features/backbone/maintenance/maintenance-page.component').then(m => m.MaintenancePageComponent);
 
 const loadHomeComponent = () =>
   import('./features/backbone/home/home.component').then(m => m.HomeComponent);
@@ -15,10 +19,12 @@ const collectionRoutes: Routes = environment.features.collectionsEnabled
   ? [
       {
         path: 'collections',
+        canMatch: [maintenanceGuard],
         loadChildren: () => import('./features/module-collections/module-collections.module').then(m => m.ModuleCollectionsModule)
       },
       {
         path: 'collection/:collectionId',
+        canMatch: [maintenanceGuard],
         loadChildren: () => import('./features/module-collections/module-collections-owned.module').then(m => m.ModuleCollectionsOwnedModule)
       }
     ]
@@ -28,6 +34,7 @@ export const marketplaceRoutes: Routes = environment.features.marketplaceEnabled
   ? [
       {
         path: 'marketplace',
+        canMatch: [maintenanceGuard],
         loadChildren: () => import('./features/routes/marketplace/marketplace.module').then(m => m.MarketplaceModule)
       }
     ]
@@ -43,6 +50,11 @@ export const appRoutes: Routes = [
     path: 'home',
     pathMatch: 'full',
     loadComponent: loadHomeComponent
+  },
+  {
+    path: 'maintenance',
+    pathMatch: 'full',
+    loadComponent: loadMaintenancePageComponent
   },
   {
     path: 'admin',
@@ -79,32 +91,39 @@ export const appRoutes: Routes = [
   },
   {
     path: 'u',
+    canMatch: [maintenanceGuard],
     loadChildren: () => import('./features/routes/public-profile/public-profile.module').then(m => m.PublicProfileModule)
   },
   {
     path: 'user/account',
+    canMatch: [maintenanceGuard],
     loadChildren: () => import('./features/backbone/user-management/user-management.module').then(m => m.UserManagementModule)
   },
   {
     path: 'user',
+    canMatch: [maintenanceGuard],
     loadChildren: () => import('./features/routes/user-area/user-area.module').then(m => m.UserAreaModule)
   },
   {
     path: 'racks',
+    canMatch: [maintenanceGuard],
     loadChildren: () => import('./features/routes/rack/rack-browser.module').then(m => m.RackBrowserModule)
   },
   {
     path: 'patches',
+    canMatch: [maintenanceGuard],
     loadChildren: () => import('./features/patch-browser/patch-browser.module').then(m => m.PatchBrowserModule)
   },
   {
     path: 'modules',
+    canMatch: [maintenanceGuard],
     loadChildren: () => import('./features/module-browser/module-browser.module').then(m => m.ModuleBrowserModule)
   },
   ...marketplaceRoutes,
   ...collectionRoutes,
   {
     path: 'manufacturers',
+    canMatch: [maintenanceGuard],
     loadChildren: () => import('./features/manufacturer-detail/manufacturer.module').then(m => m.ManufacturerModule)
   },
   {

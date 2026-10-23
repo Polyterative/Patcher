@@ -17,6 +17,7 @@
        [class.app-shell--area-comments]="shell.area === 'comments'"
        [class.app-shell--area-info]="shell.area === 'info'">
     <a href="#main-content" class="skip-link">Skip to main content</a>
+    <app-maintenance-banner></app-maintenance-banner>
     <div class="app-shell__content">
       @if (shell.modernShell) {
         <div #wideToolbarSentinel

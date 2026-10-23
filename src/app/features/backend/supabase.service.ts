@@ -6,6 +6,7 @@ import {
   ɵPendingTasksInternal,
   PLATFORM_ID
 } from '@angular/core';
+import { createMaintenanceFetch } from '../backbone/maintenance/maintenance-fetch';
 import { isPlatformBrowser } from '@angular/common';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -108,8 +109,11 @@ export class SupabaseService extends SubManager {
         // On the server, Supabase's raw `fetch` calls are invisible to Angular's SSR
         // stability tracking — without this, SSR can serialize the page before data
         // has loaded. See supabase-ssr-fetch.ts for details.
-        global: isBrowser ? undefined : {
-          fetch: createSsrPendingTasksFetch(pendingTasks)
+        global: {
+          fetch: createMaintenanceFetch(
+            () => this.latestAccessToken,
+            isBrowser ? undefined : createSsrPendingTasksFetch(pendingTasks)
+          )
         }
       }
     );
