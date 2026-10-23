@@ -43,6 +43,8 @@ import {
 })
 export class HomeComponent {
   readonly modularGridImportEnabled = environment.features.modularGridImportEnabled;
+  /** Maintenance mode keeps only the hero; the remaining sections show live data. */
+  readonly maintenanceModeEnabled = environment.features.maintenanceModeEnabled;
   readonly hero = HOME_HERO;
   readonly tourTabs = HOME_TOUR_TABS;
   readonly switchSteps = HOME_SWITCH_STEPS;

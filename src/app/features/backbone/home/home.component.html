@@ -10,91 +10,93 @@
     ></app-home-experience-hero>
   </div>
 
-  <div class="home-page__band">
-    <app-home-proof-strip
-      [figures]="(homeData.proofFigures$ | async) ?? []"
-      (ctaClicked)="homeData.ctaClicked$.next($event)"
-    ></app-home-proof-strip>
-  </div>
+  @if (!maintenanceModeEnabled) {
+    <div class="home-page__band">
+      <app-home-proof-strip
+        [figures]="(homeData.proofFigures$ | async) ?? []"
+        (ctaClicked)="homeData.ctaClicked$.next($event)"
+      ></app-home-proof-strip>
+    </div>
 
-  <section class="home-section" aria-labelledby="home-tour-title">
-    <header class="home-section__head">
-      <p class="home-section__index">The system</p>
-      <h2 id="home-tour-title" class="home-section__title">One place for the gear, the case and the cables.</h2>
-      <p class="home-section__intro">
-        Your collection feeds your racks and patches, so each module is entered once and shows up wherever you need it.
-      </p>
-    </header>
-    <app-home-system-tour
-      [tabs]="tourTabs"
-      (ctaClicked)="homeData.ctaClicked$.next($event)"
-    ></app-home-system-tour>
-  </section>
-
-  @if (modularGridImportEnabled) {
-    <section id="switch" class="home-section home-section--switch" aria-labelledby="home-switch-title">
+    <section class="home-section" aria-labelledby="home-tour-title">
       <header class="home-section__head">
-        <p class="home-section__index">Switching</p>
-        <h2 id="home-switch-title" class="home-section__title">Import racks exported from ModularGrid</h2>
+        <p class="home-section__index">The system</p>
+        <h2 id="home-tour-title" class="home-section__title">One place for the gear, the case and the cables.</h2>
         <p class="home-section__intro">
-          Import a rack file, check the matches and carry on where you left off.
+          Your collection feeds your racks and patches, so each module is entered once and shows up wherever you need it.
         </p>
       </header>
-      <app-home-switch-section
-        [steps]="switchSteps"
-        [benefits]="switchBenefits"
+      <app-home-system-tour
+        [tabs]="tourTabs"
+        (ctaClicked)="homeData.ctaClicked$.next($event)"
+      ></app-home-system-tour>
+    </section>
+
+    @if (modularGridImportEnabled) {
+      <section id="switch" class="home-section home-section--switch" aria-labelledby="home-switch-title">
+        <header class="home-section__head">
+          <p class="home-section__index">Switching</p>
+          <h2 id="home-switch-title" class="home-section__title">Import racks exported from ModularGrid</h2>
+          <p class="home-section__intro">
+            Import a rack file, check the matches and carry on where you left off.
+          </p>
+        </header>
+        <app-home-switch-section
+          [steps]="switchSteps"
+          [benefits]="switchBenefits"
+          [isSignedIn]="signedIn"
+          (ctaClicked)="homeData.ctaClicked$.next($event)"
+        ></app-home-switch-section>
+      </section>
+    }
+
+    <section class="home-section" aria-labelledby="home-community-title">
+      <header class="home-section__head">
+        <p class="home-section__index">Community</p>
+        <h2 id="home-community-title" class="home-section__title">What the community owns.</h2>
+        <p class="home-section__intro">Live rankings from the collections people keep on Patcher.</p>
+      </header>
+      @defer (on viewport) {
+        <app-home-discovery-section></app-home-discovery-section>
+      } @placeholder {
+        <div class="home-section__placeholder"></div>
+      }
+    </section>
+
+    <section class="home-section" aria-labelledby="home-api-title">
+      <header class="home-section__head">
+        <p class="home-section__index">Developers</p>
+        <h2 id="home-api-title" class="home-section__title">Build on Patcher's data.</h2>
+        <p class="home-section__intro">
+          The public API serves the same module catalogue the app runs on. Build rack tools or store integrations on data
+          the community already maintains.
+        </p>
+      </header>
+      <app-home-api-section
+        [facts]="apiFacts"
+        [docsUrl]="apiDocsUrl"
         [isSignedIn]="signedIn"
         (ctaClicked)="homeData.ctaClicked$.next($event)"
-      ></app-home-switch-section>
+      ></app-home-api-section>
     </section>
+
+    <section class="home-section" aria-labelledby="home-open-title">
+      <header class="home-section__head">
+        <p class="home-section__index">Open</p>
+        <h2 id="home-open-title" class="home-section__title">Built in the open.</h2>
+        <p class="home-section__intro">The code, the catalogue and the roadmap are all public.</p>
+      </header>
+      <app-home-open-section
+        [pillars]="openPillars"
+        (ctaClicked)="homeData.ctaClicked$.next($event)"
+      ></app-home-open-section>
+    </section>
+
+    <div class="home-section home-section--closing">
+      <app-home-closing-cta
+        [isSignedIn]="signedIn"
+        (ctaClicked)="homeData.ctaClicked$.next($event)"
+      ></app-home-closing-cta>
+    </div>
   }
-
-  <section class="home-section" aria-labelledby="home-community-title">
-    <header class="home-section__head">
-      <p class="home-section__index">Community</p>
-      <h2 id="home-community-title" class="home-section__title">What the community owns.</h2>
-      <p class="home-section__intro">Live rankings from the collections people keep on Patcher.</p>
-    </header>
-    @defer (on viewport) {
-      <app-home-discovery-section></app-home-discovery-section>
-    } @placeholder {
-      <div class="home-section__placeholder"></div>
-    }
-  </section>
-
-  <section class="home-section" aria-labelledby="home-api-title">
-    <header class="home-section__head">
-      <p class="home-section__index">Developers</p>
-      <h2 id="home-api-title" class="home-section__title">Build on Patcher's data.</h2>
-      <p class="home-section__intro">
-        The public API serves the same module catalogue the app runs on. Build rack tools or store integrations on data
-        the community already maintains.
-      </p>
-    </header>
-    <app-home-api-section
-      [facts]="apiFacts"
-      [docsUrl]="apiDocsUrl"
-      [isSignedIn]="signedIn"
-      (ctaClicked)="homeData.ctaClicked$.next($event)"
-    ></app-home-api-section>
-  </section>
-
-  <section class="home-section" aria-labelledby="home-open-title">
-    <header class="home-section__head">
-      <p class="home-section__index">Open</p>
-      <h2 id="home-open-title" class="home-section__title">Built in the open.</h2>
-      <p class="home-section__intro">The code, the catalogue and the roadmap are all public.</p>
-    </header>
-    <app-home-open-section
-      [pillars]="openPillars"
-      (ctaClicked)="homeData.ctaClicked$.next($event)"
-    ></app-home-open-section>
-  </section>
-
-  <div class="home-section home-section--closing">
-    <app-home-closing-cta
-      [isSignedIn]="signedIn"
-      (ctaClicked)="homeData.ctaClicked$.next($event)"
-    ></app-home-closing-cta>
-  </div>
 </div>
