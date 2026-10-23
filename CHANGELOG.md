@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.9.8](https://github.com/Polyterative/Patcher/compare/v6.9.7...v6.9.8) (2026-10-23)
+
+
+### Features
+
+* **db:** add maintenance gate extras for api views and storage buckets ([34a5076](https://github.com/Polyterative/Patcher/commit/34a5076c8623f04abf5540da4351a15d3aff80ca))
+* **image-proxy:** return 503 while maintenance mode is active ([ec292c4](https://github.com/Polyterative/Patcher/commit/ec292c42a649f5cdecf2c55d9b240e4a7d2114c9))
+* **maintenance:** sign storage image urls for admins while maintenance is on ([2ac21e6](https://github.com/Polyterative/Patcher/commit/2ac21e6867607853369771ac6b10f5a8c9566e6c))
+* **public-api:** return 503 while maintenance mode is active ([104889c](https://github.com/Polyterative/Patcher/commit/104889c4bb9f50a9f383a41640d3f5d6718c3c4d))
+
 ### [6.9.7](https://github.com/Polyterative/Patcher/compare/v6.9.6...v6.9.7) (2026-10-23)
 
 
