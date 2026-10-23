@@ -10,6 +10,11 @@ import {
   serveCatalogueRequest,
   type CatalogueServingOptions,
 } from './catalogue-serving.ts';
+import {
+  createHyperdriveMaintenanceProvider,
+  isMaintenanceActive,
+  type MaintenanceProvider,
+} from './maintenance.ts';
 import { QUOTA_HEADER_NAMES } from './quota-response.ts';
 import { normalizeApiRequest } from './request.ts';
 import { corsHeaders, errorResponse } from './response.ts';
@@ -38,6 +43,7 @@ export interface PublicApiRuntimeOptions extends CatalogueServingOptions {
   metadataProvider?: ApiKeyMetadataProvider;
   quotaNamespace?: PublicApiDurableObjectNamespace;
   clock?: () => number;
+  maintenanceProvider?: MaintenanceProvider;
 }
 
 export async function handlePublicApiRequest(
@@ -55,6 +61,15 @@ export async function handlePublicApiRequest(
   if (request.method !== 'GET' && request.method !== 'HEAD') {
     return errorResponse(request, 405, 'method_not_allowed', 'Only GET and HEAD are supported', {
       Allow: 'GET, HEAD, OPTIONS',
+    });
+  }
+
+  // Maintenance gating runs before routing, auth and any cache lookup. Fail closed on errors.
+  const maintenanceProvider = runtimeOptions.maintenanceProvider
+    ?? (env.HYPERDRIVE ? hyperdriveMaintenanceProvider(env.HYPERDRIVE) : null);
+  if (maintenanceProvider && await isMaintenanceActive(maintenanceProvider, runtimeOptions.clock?.() ?? Date.now())) {
+    return errorResponse(request, 503, 'maintenance', 'The API is temporarily unavailable', {
+      'Retry-After': '300',
     });
   }
 
@@ -156,6 +171,17 @@ export async function handlePublicApiRequest(
     quota.headers,
     runtimeOptions
   );
+}
+
+const hyperdriveProviders = new WeakMap<HyperdriveBinding, MaintenanceProvider>();
+
+function hyperdriveMaintenanceProvider(binding: HyperdriveBinding): MaintenanceProvider {
+  let provider = hyperdriveProviders.get(binding);
+  if (!provider) {
+    provider = createHyperdriveMaintenanceProvider(binding);
+    hyperdriveProviders.set(binding, provider);
+  }
+  return provider;
 }
 
 export default {

@@ -175,3 +175,11 @@ The checked-in `wrangler.jsonc` intentionally contains no production resource ID
 - No direct PostgREST/`anon` exposure.
 - No `service_role`, JWT signing secret, or raw database credential in the Worker.
 - No Patcher-docs repository edits from this package; public marketing/consumer docs live at <https://docs.patcher.xyz/reference/public-open-api>.
+
+## Maintenance gating
+
+Before routing, auth and any cache lookup the worker asks the database whether maintenance is active
+(`private.maint_flag_on()` through Hyperdrive, from `supabase/migrations-pending/maintenance-gate-extras/`). The answer is cached
+in-isolate for 30 s. While active, every GET/HEAD returns `503` with `code: maintenance`, `Retry-After: 300` and `Cache-Control: private, no-store`.
+Lookup errors fail closed (also `503`). No new bindings or secrets: it reuses the existing `HYPERDRIVE` binding. The SQL function must
+be applied before deploying this worker, otherwise every request fails closed.
