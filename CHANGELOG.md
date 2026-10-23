@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.9.7](https://github.com/Polyterative/Patcher/compare/v6.9.6...v6.9.7) (2026-10-23)
+
+
+### Features
+
+* **flags:** add maintenanceModeEnabled flag and manual seed sql ([79de9b9](https://github.com/Polyterative/Patcher/commit/79de9b9f00082445c9a351d8a767e8761e67337a))
+* **maintenance:** add guard, page, banner and data short-circuit for maintenance mode ([7ced221](https://github.com/Polyterative/Patcher/commit/7ced221eaf482e4f36a9c08fa15b5db1de8e8290))
+* **maintenance:** show only the homepage hero during maintenance ([bc12ab0](https://github.com/Polyterative/Patcher/commit/bc12ab06a6d90cc8a7002f054caf190328c7662a))
+
+
+### Bug Fixes
+
+* **maintenance:** calm banner and hide FAQ on maintenance page ([e068cbc](https://github.com/Polyterative/Patcher/commit/e068cbc4936bb4d05b544e44e6d6634dadaee1e8))
+* **maintenance:** fail closed on maintenance flag when remote and cache are unavailable ([cbf5caa](https://github.com/Polyterative/Patcher/commit/cbf5caaaafc5550e5623f56868ad5d2e4d819fd1))
+* **maintenance:** keep account page reachable during maintenance ([5d1e93b](https://github.com/Polyterative/Patcher/commit/5d1e93ba668db4e1f54ec689f0c46543fbcf2902))
+* **maintenance:** let guard match on the server so admins keep first-load access ([1477bef](https://github.com/Polyterative/Patcher/commit/1477bef79bbae33b7be72f9596f454f0a6211974))
+* **maintenance:** narrow fetch exemptions to auth, flags and own profile row ([d8ef116](https://github.com/Polyterative/Patcher/commit/d8ef116e549b6d7df3ba4ab515ab01ac10d646ab))
+* **maintenance:** skip content rows in edge SEO renderer and sitemap, fail closed ([a6c7994](https://github.com/Polyterative/Patcher/commit/a6c7994c17dbb6c1a3a9cf109c61227bf793e99a))
+
 ### [6.9.6](https://github.com/Polyterative/Patcher/compare/v6.9.5...v6.9.6) (2026-10-18)
 
 ### [6.9.5](https://github.com/Polyterative/Patcher/compare/v6.9.4...v6.9.5) (2026-10-18)
