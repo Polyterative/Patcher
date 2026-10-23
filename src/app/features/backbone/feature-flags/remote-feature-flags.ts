@@ -40,6 +40,14 @@ function applyFlags(target: Flags, rows: unknown): number {
   return applied;
 }
 
+const MAINTENANCE_KEY = 'maintenanceModeEnabled';
+/** Envs that already received a definitive maintenance value (remote success or cache) in this process. */
+const maintenanceKnown = new WeakSet<object>();
+
+function hasMaintenanceRow(rows: unknown): boolean {
+  return Array.isArray(rows) && rows.some(r => r && (r as FlagRow).key === MAINTENANCE_KEY && typeof (r as FlagRow).enabled === 'boolean');
+}
+
 function getStorage(opts: RemoteFeatureFlagOptions): Pick<Storage, 'getItem' | 'setItem'> | null {
   if (opts.storage !== undefined) {
     return opts.storage;
@@ -92,6 +100,7 @@ export async function loadRemoteFeatureFlags(
       throw new Error('feature flags: unexpected payload');
     }
     applyFlags(env.features, rows);
+    maintenanceKnown.add(env);
     if (storage) {
       try {
         storage.setItem(FEATURE_FLAGS_CACHE_KEY, JSON.stringify(rows));
@@ -103,9 +112,18 @@ export async function loadRemoteFeatureFlags(
       try {
         const cached = storage.getItem(FEATURE_FLAGS_CACHE_KEY);
         if (cached) {
-          applyFlags(env.features, JSON.parse(cached));
+          const cachedRows = JSON.parse(cached);
+          applyFlags(env.features, cachedRows);
+          if (hasMaintenanceRow(cachedRows)) {
+            maintenanceKnown.add(env);
+          }
         }
       } catch { /* ignore */ }
+    }
+    // Fail closed for maintenance only: with no known value, assume maintenance is on so a
+    // flag outage cannot expose content. Other flags keep their bundled fallback.
+    if (!maintenanceKnown.has(env)) {
+      (env.features as unknown as Record<string, unknown>)[MAINTENANCE_KEY] = true;
     }
     console.warn('Remote feature flags unavailable, using fallback:', err);
     return false;

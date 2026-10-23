@@ -66,14 +66,14 @@ describe('loadRemoteFeatureFlags', () => {
     const failing = (() => Promise.resolve({ ok: false, status: 500, json: () => Promise.resolve([]) })) as unknown as typeof fetch;
     const ok = await loadRemoteFeatureFlags(env, { fetchFn: failing, storage: memStorage(), useCache: true });
     expect(ok).toBeFalse();
-    expect(env.features).toEqual(makeEnv().features);
+    expect(env.features).toEqual({ ...makeEnv().features, maintenanceModeEnabled: true });
   });
 
   it('survives corrupt cache', async () => {
     const env = makeEnv();
     const failing = (() => Promise.reject(new Error('x'))) as unknown as typeof fetch;
     await loadRemoteFeatureFlags(env, { fetchFn: failing, storage: memStorage('{not json'), useCache: true });
-    expect(env.features).toEqual(makeEnv().features);
+    expect(env.features).toEqual({ ...makeEnv().features, maintenanceModeEnabled: true });
   });
 
   it('keeps a cached maintenanceModeEnabled=true when the fetch fails', async () => {
@@ -94,5 +94,37 @@ describe('loadRemoteFeatureFlags', () => {
     });
     expect(env.features.maintenanceModeEnabled).toBeFalse();
     expect(storage.getItem(FEATURE_FLAGS_CACHE_KEY)).toContain('false');
+  });
+
+  it('fails closed for maintenance only when the fetch fails with no known value', async () => {
+    const env = makeEnv();
+    const failing = (() => Promise.reject(new Error('down'))) as unknown as typeof fetch;
+    await loadRemoteFeatureFlags(env, { fetchFn: failing, storage: memStorage(), useCache: true });
+    expect(env.features.maintenanceModeEnabled).toBeTrue();
+    expect(env.features.readOnlyModeEnabled).toBeTrue();
+    expect(env.features.collectionsEnabled).toBeFalse();
+  });
+
+  it('uses the cached maintenance value on failure instead of failing closed', async () => {
+    const env = makeEnv();
+    const cache = JSON.stringify([{ key: 'maintenanceModeEnabled', enabled: false }]);
+    const failing = (() => Promise.reject(new Error('down'))) as unknown as typeof fetch;
+    await loadRemoteFeatureFlags(env, { fetchFn: failing, storage: memStorage(cache), useCache: true });
+    expect(env.features.maintenanceModeEnabled).toBeFalse();
+  });
+
+  it('keeps a previously fetched value when a later refresh fails (SSR)', async () => {
+    const env = makeEnv();
+    await loadRemoteFeatureFlags(env, { fetchFn: okFetch([{ key: 'maintenanceModeEnabled', enabled: false }]), useCache: false });
+    const failing = (() => Promise.reject(new Error('down'))) as unknown as typeof fetch;
+    await loadRemoteFeatureFlags(env, { fetchFn: failing, useCache: false });
+    expect(env.features.maintenanceModeEnabled).toBeFalse();
+  });
+
+  it('clears maintenance on a successful false response', async () => {
+    const env = makeEnv();
+    env.features.maintenanceModeEnabled = true;
+    await loadRemoteFeatureFlags(env, { fetchFn: okFetch([{ key: 'maintenanceModeEnabled', enabled: false }]), useCache: false });
+    expect(env.features.maintenanceModeEnabled).toBeFalse();
   });
 });
