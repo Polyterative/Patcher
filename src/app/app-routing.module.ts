@@ -95,8 +95,8 @@ export const appRoutes: Routes = [
     loadChildren: () => import('./features/routes/public-profile/public-profile.module').then(m => m.PublicProfileModule)
   },
   {
+    // Left open during maintenance so users can still manage their account and sign out.
     path: 'user/account',
-    canMatch: [maintenanceGuard],
     loadChildren: () => import('./features/backbone/user-management/user-management.module').then(m => m.UserManagementModule)
   },
   {
