@@ -228,7 +228,8 @@ export class AppComponent implements OnDestroy {
 
  private supportsSupportingContent(url: string): boolean {
    const normalizedUrl = normalizeUrlPath(url);
-   return !/^\/collection\/\d+(?:[/?#]|$)/.test(normalizedUrl)
+   return !/^\/maintenance(?:[/?#]|$)/.test(normalizedUrl)
+     && !/^\/collection\/\d+(?:[/?#]|$)/.test(normalizedUrl)
      && !/^\/collections\/manage\/\d+(?:[/?#]|$)/.test(normalizedUrl);
  }
 

@@ -19,7 +19,7 @@ import { RouterLink } from '@angular/router';
   template: `
     <section class="maintenance" aria-labelledby="maintenance-title">
       <h1 id="maintenance-title">Down for maintenance</h1>
-      <p>We're doing database maintenance. Your data is safe. Patcher will be back soon.</p>
+      <p>We're doing database maintenance. Patcher will be back soon.</p>
       <a mat-stroked-button routerLink="/">Back to home</a>
     </section>
   `,
