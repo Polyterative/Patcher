@@ -4,6 +4,7 @@ import {
   Component,
   inject
 } from '@angular/core';
+import { MaintenanceAdminImagesService } from './maintenance-admin-images.service';
 import { MaintenanceModeService } from './maintenance-mode.service';
 
 
@@ -43,4 +44,8 @@ import { MaintenanceModeService } from './maintenance-mode.service';
 })
 export class MaintenanceBannerComponent {
   readonly maintenance = inject(MaintenanceModeService);
+
+  constructor() {
+    inject(MaintenanceAdminImagesService).start();
+  }
 }

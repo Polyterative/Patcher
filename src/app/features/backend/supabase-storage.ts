@@ -214,6 +214,21 @@ export function createStorageNamespace(
       );
     },
 
+    /** Batched signed URLs for one bucket; failed entries are omitted. Used for admin image access during maintenance. */
+    createSignedUrlsForBucket: async (bucket: string, paths: string[], expiresInSeconds: number): Promise<Record<string, string>> => {
+      const {data, error} = await supabase.storage.from(bucket).createSignedUrls(paths, expiresInSeconds);
+      const result: Record<string, string> = {};
+      if (error || !data) {
+        return result;
+      }
+      for (const entry of data) {
+        if (entry.path && entry.signedUrl && !entry.error) {
+          result[entry.path] = entry.signedUrl;
+        }
+      }
+      return result;
+    },
+
     createMarketplaceListingImageSignedUrl: (storagePath: string, expiresInSeconds = 600) => {
       const normalizedPath = storagePath.trim().toLocaleLowerCase();
       if (!normalizedPath) {
