@@ -70,9 +70,13 @@ function manufacturerPayload(logo = 'intellijel.png') {
   }];
 }
 
-function stubFetchWithPayload(payloadFactory) {
+function stubFetchWithPayload(payloadFactory, flagResponse = { ok: true, async json() { return []; } }) {
   let calls = 0;
   global.fetch = async (url) => {
+    if (String(url).includes('/rest/v1/app_feature_flags')) {
+      if (flagResponse instanceof Error) throw flagResponse;
+      return flagResponse;
+    }
     calls += 1;
     return {
       ok: true,
@@ -475,7 +479,9 @@ test('Supabase errors, timeouts and 5xx return 503 with Retry-After and no-store
 
   for (const [label, impl] of Object.entries(failures)) {
     const middleware = loadMiddleware('test-key');
-    global.fetch = impl;
+    global.fetch = async (url) => String(url).includes('/rest/v1/app_feature_flags')
+      ? {ok: true, async json() { return []; }}
+      : impl(url);
 
     const first = await middleware(makeRequest('/modules/details/72'));
     assert.equal(first.status, 503, label);
@@ -497,4 +503,41 @@ test('confirmed empty lookup is still a 404 without Retry-After', async () => {
   const response = await middleware(makeRequest('/patches/details/12345'));
   assert.equal(response.status, 404);
   assert.equal(response.headers.get('retry-after'), null);
+});
+
+const flagOn = { ok: true, async json() { return [{ enabled: true }]; } };
+
+test('maintenance on: detail bot request renders generic shell without content rows', async () => {
+  const middleware = loadMiddleware('test-key');
+  const getCalls = stubFetchWithPayload(modulePayload, flagOn);
+
+  const response = await middleware(makeRequest('/modules/details/72'));
+  const html = await response.text();
+
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('x-patcher-seo-source'), 'module-maintenance');
+  assert.equal(response.headers.get('cache-control'), 'private, no-store, max-age=0');
+  assert.equal(getCalls(), 0);
+  assert.doesNotMatch(html, /Test Module/);
+});
+
+test('maintenance flag fetch failure fails closed', async () => {
+  const middleware = loadMiddleware('test-key');
+  const getCalls = stubFetchWithPayload(modulePayload, new Error('boom'));
+
+  const response = await middleware(makeRequest('/modules/details/72'));
+
+  assert.equal(response.headers.get('x-patcher-seo-source'), 'module-maintenance');
+  assert.equal(getCalls(), 0);
+});
+
+test('maintenance on: previously cached metadata is not served', async () => {
+  const middleware = loadMiddleware('test-key');
+  stubFetchWithPayload(modulePayload);
+  await middleware(makeRequest('/modules/details/72'));
+  // flag cached as off for 30s in this isolate; a fresh load simulates a new isolate with the flag on
+  const fresh = loadMiddleware('test-key');
+  stubFetchWithPayload(modulePayload, flagOn);
+  const response = await fresh(makeRequest('/modules/details/72'));
+  assert.equal(response.headers.get('x-patcher-seo-source'), 'module-maintenance');
 });

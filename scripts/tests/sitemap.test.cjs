@@ -78,11 +78,16 @@ function stubSupabaseResponses({
   modules = [],
   patches = [],
   racks = [],
-  manufacturers = []
+  manufacturers = [],
+  flag = []
 } = {}) {
   const calls = [];
   global.fetch = async (url) => {
     const rawUrl = String(url);
+    if (rawUrl.includes('/rest/v1/app_feature_flags')) {
+      if (flag instanceof Error) throw flag;
+      return ok(flag);
+    }
     calls.push(rawUrl);
     if (rawUrl.includes('/rest/v1/modules?')) {
       return ok(modules);
@@ -199,4 +204,23 @@ test('includes manufacturer browser route in static entries and manufacturer det
   assert.match(state.body, /<loc>https:\/\/patcher\.xyz\/manufacturers\/details\/15<\/loc>/);
   assert.match(state.body, /<loc>https:\/\/patcher\.xyz\/manufacturers\/details\/22<\/loc>/);
   assert.match(state.body, /manufacturer-logos\/intellijel\.png/);
+});
+
+test('maintenance on: sitemap contains only static pages and fetches no content', async () => {
+  const handler = loadSitemapHandler();
+  const calls = stubSupabaseResponses({ modules: [{ id: 72 }], flag: [{ enabled: true }] });
+  const { res, state } = makeResponseRecorder();
+  await handler(makeRequest('GET'), res);
+  assert.equal(state.statusCode, 200);
+  assert.equal(calls.length, 0);
+  assert.doesNotMatch(state.body, /modules\/details/);
+});
+
+test('maintenance flag failure fails closed to static pages', async () => {
+  const handler = loadSitemapHandler();
+  const calls = stubSupabaseResponses({ modules: [{ id: 72 }], flag: new Error('boom') });
+  const { res, state } = makeResponseRecorder();
+  await handler(makeRequest('GET'), res);
+  assert.equal(calls.length, 0);
+  assert.doesNotMatch(state.body, /modules\/details/);
 });

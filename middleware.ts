@@ -137,12 +137,17 @@ export default async function middleware(request: Request): Promise<Response | v
   }
 
   const canonicalUrl = `${ canonicalOrigin }${ resolveCanonicalPath(pathname) }`;
-  const cachedMetadata = readMetadataCache(canonicalUrl);
-  const metadata = cachedMetadata || await buildMetadata(detailRoute, canonicalUrl, canonicalOrigin);
+  // During maintenance, detail routes never touch the DB or the metadata cache (which may hold content).
+  const inMaintenance = isDetailRoute && await isMaintenanceMode();
+  const cachedMetadata = inMaintenance ? undefined : readMetadataCache(canonicalUrl);
+  const metadata = cachedMetadata
+    || (inMaintenance && detailRoute
+      ? defaultMetadata(canonicalUrl, canonicalOrigin, `${ detailRoute.type }-maintenance`)
+      : await buildMetadata(detailRoute, canonicalUrl, canonicalOrigin));
   const cacheState = cachedMetadata ? 'hit' : 'miss';
   const isDetailFallback = isDetailRoute && metadata.type === 'site';
 
-  if (!cachedMetadata && shouldCacheMetadata(metadata, isDetailRoute)) {
+  if (!cachedMetadata && !inMaintenance && shouldCacheMetadata(metadata, isDetailRoute)) {
     writeMetadataCache(canonicalUrl, metadata, isDetailRoute);
   }
 
@@ -729,6 +734,51 @@ function normalizeRackStoragePath(imagePath: string): string {
     .filter(Boolean)
     .map(segment => encodeURIComponent(decodeURIComponent(segment)))
     .join('/');
+}
+
+const MAINTENANCE_FLAG_TIMEOUT_MS = 1000;
+const MAINTENANCE_FLAG_CACHE_TTL_MS = 30 * 1000;
+let maintenanceFlagCache: {value: boolean; expiresAt: number} | undefined;
+
+/**
+ * Reads the production `maintenanceModeEnabled` flag. Fails CLOSED: any error, timeout
+ * or unexpected payload counts as maintenance on, so no content rows are exposed.
+ */
+async function isMaintenanceMode(): Promise<boolean> {
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    return false;
+  }
+  const now = Date.now();
+  if (maintenanceFlagCache && maintenanceFlagCache.expiresAt > now) {
+    return maintenanceFlagCache.value;
+  }
+
+  const abortController = new AbortController();
+  const timeoutHandle = setTimeout(() => abortController.abort(), MAINTENANCE_FLAG_TIMEOUT_MS);
+  let value = true;
+  let definitive = false;
+  try {
+    const response = await fetch(`${ SUPABASE_URL }/rest/v1/app_feature_flags?environment=eq.production&key=eq.maintenanceModeEnabled&select=enabled&limit=1`, {
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        authorization: `Bearer ${ SUPABASE_ANON_KEY }`
+      },
+      signal: abortController.signal
+    });
+    if (response && response.ok) {
+      const payload = await response.json();
+      if (Array.isArray(payload)) {
+        value = payload.length > 0 && payload[0]?.enabled === true;
+        definitive = true;
+      }
+    }
+  } catch {
+    value = true;
+  } finally {
+    clearTimeout(timeoutHandle);
+  }
+  if (definitive) maintenanceFlagCache = {value, expiresAt: now + MAINTENANCE_FLAG_CACHE_TTL_MS};
+  return value;
 }
 
 class SupabaseLookupError extends Error {}

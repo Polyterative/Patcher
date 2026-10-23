@@ -108,6 +108,11 @@ async function buildSitemapEntries(): Promise<SitemapEntry[]> {
     priority: route.priority,
   }));
 
+  // Maintenance (or an unreadable flag) means static pages only: no content rows are fetched.
+  if (await isMaintenanceMode()) {
+    return staticEntries.sort((a, b) => a.loc.localeCompare(b.loc));
+  }
+
   const [moduleRows, patchRows, rackRows, manufacturerRows] = await Promise.all([
     fetchPublicEntityRows<ModuleRow>('modules', 'id,created,updated,name,description,hp,manufacturer:manufacturerId(name),panels:module_panels!module_panels_moduleid_fkey(filename)'),
     fetchPublicEntityRows<PatchRow>('patches', 'id,created,updated,name,description'),
@@ -273,6 +278,51 @@ async function fetchPublicEntityRows<T extends PublicEntityRow>(
 
   const payload = await response.json().catch(() => []);
   return Array.isArray(payload) ? payload as T[] : [];
+}
+
+const MAINTENANCE_FLAG_TIMEOUT_MS = 1000;
+const MAINTENANCE_FLAG_CACHE_TTL_MS = 30 * 1000;
+let maintenanceFlagCache: {value: boolean; expiresAt: number} | undefined;
+
+/**
+ * Reads the production `maintenanceModeEnabled` flag. Fails CLOSED: any error, timeout
+ * or unexpected payload counts as maintenance on, so no content rows are exposed.
+ */
+async function isMaintenanceMode(): Promise<boolean> {
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    return false;
+  }
+  const now = Date.now();
+  if (maintenanceFlagCache && maintenanceFlagCache.expiresAt > now) {
+    return maintenanceFlagCache.value;
+  }
+
+  const abortController = new AbortController();
+  const timeoutHandle = setTimeout(() => abortController.abort(), MAINTENANCE_FLAG_TIMEOUT_MS);
+  let value = true;
+  let definitive = false;
+  try {
+    const response = await fetch(`${ SUPABASE_URL }/rest/v1/app_feature_flags?environment=eq.production&key=eq.maintenanceModeEnabled&select=enabled&limit=1`, {
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        authorization: `Bearer ${ SUPABASE_ANON_KEY }`
+      },
+      signal: abortController.signal
+    });
+    if (response && response.ok) {
+      const payload = await response.json();
+      if (Array.isArray(payload)) {
+        value = payload.length > 0 && payload[0]?.enabled === true;
+        definitive = true;
+      }
+    }
+  } catch {
+    value = true;
+  } finally {
+    clearTimeout(timeoutHandle);
+  }
+  if (definitive) maintenanceFlagCache = {value, expiresAt: now + MAINTENANCE_FLAG_CACHE_TTL_MS};
+  return value;
 }
 
 function resolveSiteUrl(): string {
