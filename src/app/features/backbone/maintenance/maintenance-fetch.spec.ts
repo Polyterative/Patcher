@@ -40,12 +40,36 @@ describe('createMaintenanceFetch', () => {
     expect(base).not.toHaveBeenCalled();
   });
 
-  it('leaves profiles, feature flags, auth and storage alone', async () => {
+  it('leaves feature flags and auth alone', async () => {
     const f = make(true);
-    await f(`${ rest }profiles?id=eq.1`);
     await f(`${ rest }app_feature_flags`);
     await f('https://x.test/auth/v1/token');
-    await f('https://x.test/storage/v1/object/x');
+    expect(base).toHaveBeenCalledTimes(2);
+  });
+
+  it('blocks storage API calls for non-admins', async () => {
+    const f = make(true);
+    const read = await f('https://x.test/storage/v1/object/module-panels/a.png');
+    expect(read.status).toBe(404);
+    const write = await f('https://x.test/storage/v1/object/module-panels/a.png', {method: 'POST'});
+    expect(write.status).toBe(503);
+    expect(base).not.toHaveBeenCalled();
+  });
+
+  it('allows only the signed-in user\'s own profiles row', async () => {
+    const token = `h.${ btoa(JSON.stringify({sub: 'u1'})) }.s`;
+    const f = make(true, token);
+    await f(`${ rest }profiles?select=username&id=eq.u1`);
+    await f(`${ rest }profiles?id=eq.u1`, {method: 'PATCH', headers: {Authorization: `Bearer ${ token }`}});
+    await f(`${ rest }profiles?on_conflict=id`, {method: 'POST', body: JSON.stringify({id: 'u1', email: 'a'})});
+    await f(`${ rest }profiles?select=id&username=ilike.bob`);
+    expect(base).toHaveBeenCalledTimes(4);
+    const other = await f(`${ rest }profiles?select=*&id=eq.u2`);
+    const list = await f(`${ rest }profiles?select=id,username,public`);
+    const forged = await f(`${ rest }profiles`, {method: 'POST', body: JSON.stringify({id: 'u2'})});
+    expect(await other.json()).toEqual([]);
+    expect(await list.json()).toEqual([]);
+    expect(forged.status).toBe(503);
     expect(base).toHaveBeenCalledTimes(4);
   });
 
