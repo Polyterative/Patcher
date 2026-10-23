@@ -38,3 +38,16 @@ Operator checks (dashboards only, no credentials in repo):
 
 R2 reassessment stays operator-gated until dashboards show measured savings that justify
 the migration cost. No routing, TTL, or infrastructure change ships from this note.
+
+## Maintenance gating
+
+Before the cache lookup the worker reads the production `maintenanceModeEnabled` flag over Supabase REST (anon key, derived REST base
+from `SUPABASE_STORAGE_ORIGIN`), cached in-isolate for 30 s. While on, every image request returns `503` with `Cache-Control: no-store`
+and `Retry-After: 300`; lookup errors fail closed. The anon key is a secret binding, not a var:
+
+```text
+cd cloudflare/image-proxy && wrangler secret put SUPABASE_ANON_KEY
+```
+
+If `SUPABASE_ANON_KEY` is unset the gate is skipped, so set the secret before relying on maintenance gating. Pairs with the bucket
+toggle in `supabase/migrations-pending/maintenance-gate-extras/`.

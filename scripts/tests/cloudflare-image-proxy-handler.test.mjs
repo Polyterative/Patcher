@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { afterEach, test } from 'node:test';
-import worker, { buildOriginImageUrl } from '../../cloudflare/image-proxy/src/index.ts';
+import worker, { buildOriginImageUrl, resetMaintenanceCache } from '../../cloudflare/image-proxy/src/index.ts';
 
 const ORIGIN = 'https://supabase.test/storage/v1/object/public';
 const env = {
@@ -10,7 +10,7 @@ const env = {
   EDGE_CACHE_TTL_SECONDS: '120',
 };
 const realFetch = globalThis.fetch;
-afterEach(() => { globalThis.fetch = realFetch; });
+afterEach(() => { globalThis.fetch = realFetch; resetMaintenanceCache(); });
 
 function stubFetch(response) {
   const calls = [];
@@ -203,4 +203,53 @@ test('invalid TTL env values fall back to defaults', async () => {
     { ...env, BROWSER_CACHE_TTL_SECONDS: '-5', EDGE_CACHE_TTL_SECONDS: 'abc' }
   );
   assert.equal(res.headers.get('Cache-Control'), 'public, max-age=604800, s-maxage=2592000');
+});
+
+const maintEnv = { ...env, SUPABASE_ANON_KEY: 'anon-test' };
+const flagResponse = (rows, status = 200) => new Response(JSON.stringify(rows), { status, headers: { 'content-type': 'application/json' } });
+const imageRequest = () => new Request('https://images.test/racks/a.png');
+
+function maintenanceFetch(flag) {
+  const calls = [];
+  globalThis.fetch = async (url, init) => {
+    calls.push(String(url));
+    if (String(url).includes('app_feature_flags')) return typeof flag === 'function' ? flag() : flag;
+    return imageResponse();
+  };
+  return calls;
+}
+
+test('maintenance on: 503 no-store, origin image never fetched', async () => {
+  const calls = maintenanceFetch(flagResponse([{ enabled: true }]));
+  const res = await worker.fetch(imageRequest(), maintEnv);
+  assert.equal(res.status, 503);
+  assert.equal(res.headers.get('cache-control'), 'no-store');
+  assert.equal(res.headers.get('retry-after'), '300');
+  assert.equal(calls.length, 1);
+  assert.ok(calls[0].startsWith('https://supabase.test/rest/v1/app_feature_flags?'));
+  assert.ok(calls[0].includes('key=eq.maintenanceModeEnabled&environment=eq.production'));
+});
+
+test('maintenance off or missing row: image is served and the flag is cached', async () => {
+  const calls = maintenanceFetch(flagResponse([]));
+  assert.equal((await worker.fetch(imageRequest(), maintEnv)).status, 200);
+  assert.equal((await worker.fetch(imageRequest(), maintEnv)).status, 200);
+  assert.equal(calls.filter(u => u.includes('app_feature_flags')).length, 1);
+});
+
+test('flag lookup failures fail closed', async () => {
+  maintenanceFetch(flagResponse({}, 500));
+  assert.equal((await worker.fetch(imageRequest(), maintEnv)).status, 503);
+  resetMaintenanceCache();
+  maintenanceFetch(() => { throw new Error('network'); });
+  assert.equal((await worker.fetch(imageRequest(), maintEnv)).status, 503);
+  resetMaintenanceCache();
+  maintenanceFetch(flagResponse([{ enabled: 'yes' }]));
+  assert.equal((await worker.fetch(imageRequest(), maintEnv)).status, 503);
+});
+
+test('without an anon key no flag lookup happens', async () => {
+  const calls = maintenanceFetch(flagResponse([{ enabled: true }]));
+  assert.equal((await worker.fetch(imageRequest(), env)).status, 200);
+  assert.equal(calls.length, 1);
 });

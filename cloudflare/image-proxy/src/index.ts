@@ -3,6 +3,56 @@ export interface ImageProxyEnv {
   ALLOWED_BUCKETS?: string;
   BROWSER_CACHE_TTL_SECONDS?: string;
   EDGE_CACHE_TTL_SECONDS?: string;
+  /** Public anon key (secret binding) used only to read the maintenance flag. Unset: maintenance gating is skipped. */
+  SUPABASE_ANON_KEY?: string;
+}
+
+export const MAINTENANCE_CACHE_TTL_MS = 30_000;
+const MAINTENANCE_FLAG_PATH =
+  '/rest/v1/app_feature_flags?select=enabled&key=eq.maintenanceModeEnabled&environment=eq.production';
+let maintenanceState: { enabled: boolean; expiresAt: number } | null = null;
+
+export function resetMaintenanceCache(): void {
+  maintenanceState = null;
+}
+
+/**
+ * True while the production maintenance flag is on. Cached in-isolate for 30 s. Any error, non-OK status or
+ * unexpected body counts as "on" (fail closed, not cached). Returns false only when no anon key is configured.
+ */
+export async function isMaintenanceActive(env: ImageProxyEnv, nowMs: number = Date.now()): Promise<boolean> {
+  if (!env.SUPABASE_ANON_KEY) return false;
+  if (maintenanceState && maintenanceState.expiresAt > nowMs) return maintenanceState.enabled;
+  try {
+    const restBase = new URL(env.SUPABASE_STORAGE_ORIGIN || DEFAULT_SUPABASE_STORAGE_ORIGIN).origin;
+    const response = await fetch(`${restBase}${MAINTENANCE_FLAG_PATH}`, {
+      headers: { apikey: env.SUPABASE_ANON_KEY, Authorization: `Bearer ${env.SUPABASE_ANON_KEY}` },
+      cf: { cacheTtl: 0, cacheEverything: false },
+    } as RequestInit);
+    if (!response.ok) throw new Error(`flag lookup status ${response.status}`);
+    const rows: unknown = await response.json();
+    if (!Array.isArray(rows) || rows.length > 1) throw new Error('unexpected flag body');
+    const first = rows[0] as { enabled?: unknown } | undefined;
+    if (rows.length === 1 && typeof first?.enabled !== 'boolean') throw new Error('unexpected flag row');
+    const enabled = rows.length === 1 && first?.enabled === true;
+    maintenanceState = { enabled, expiresAt: nowMs + MAINTENANCE_CACHE_TTL_MS };
+    return enabled;
+  } catch {
+    maintenanceState = null;
+    return true;
+  }
+}
+
+function maintenanceResponse(): Response {
+  return new Response('Service temporarily unavailable', {
+    status: 503,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Cache-Control': 'no-store',
+      'Retry-After': '300',
+      'X-Content-Type-Options': 'nosniff',
+    },
+  });
 }
 
 export const DEFAULT_SUPABASE_STORAGE_ORIGIN = 'https://supabase.patcher.xyz/storage/v1/object/public';
@@ -124,6 +174,8 @@ async function handleImageProxyRequest(request: Request, env: ImageProxyEnv): Pr
 
   const originUrl = buildOriginImageUrl(request.url, env);
   if (!originUrl) return notFoundResponse();
+
+  if (await isMaintenanceActive(env)) return maintenanceResponse();
 
   const cacheTtl = readEdgeCacheTtlSeconds(env);
   const originResponse = await fetch(originUrl, {
